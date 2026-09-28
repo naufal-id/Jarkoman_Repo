@@ -1,0 +1,1280 @@
+/* MLBB: "Land of Dawn"
+   Malam dan royal blue sebagai dasar, emas metalik hanya untuk teks display dan ornamen, cyan hanya di kristal.
+   Komposisi simetris dan terpusat (beda dari Valorant yang berat di kiri dan CS2 yang berupa HUD).
+   Cinzel = kapital mitos ala "Legends", Kanit = callout pertempuran dan UI. */
+
+.ml {
+  --bg: #070b1c;
+  --royal: #16245c;
+  --panel: #0d1433;
+  --ground: #0b1535;
+  --gold: #f0c45c;
+  --gold-hi: #fff1c1;
+  --gold-lo: #a8741f;
+  --gold-ink: #1a1203;
+  --gold-grad: linear-gradient(180deg, #fff1c1 0%, #f0c45c 48%, #b8822a 100%);
+  --fg: #f4f1e8;
+  --muted: #b8bcd6;
+  --line: rgba(240, 196, 92, 0.3);
+  --arcane: #5ce1ff;
+  --enemy: #e0475b;
+  --focus: var(--gold-hi);
+  --pad-x: clamp(16px, 4vw, 48px);
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Kanit', system-ui, sans-serif;
+  overflow-x: clip;
+}
+
+.ml[data-variant='red'] {
+  --bg: #12050a;
+  --royal: #5a1426;
+  --panel: #230a14;
+  --ground: #1c0a12;
+  --muted: #dcc2c8;
+}
+
+body:has(.ml) {
+  background: #070b1c;
+}
+body:has(.ml[data-variant='red']) {
+  background: #12050a;
+}
+
+.ml-gold {
+  background: var(--gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- Top ---------- */
+.ml-top {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px var(--pad-x);
+}
+
+.ml-top__mark {
+  margin-right: auto;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  background: var(--gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ml-status {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold-hi);
+  white-space: nowrap;
+}
+
+.ml-status--cancelled {
+  color: #ff9aa6;
+  border-color: rgba(255, 154, 166, 0.5);
+}
+
+/* ---------- Tombol ---------- */
+.ml-btn,
+.ml-form .jf__submit {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 0 34px;
+  border: 0;
+  font-family: 'Kanit', sans-serif;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 16px 100%, 0 50%);
+  transition: filter 0.2s, transform 0.2s;
+}
+
+.ml-btn--gold,
+.ml-form .jf__submit {
+  background: linear-gradient(180deg, #ffe7a3, #f0c45c 52%, #c48a2c);
+  color: var(--gold-ink);
+}
+
+.ml-btn--gold::after,
+.ml-form .jf__submit::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.7) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.7s ease;
+}
+
+.ml-btn--gold:hover::after,
+.ml-form .jf__submit:hover::after {
+  transform: translateX(120%);
+}
+
+.ml-btn--ghost {
+  background: var(--gold-grad);
+  color: var(--gold-hi);
+}
+
+.ml-btn--ghost::before {
+  content: '';
+  position: absolute;
+  inset: 1.5px;
+  z-index: -1;
+  background: var(--bg);
+  clip-path: inherit;
+  transition: background 0.2s;
+}
+
+.ml-btn--ghost:hover::before {
+  background: var(--royal);
+}
+
+.ml-btn--sm {
+  min-height: 44px;
+  padding: 0 22px;
+  font-size: 14px;
+}
+
+.ml-btn:focus-visible,
+.ml-form .jf__submit:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: -7px;
+}
+
+.ml-btn--gold:focus-visible,
+.ml-form .jf__submit:focus-visible {
+  outline-color: var(--gold-ink);
+}
+
+/* ---------- Hero ---------- */
+.ml-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 104px var(--pad-x) 72px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.ml-hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 30%, var(--royal) 0%, var(--bg) 70%);
+}
+
+.ml-hero__photo {
+  filter: blur(3px) saturate(1.2) brightness(0.42);
+  transform: scale(1.05);
+}
+
+.ml-hero__bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 42%, color-mix(in srgb, var(--bg) 55%, transparent) 0%, color-mix(in srgb, var(--bg) 88%, transparent) 60%, var(--bg) 100%);
+}
+
+.ml-rays {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  z-index: 1;
+  width: 170vmax;
+  height: 170vmax;
+  translate: -50% -50%;
+  background: repeating-conic-gradient(from 0deg, rgba(240, 196, 92, 0.08) 0deg 5deg, transparent 5deg 15deg);
+  -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 42%);
+  mask-image: radial-gradient(circle, #000 0%, transparent 42%);
+}
+
+.ml-embers {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+}
+
+.ml-hero__inner {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.ml-crest {
+  width: 84px;
+  height: 84px;
+  filter: drop-shadow(0 0 18px rgba(92, 225, 255, 0.35));
+}
+
+.ml-hero__game {
+  margin-top: 14px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ml-hero__title {
+  --scale: 1;
+  --shine: -40%;
+  position: relative;
+  margin: 18px 0 16px;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(46px, calc(8.6vw * var(--scale)), calc(128px * var(--scale)));
+  line-height: 1.02;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+
+/* Gradien emas per huruf supaya tetap benar saat huruf dianimasikan satu per satu. */
+.ml-hero__title .split-char {
+  background: var(--gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 3px 0 rgba(58, 37, 6, 0.9));
+}
+
+.ml-hero__title::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--shine);
+  width: 24%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.ml-hero__sub {
+  max-width: 48ch;
+  font-size: clamp(17px, 1.5vw, 20px);
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.ml-streak {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  margin: 30px 0 26px;
+}
+
+.ml-streak__word {
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(40px, 7vw, 86px);
+  line-height: 1;
+  text-transform: uppercase;
+  background: var(--gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transform: skewX(-6deg);
+  filter: drop-shadow(0 4px 0 #3a2506) drop-shadow(0 0 22px rgba(240, 196, 92, 0.35));
+}
+
+.ml-streak__ring {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: 260px;
+  height: 260px;
+  margin: -130px 0 0 -130px;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ml-streak__caption {
+  margin-top: 8px;
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ml-plaque {
+  position: relative;
+  width: min(100%, 600px);
+  padding: 26px 28px 28px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--royal) 70%, transparent), color-mix(in srgb, var(--bg) 92%, transparent));
+}
+
+.ml-plaque__date {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: clamp(20px, 2.4vw, 26px);
+  color: var(--gold);
+}
+
+.ml-plaque__time {
+  margin-top: 4px;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Ornamen sudut: siku emas dengan permata kecil. */
+.ml-orn {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 0 solid var(--gold);
+  pointer-events: none;
+}
+
+.ml-orn::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--gold);
+  transform: rotate(45deg);
+}
+
+.ml-orn--tl {
+  left: -1px;
+  top: -1px;
+  border-width: 2px 0 0 2px;
+}
+
+.ml-orn--tl::after {
+  left: -5px;
+  top: -5px;
+}
+
+.ml-orn--br {
+  right: -1px;
+  bottom: -1px;
+  border-width: 0 2px 2px 0;
+}
+
+.ml-orn--br::after {
+  right: -5px;
+  bottom: -5px;
+}
+
+.ml-cd {
+  margin-top: 20px;
+}
+
+.ml-cd__label {
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ml-cd__cells {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.ml-cd__cell {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-content: center;
+  width: 86px;
+  aspect-ratio: 1 / 1.08;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background: var(--gold-grad);
+}
+
+.ml-cd__cell::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  clip-path: inherit;
+  background: linear-gradient(180deg, var(--royal), var(--bg));
+}
+
+.ml-cd__num {
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ml-cd__num .digit {
+  display: inline-block;
+  animation: ml-digit 0.5s ease-out;
+}
+
+@keyframes ml-digit {
+  from {
+    opacity: 0;
+    transform: scale(1.5);
+    filter: blur(3px);
+  }
+}
+
+.ml-cd__unit {
+  margin-top: 4px;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.ml-cd-state {
+  margin-top: 18px;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: 34px;
+  color: var(--gold);
+}
+
+.ml-cd-state--cancelled {
+  color: #ff9aa6;
+}
+
+.ml-hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 30px;
+}
+
+/* ---------- Section umum ---------- */
+.ml main > section:not(.ml-hero) {
+  padding: clamp(72px, 10vw, 124px) var(--pad-x);
+}
+
+.ml-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(32px, 5vw, 58px);
+  line-height: 1.1;
+  text-align: center;
+}
+
+.ml-title__text {
+  background: var(--gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ml-title__orn {
+  position: relative;
+  flex: 0 1 150px;
+  min-width: 24px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold));
+  transform-origin: 100% 50%;
+}
+
+.ml-title__orn::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  background: var(--gold);
+  transform: rotate(45deg);
+}
+
+.ml-title__orn--r {
+  background: linear-gradient(270deg, transparent, var(--gold));
+  transform-origin: 0 50%;
+}
+
+.ml-title__orn--r::after {
+  right: auto;
+  left: -4px;
+}
+
+.ml-lead {
+  max-width: 54ch;
+  margin: 16px auto 0;
+  text-align: center;
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* ---------- Lineup ---------- */
+.ml-lineup {
+  background: linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--royal) 35%, var(--bg)) 50%, var(--bg));
+}
+
+.ml-team-wrap {
+  max-width: 1200px;
+  margin: 40px auto 0;
+}
+
+.ml-team__label {
+  margin-bottom: 14px;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--gold);
+}
+
+.ml-team {
+  --cols: 5;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (min-width: 720px) {
+  .ml-team {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .ml-team {
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  }
+}
+
+.ml-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  aspect-ratio: 3 / 4.4;
+  padding: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--royal) 0%, var(--panel) 55%, color-mix(in srgb, var(--bg) 80%, #000) 100%);
+  color: var(--fg);
+  text-decoration: none;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s;
+}
+
+.ml-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--gold-grad);
+}
+
+.ml-card::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(240, 196, 92, 0.16);
+  pointer-events: none;
+}
+
+.ml-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--gold);
+}
+
+.ml-card__slot {
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ml-card__lane {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.ml-card__lane .ml-lane-ico {
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+
+.ml-card__initial {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  translate: -50% -50%;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(110px, 12vw, 170px);
+  line-height: 1;
+  color: rgba(240, 196, 92, 0.14);
+  pointer-events: none;
+}
+
+.ml-card__foot {
+  position: relative;
+  margin-top: auto;
+}
+
+.ml-card__name {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: clamp(19px, 1.8vw, 24px);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.ml-card__hero {
+  margin-top: 2px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.ml-card__tag {
+  display: inline-block;
+  margin: 0 6px 8px 0;
+  padding: 3px 8px;
+  background: var(--gold);
+  color: var(--gold-ink);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ml-card__tag--maybe {
+  background: transparent;
+  color: var(--gold-hi);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+.ml-card.is-maybe {
+  border-style: dashed;
+}
+
+.ml-card--empty {
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  border-style: dashed;
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+}
+
+.ml-card--empty .ml-card__slot {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+}
+
+.ml-card__sil {
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: 84px;
+  line-height: 1;
+  color: rgba(240, 196, 92, 0.3);
+}
+
+.ml-card__open {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.ml-card__take {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.ml-card:focus-visible {
+  outline-offset: 4px;
+}
+
+.ml-vs {
+  margin: 22px 0 8px;
+  text-align: center;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 52px;
+  line-height: 1;
+  background: var(--gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ml-reserve {
+  max-width: 1200px;
+  margin: 24px auto 0;
+  text-align: center;
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.ml-reserve span {
+  font-weight: 600;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ---------- Ikon lane ---------- */
+.ml-lane-ico {
+  width: 36px;
+  height: 36px;
+}
+
+.ml-lane-ico__frame {
+  fill: none;
+  stroke: rgba(244, 241, 232, 0.35);
+  stroke-width: 1.5;
+}
+
+.ml-lane-ico__path {
+  fill: none;
+  stroke: rgba(244, 241, 232, 0.28);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ml-lane-ico__path.is-on {
+  stroke: var(--gold);
+  stroke-width: 4;
+}
+
+.ml-lane-ico__dots {
+  fill: var(--gold);
+}
+
+.ml-lane-ico__roam {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 3;
+  stroke-dasharray: 3 3;
+  stroke-linecap: round;
+}
+
+/* ---------- Land of Dawn ---------- */
+.ml-dawn__grid {
+  display: grid;
+  gap: 40px;
+  max-width: 1200px;
+  margin: 44px auto 0;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .ml-dawn__grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 64px;
+  }
+}
+
+.ml-map {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.ml-map svg {
+  width: 100%;
+  height: auto;
+}
+
+.ml-map__ground {
+  fill: var(--ground);
+  stroke: var(--line);
+  stroke-width: 2;
+}
+
+.ml-map__river {
+  fill: none;
+  stroke: var(--arcane);
+  stroke-opacity: 0.22;
+  stroke-width: 30;
+  stroke-linecap: round;
+}
+
+.ml-map__jungle {
+  fill: rgba(240, 196, 92, 0.13);
+}
+
+.ml-map__pit {
+  fill: none;
+  stroke: var(--arcane);
+  stroke-opacity: 0.6;
+  stroke-width: 2;
+}
+
+.ml-map__lane {
+  fill: none;
+  stroke: rgba(244, 241, 232, 0.07);
+  stroke-width: 22;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ml-map__lane-line {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.ml-map__tower {
+  fill: var(--gold);
+  opacity: 0.85;
+}
+
+.ml-map__base--ally {
+  fill: var(--arcane);
+}
+
+.ml-map__base--enemy {
+  fill: var(--enemy);
+}
+
+.ml-map__label {
+  font-family: 'Kanit', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: var(--muted);
+}
+
+.ml-map__label--end {
+  text-anchor: end;
+}
+
+.ml-map__chip {
+  position: absolute;
+  translate: -50% -50%;
+  max-width: 38%;
+  padding: 4px 14px;
+  overflow: hidden;
+  background: var(--gold);
+  color: var(--gold-ink);
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%);
+}
+
+.ml-map__cap {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.ml-intel {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.ml-intel__item {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--royal) 40%, transparent);
+}
+
+.ml-intel__item dt {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.ml-intel__item dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Join ---------- */
+.ml-join__panel {
+  position: relative;
+  max-width: 900px;
+  margin: 40px auto 0;
+  padding: clamp(20px, 4vw, 40px);
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--royal) 55%, transparent), var(--panel));
+}
+
+.ml-form .jf__field--role {
+  grid-column: 1 / -1;
+}
+
+.ml-form .jf__label {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.ml-form .jf__opt {
+  color: var(--muted);
+}
+
+.ml-form .jf__input {
+  background: color-mix(in srgb, var(--bg) 75%, transparent);
+  border: 1px solid var(--line);
+  color: var(--fg);
+}
+
+.ml-form .jf__input::placeholder {
+  color: #9aa0bf;
+}
+
+.ml-form .jf__input:focus-visible {
+  outline: 2px solid var(--gold-hi);
+  outline-offset: 2px;
+}
+
+.ml-lanes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(30%, 110px), 1fr));
+  gap: 8px;
+}
+
+.ml-lane {
+  position: relative;
+}
+
+.ml-lane input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.ml-lane__card {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 6px;
+  min-height: 100px;
+  padding: 12px 6px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.ml-lane:hover .ml-lane__card {
+  border-color: var(--gold);
+}
+
+.ml-lane input:checked + .ml-lane__card {
+  border-color: var(--gold);
+  background: rgba(240, 196, 92, 0.16);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+.ml-lane input:focus-visible + .ml-lane__card {
+  outline: 2px solid var(--gold-hi);
+  outline-offset: 2px;
+}
+
+.ml-lane__name {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ml-lane__taken {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ml-form .jf__submit {
+  min-height: 60px;
+  padding: 0 44px;
+  font-size: 19px;
+}
+
+.ml-form .jf__hint {
+  color: var(--muted);
+}
+
+.ml-form .jf__hint strong {
+  color: var(--fg);
+}
+
+.ml-form .jf__error {
+  color: #ffb3bd;
+}
+
+.ml-form .jf__sent a {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* ---------- Aturan ---------- */
+.ml-notes__list {
+  list-style: none;
+  max-width: 760px;
+  margin: 36px auto 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.ml-notes__list li {
+  position: relative;
+  padding: 14px 20px 14px 44px;
+  border-bottom: 1px solid var(--line);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.ml-notes__list li::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  top: 1.25em;
+  width: 9px;
+  height: 9px;
+  background: var(--gold);
+  transform: rotate(45deg);
+}
+
+/* ---------- Jadwal lain & footer ---------- */
+.ml .ml-sched {
+  max-width: calc(1000px + 2 * var(--pad-x));
+  margin: 0 auto;
+  padding: 0 var(--pad-x) clamp(56px, 8vw, 96px);
+}
+
+.ml-sched .sched__title {
+  margin-bottom: 20px;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(28px, 4vw, 42px);
+  color: var(--gold);
+}
+
+.ml-sched .sched__row {
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--royal) 30%, transparent);
+  transition: border-color 0.2s;
+}
+
+.ml-sched .sched__row:hover {
+  border-color: var(--gold);
+}
+
+.ml-sched .sched__slots {
+  color: var(--gold);
+}
+
+.ml-foot {
+  max-width: 1200px;
+  margin: 0 auto;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.ml-foot a {
+  color: var(--gold-hi);
+}
+
+/* ---------- Pesan siap ---------- */
+.ml-victory {
+  position: fixed;
+  inset: 0;
+  z-index: 280;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  background: radial-gradient(circle, rgba(7, 11, 28, 0.82) 0%, rgba(7, 11, 28, 0.2) 70%);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.ml-victory span {
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(44px, 8vw, 96px);
+  background: var(--gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ml-victory small {
+  font-weight: 500;
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+
+/* ---------- Intro ---------- */
+.ml-intro {
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse at 50% 40%, #16245c 0%, #070b1c 70%);
+  color: #f4f1e8;
+}
+
+.ml-intro__inner {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+}
+
+.ml-intro .ml-crest {
+  width: 120px;
+  height: 120px;
+}
+
+.ml-intro__label {
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #b8bcd6;
+}
+
+.ml-intro__bar {
+  width: min(70vw, 280px);
+  height: 6px;
+  padding: 1px;
+  border: 1px solid rgba(240, 196, 92, 0.5);
+}
+
+.ml-intro__fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #a8741f, #fff1c1);
+  transform-origin: 0 50%;
+}
+
+.ml-intro .intro__skip {
+  color: #fff1c1;
+}
+
+/* ---------- Layar kecil ---------- */
+@media (max-width: 560px) {
+  .ml-top__mark {
+    font-size: 20px;
+  }
+  .ml-status {
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+  .ml-top .ml-btn--sm {
+    padding: 0 16px;
+  }
+  .ml-hero {
+    padding-top: 92px;
+  }
+  .ml-hero__cta > * {
+    flex: 1 1 100%;
+  }
+  .ml-plaque {
+    padding: 22px 14px;
+  }
+  .ml-cd__cells {
+    gap: 6px;
+  }
+  .ml-cd__cell {
+    width: 70px;
+  }
+  .ml-cd__num {
+    font-size: 24px;
+  }
+  .ml-intel__item {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .ml-map__chip {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
+  .ml-title {
+    gap: 10px;
+  }
+  .ml-title__orn {
+    flex: 0 0 18px;
+    min-width: 0;
+  }
+  .ml-title__text {
+    text-wrap: balance;
+  }
+}

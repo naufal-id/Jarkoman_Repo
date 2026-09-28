@@ -1,0 +1,1342 @@
+/* ADMIN: "Backstage"
+   Graphite netral supaya satu-satunya warna di layar adalah aksen game yang sedang diedit (--acc).
+   Satu keluarga font (Archivo, sumbu lebar) untuk semua hierarki: kondensed untuk judul dan label,
+   normal untuk isian. Font game hanya muncul di kartu pemilih game.
+   Tema gelap dipilih karena preview keempat game berlatar gelap; chrome terang akan silau di sekitarnya. */
+
+:root {
+  --bg: #121214;
+  --panel: #17171b;
+  --panel-2: #1d1d22;
+  --field: #0e0e10;
+  --fg: #edebe6;
+  --muted: #a3a1a9;
+  --soft: #cfcdd4;
+  --line: #2c2c32;
+  --line-2: #3a3a41;
+  --acc: #ece8e1;
+  --warn: #ffd27a;
+  --danger: #ff8f8f;
+  --font-valorant: 'Anton', sans-serif;
+  --font-cs2: 'Saira Stencil One', sans-serif;
+  --font-mlbb: 'Cinzel', serif;
+  --font-repo: 'Teko', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Archivo Variable', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #26262c;
+}
+
+:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+
+/* ---------- Tombol ---------- */
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-weight: 650;
+  font-size: 15px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, filter 0.15s;
+}
+
+.adm-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.adm-btn--primary {
+  background: var(--acc);
+  color: #121214;
+}
+
+.adm-btn--primary:not(:disabled):hover {
+  filter: brightness(1.1);
+}
+
+.adm-btn--ghost {
+  background: transparent;
+  border-color: var(--line-2);
+  color: var(--fg);
+}
+
+.adm-btn--ghost:not(:disabled):hover {
+  background: var(--panel-2);
+  border-color: #52525a;
+}
+
+.adm-btn--danger {
+  background: transparent;
+  border-color: #6b2a2a;
+  color: var(--danger);
+}
+
+.adm-btn--danger:not(:disabled):hover {
+  background: #2a1414;
+}
+
+.adm-btn--sm {
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.adm-link {
+  color: var(--soft);
+  font-weight: 600;
+  text-underline-offset: 4px;
+}
+
+/* ---------- Isian ---------- */
+.adm-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #34343a;
+  border-radius: 6px;
+  background: var(--field);
+  color: var(--fg);
+  line-height: 1.35;
+}
+
+.adm-input::placeholder {
+  color: #7f7d86;
+}
+
+.adm-input:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.adm-input[aria-invalid='true'] {
+  border-color: #8a3a3a;
+}
+
+textarea.adm-input {
+  resize: vertical;
+}
+
+.adm-input--lg {
+  font-stretch: 80%;
+  font-weight: 800;
+  font-size: 22px;
+}
+
+select.adm-input option {
+  background: #fff;
+  color: #111;
+}
+
+.adm-label {
+  font-stretch: 82%;
+  font-weight: 650;
+  font-size: 14px;
+  color: var(--soft);
+}
+
+.adm-hint {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.adm-hint--warn {
+  color: var(--warn);
+}
+
+.adm-error {
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--danger);
+}
+
+.adm-counter {
+  float: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-counter.is-low {
+  color: var(--warn);
+}
+
+.adm-field {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  min-width: 0;
+}
+
+.adm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 18px;
+}
+
+.adm-grid .adm-field {
+  margin-top: 14px;
+}
+
+.adm-choice {
+  display: grid;
+  gap: 8px;
+}
+
+.adm-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adm-inline .adm-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.adm-note {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 12px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--panel-2);
+  font-size: 14px;
+}
+
+.adm-note--warn {
+  border-color: #5a4a1e;
+  background: #211c0e;
+  color: #ffe6ad;
+}
+
+.adm-empty {
+  padding: 18px;
+  border: 1px dashed var(--line-2);
+  border-radius: 8px;
+  color: var(--soft);
+  font-size: 14px;
+}
+
+/* Segmented control (radio). */
+.adm-seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  justify-self: start;
+}
+
+.adm-seg__opt {
+  position: relative;
+}
+
+.adm-seg__opt input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.adm-seg__opt span {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 5px;
+  color: var(--soft);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.adm-seg__opt.is-on span {
+  background: #26262c;
+  color: var(--fg);
+  box-shadow: inset 0 -2px 0 var(--acc);
+}
+
+.adm-seg__opt:has(input:focus-visible) span {
+  outline: 2px solid var(--acc);
+  outline-offset: 1px;
+}
+
+.adm-seg--sm .adm-seg__opt span {
+  min-height: 36px;
+  padding: 0 12px;
+}
+
+/* ---------- Boot & login ---------- */
+.adm-boot {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  justify-items: start;
+  gap: 16px;
+  padding: 24px;
+  color: var(--soft);
+}
+
+.adm-boot__mark {
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: clamp(56px, 12vw, 110px);
+  line-height: 0.85;
+  color: var(--fg);
+}
+
+.adm-login {
+  min-height: 100dvh;
+  display: grid;
+}
+
+@media (min-width: 900px) {
+  .adm-login {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+}
+
+.adm-login__brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  padding: clamp(24px, 5vw, 56px);
+  background: #0c0c0e;
+  border-right: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.adm-login__mark {
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: clamp(64px, 11vw, 168px);
+  line-height: 0.82;
+  letter-spacing: -0.01em;
+}
+
+.adm-login__role {
+  margin-top: 10px;
+  font-size: 18px;
+  color: var(--muted);
+}
+
+.adm-login__games {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 28px;
+  align-items: baseline;
+}
+
+.adm-login__games li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(30px, 4vw, 54px);
+  line-height: 1.1;
+  color: #d9d6cf;
+}
+
+.adm-login__games li::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: var(--acc);
+}
+
+.adm-login__games [data-game='valorant'] {
+  font-family: var(--font-valorant);
+}
+.adm-login__games [data-game='cs2'] {
+  font-family: var(--font-cs2);
+}
+.adm-login__games [data-game='mlbb'] {
+  font-family: var(--font-mlbb);
+  font-weight: 900;
+  font-size: clamp(24px, 3.2vw, 44px);
+}
+.adm-login__games [data-game='repo'] {
+  font-family: var(--font-repo);
+  font-weight: 600;
+  font-size: clamp(36px, 4.8vw, 64px);
+}
+
+.adm-login__panel {
+  display: grid;
+  align-content: center;
+  gap: 18px;
+  width: 100%;
+  max-width: 520px;
+  padding: clamp(24px, 6vw, 72px);
+}
+
+.adm-login__title {
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: clamp(38px, 4.4vw, 52px);
+  line-height: 0.95;
+}
+
+.adm-login__text {
+  color: var(--soft);
+  font-size: 16px;
+}
+
+.adm-login__form {
+  display: grid;
+  gap: 10px;
+}
+
+.adm-pass {
+  display: flex;
+  gap: 8px;
+}
+
+.adm-pass .adm-input {
+  flex: 1;
+}
+
+.adm-pass__toggle {
+  min-width: 110px;
+  min-height: 44px;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  background: transparent;
+  font-weight: 600;
+}
+
+.adm-login__submit {
+  margin-top: 6px;
+  min-height: 52px;
+  font-size: 17px;
+}
+
+/* ---------- Layout dashboard ---------- */
+.adm {
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+
+/* Baris eksplisit: banner draft tidak selalu ada, jadi posisi tiap bagian dikunci. */
+.adm-top {
+  grid-row: 1;
+}
+.adm-banner {
+  grid-row: 2;
+}
+.adm-body {
+  grid-row: 3;
+}
+.adm-tabs {
+  grid-row: 4;
+}
+
+.adm-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.adm-top__mark {
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.adm-top__mark span {
+  font-stretch: 90%;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.adm-top__status {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adm-top__status.is-dirty {
+  color: var(--warn);
+}
+
+.adm-top__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.adm-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #211c0e;
+  border-bottom: 1px solid #5a4a1e;
+  color: #ffe6ad;
+  font-size: 14px;
+}
+
+.adm-body {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) minmax(0, 44%);
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.adm-list,
+.adm-editor,
+.adm-side {
+  min-height: 0;
+  overflow: auto;
+}
+
+/* ---------- Daftar jarkoman ---------- */
+.adm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 12px;
+  border-right: 1px solid var(--line);
+}
+
+.adm-list__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.adm-list__title {
+  font-stretch: 62%;
+  font-weight: 850;
+  font-size: 24px;
+}
+
+.adm-list__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.adm-item {
+  width: 100%;
+  display: grid;
+  gap: 2px;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fg);
+  text-align: left;
+}
+
+.adm-item:hover {
+  background: var(--panel-2);
+}
+
+/* Garis kiri beraksen menandai item yang sedang dibuka (status nyata, bukan dekorasi). */
+.adm-item.is-on {
+  background: #1f1f24;
+  border-color: #34343a;
+  box-shadow: inset 3px 0 0 var(--acc);
+}
+
+.adm-item__game {
+  font-size: 19px;
+  line-height: 1.1;
+  color: var(--acc);
+}
+
+.adm-item[data-game='valorant'] .adm-item__game {
+  font-family: var(--font-valorant);
+}
+.adm-item[data-game='cs2'] .adm-item__game {
+  font-family: var(--font-cs2);
+}
+.adm-item[data-game='mlbb'] .adm-item__game {
+  font-family: var(--font-mlbb);
+  font-weight: 900;
+  font-size: 16px;
+}
+.adm-item[data-game='repo'] .adm-item__game {
+  font-family: var(--font-repo);
+  font-weight: 600;
+  font-size: 23px;
+}
+
+.adm-item__headline {
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adm-item__meta {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.adm-item__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.adm-item__badges:empty {
+  display: none;
+}
+
+.adm-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #2a2a30;
+  color: #dcdae0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.adm-badge--main {
+  background: var(--acc);
+  color: #121214;
+}
+
+.adm-badge--lg {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: 14px;
+  background: transparent;
+  color: var(--acc);
+  box-shadow: inset 0 0 0 1px var(--acc);
+}
+
+.adm-list__foot {
+  margin-top: auto;
+  display: grid;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.adm-list__foot .adm-btn {
+  justify-content: flex-start;
+}
+
+.adm-show-sm {
+  display: none;
+}
+
+/* ---------- Editor ---------- */
+.adm-editor {
+  container-type: inline-size;
+  padding: 24px clamp(16px, 3vw, 36px) 96px;
+}
+
+.adm-editor__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.adm-editor__kicker {
+  font-size: 18px;
+  line-height: 1.1;
+  color: var(--acc);
+}
+
+.adm-editor__title {
+  margin-top: 4px;
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: clamp(30px, 3vw, 42px);
+  line-height: 0.95;
+  overflow-wrap: anywhere;
+}
+
+.adm-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.adm-editor__help {
+  margin-top: 12px;
+  max-width: 70ch;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.adm-sec {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.adm-sec__title {
+  font-stretch: 62%;
+  font-weight: 850;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.adm-sec > .adm-hint {
+  margin-top: 10px;
+}
+
+/* Kartu pemilih game: tiap game tampil dengan font display-nya sendiri. */
+.adm-games,
+.adm-new {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.adm-new {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 18px 0 4px;
+}
+
+.adm-game {
+  position: relative;
+  display: grid;
+  align-content: end;
+  gap: 2px;
+  min-height: 92px;
+  padding: 14px;
+  border: 1px solid #34343a;
+  border-radius: 8px;
+  background: #16161a;
+  color: var(--fg);
+  text-align: left;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.adm-game input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.adm-game:hover {
+  border-color: #52525a;
+}
+
+.adm-game.is-on {
+  border-color: var(--acc);
+  background: color-mix(in srgb, var(--acc) 9%, #16161a);
+  box-shadow: inset 0 -3px 0 var(--acc);
+}
+
+.adm-game:has(input:focus-visible) {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+
+.adm-game__name {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.adm-game[data-game='valorant'] .adm-game__name {
+  font-family: var(--font-valorant);
+}
+.adm-game[data-game='cs2'] .adm-game__name {
+  font-family: var(--font-cs2);
+  font-size: 26px;
+}
+.adm-game[data-game='mlbb'] .adm-game__name {
+  font-family: var(--font-mlbb);
+  font-weight: 900;
+  font-size: 22px;
+}
+.adm-game[data-game='repo'] .adm-game__name {
+  font-family: var(--font-repo);
+  font-weight: 600;
+  font-size: 34px;
+}
+
+.adm-game__pub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.adm-game--btn:hover {
+  border-color: var(--acc);
+}
+
+/* ---------- Pemain ---------- */
+.adm-players {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.adm-slots {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.adm-stepper {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid #34343a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.adm-stepper__btn {
+  width: 48px;
+  min-height: 44px;
+  border: 0;
+  background: var(--panel-2);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.adm-stepper__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.adm-stepper__value {
+  display: grid;
+  place-items: center;
+  min-width: 56px;
+  font-stretch: 70%;
+  font-weight: 850;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-player-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.adm-player {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #16161a;
+}
+
+.adm-player.is-reserve {
+  border: 1px dashed var(--line-2);
+  background: transparent;
+}
+
+.adm-player__num {
+  font-stretch: 70%;
+  font-weight: 850;
+  font-size: 18px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.adm-player.is-reserve .adm-player__num {
+  color: var(--warn);
+}
+
+.adm-player__tools {
+  display: flex;
+}
+
+.adm-toggle {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--soft);
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.adm-toggle.is-on {
+  border-color: var(--acc);
+  background: color-mix(in srgb, var(--acc) 16%, transparent);
+  color: var(--fg);
+}
+
+.adm-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--soft);
+}
+
+.adm-icon-btn:not(:disabled):hover {
+  background: var(--panel-2);
+  color: var(--fg);
+}
+
+.adm-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.adm-icon-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.adm-icon-btn--danger:not(:disabled):hover {
+  background: #2a1414;
+  color: var(--danger);
+}
+
+.adm-players__add {
+  justify-self: start;
+}
+
+@container (max-width: 700px) {
+  .adm-player {
+    grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .adm-player__name {
+    grid-column: 2 / -1;
+  }
+  .adm-player > select {
+    grid-column: 2;
+  }
+  .adm-player .adm-toggle {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .adm-player__tools {
+    grid-column: 3;
+    justify-self: end;
+  }
+  .adm-grid {
+    grid-template-columns: 1fr;
+  }
+  .adm-games {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------- Galeri gambar ---------- */
+.adm-media {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.adm-media__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.adm-media__opt {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: var(--panel-2);
+  cursor: pointer;
+}
+
+.adm-media__opt input {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.adm-media__opt img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.adm-media__opt.is-on {
+  border-color: var(--acc);
+}
+
+.adm-media__opt:has(input:focus-visible) {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+
+.adm-media__opt--auto span {
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.adm-media__cap {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.72);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.adm-media__opt--loading {
+  animation: adm-pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes adm-pulse {
+  to {
+    background: #26262c;
+  }
+}
+
+.adm-media__url {
+  display: grid;
+  gap: 6px;
+}
+
+/* ---------- Preview ---------- */
+.adm-side {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--line);
+  background: #0c0c0e;
+  overflow: hidden;
+}
+
+.adm-preview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.adm-preview__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.adm-preview__note {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.adm-preview__stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 16px;
+  overflow: auto;
+  display: grid;
+  justify-content: center;
+  align-content: start;
+}
+
+.adm-preview__loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+/* Bayangan menandai preview sebagai "layar perangkat" yang berada di atas panel. */
+.adm-preview__frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #000;
+  box-shadow:
+    0 0 0 1px #2c2c32,
+    0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+.adm-preview__stage[data-device='mobile'] .adm-preview__frame {
+  border-radius: 22px;
+}
+
+.adm-preview__frame iframe {
+  display: block;
+  border: 0;
+  transform-origin: 0 0;
+  background: #000;
+}
+
+/* ---------- Dialog ---------- */
+.adm-dialog {
+  width: min(92vw, 580px);
+  max-height: 88dvh;
+  padding: 0;
+  border: 1px solid #34343a;
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--fg);
+}
+
+.adm-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.adm-dialog--danger {
+  border-top: 3px solid var(--danger);
+}
+
+.adm-dialog__body {
+  display: grid;
+  gap: 14px;
+  padding: 24px;
+}
+
+.adm-dialog__title {
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.adm-dialog__text {
+  color: var(--soft);
+}
+
+.adm-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* Monospace di sini punya tujuan: meratakan kolom "Kapan :", "Jam   :" seperti tampilan di WhatsApp. */
+.adm-broadcast {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---------- Toast ---------- */
+.toast-region {
+  position: fixed;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 300;
+  display: grid;
+  gap: 8px;
+  width: min(92vw, 440px);
+  pointer-events: none;
+}
+
+.toast {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--fg);
+  color: #121214;
+  font-weight: 650;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  animation: adm-toast 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes adm-toast {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* ---------- Tab panel (layar kecil) ---------- */
+.adm-tabs {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .adm-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .adm-list,
+  .adm-editor,
+  .adm-side {
+    display: none;
+    border: 0;
+  }
+  .adm[data-pane='list'] .adm-list {
+    display: flex;
+  }
+  .adm[data-pane='edit'] .adm-editor {
+    display: block;
+  }
+  .adm[data-pane='preview'] .adm-side {
+    display: flex;
+  }
+  .adm-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .adm-tabs__btn {
+    min-height: 54px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .adm-tabs__btn.is-on {
+    color: var(--fg);
+    box-shadow: inset 0 3px 0 var(--acc);
+  }
+}
+
+@media (max-width: 720px) {
+  .adm-top {
+    padding: 8px 12px;
+    gap: 10px;
+  }
+  .adm-top__mark span {
+    display: none;
+  }
+  .adm-hide-sm {
+    display: none;
+  }
+  .adm-show-sm {
+    display: inline-flex;
+  }
+  .adm-top__status {
+    font-size: 13px;
+    white-space: normal;
+    line-height: 1.25;
+  }
+  .adm-editor__actions .adm-btn,
+  .adm-editor__actions .adm-badge--lg {
+    flex: 1 1 auto;
+  }
+  .adm-pass__toggle {
+    min-width: 0;
+    padding: 0 12px;
+  }
+  .toast-region {
+    bottom: 76px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,0 +1,243 @@
+/* Struktur bersama untuk komponen lintas tema. Warna, font, dan bentuk diatur oleh tiap tema. */
+
+/* ---------- Form join ---------- */
+.jf {
+  display: grid;
+  gap: 22px;
+}
+
+.jf__field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.jf__label {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.jf__opt {
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.jf__input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: 0;
+  font-size: 16px;
+  line-height: 1.3;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+select.jf__input {
+  padding-right: 40px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 50%,
+    calc(100% - 14px) 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
+select.jf__input option {
+  color: #111;
+  background: #fff;
+}
+
+.jf__textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.jf__error {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.jf__foot {
+  display: grid;
+  gap: 12px;
+}
+
+.jf__submit {
+  min-height: 56px;
+  padding: 0 28px;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-decoration: none;
+  width: 100%;
+}
+
+.jf__hint,
+.jf__sent,
+.jf__closed-text {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.jf__closed-text {
+  font-size: 17px;
+  margin-bottom: 8px;
+}
+
+@media (min-width: 720px) {
+  .jf {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 20px;
+  }
+  .jf__field--name,
+  .jf__field--note,
+  .jf__foot {
+    grid-column: 1 / -1;
+  }
+  .jf__submit {
+    width: auto;
+    justify-self: start;
+  }
+}
+
+/* Radio visual (dipakai picker kustom tema). Input asli tetap ada untuk keyboard & pembaca layar. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  position: relative;
+}
+
+.chip input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.chip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+}
+
+/* ---------- Jadwal lain ---------- */
+.sched__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.sched__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    'game headline slots'
+    'game when slots';
+  column-gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  min-height: 64px;
+}
+
+.sched__game {
+  grid-area: game;
+  font-size: 13px;
+  font-weight: 800;
+  min-width: 76px;
+}
+
+.sched__row[data-game='valorant'] .sched__game {
+  font-family: 'Anton', sans-serif;
+  font-weight: 400;
+  font-size: 17px;
+}
+.sched__row[data-game='cs2'] .sched__game {
+  font-family: 'Saira Stencil One', sans-serif;
+  font-weight: 400;
+  font-size: 17px;
+}
+.sched__row[data-game='mlbb'] .sched__game {
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: 15px;
+}
+.sched__row[data-game='repo'] .sched__game {
+  font-family: 'Teko', sans-serif;
+  font-weight: 600;
+  font-size: 21px;
+}
+
+.sched__headline {
+  grid-area: headline;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sched__when {
+  grid-area: when;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.sched__slots {
+  grid-area: slots;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+/* ---------- Footer ---------- */
+.site-foot {
+  display: grid;
+  gap: 14px;
+  padding: 40px 20px calc(40px + env(safe-area-inset-bottom));
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.site-foot p {
+  max-width: 70ch;
+}
+
+.site-foot__admin {
+  justify-self: start;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+}
+
+@media (min-width: 900px) {
+  .site-foot {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    padding-inline: 48px;
+  }
+}
+
+/* ---------- Potongan teks untuk animasi ---------- */
+.split,
+.split-line,
+.split-word,
+.split-char {
+  display: inline-block;
+}
+
+.split-line {
+  display: block;
+}
+

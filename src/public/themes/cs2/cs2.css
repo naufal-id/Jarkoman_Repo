@@ -1,0 +1,1212 @@
+/* CS2: "Freeze Time"
+   Informasi sesi ditaruh di tempat pemain CS biasa membaca info: HUD atas (skor + timer), kiri bawah, kanan bawah.
+   Saira Stencil One = huruf stensil bombsite, Rajdhani = pengganti Stratum2 untuk angka HUD, Noto Sans = font UI asli CS2. */
+
+.cs {
+  --bg: #0e1114;
+  --panel: rgba(10, 13, 16, 0.82);
+  --panel-solid: #151a1f;
+  --fg: #e8e6e1;
+  --muted: #a4abb3;
+  --line: rgba(232, 230, 225, 0.14);
+  --accent: #eda338;
+  --accent-ink: #1a1206;
+  --danger: #ff5a5f;
+  --focus: var(--accent);
+  --pad-x: clamp(16px, 4vw, 48px);
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Noto Sans', system-ui, sans-serif;
+  overflow-x: clip;
+}
+
+.cs[data-variant='ct'] {
+  --accent: #6d9eeb;
+  --accent-ink: #07111f;
+}
+
+body:has(.cs) {
+  background: #0e1114;
+}
+
+.cs code,
+.cs-mono {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+}
+
+/* ---------- Tombol ---------- */
+.cs-btn,
+.cs-form .jf__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: 0 26px;
+  border: 0;
+  border-radius: 2px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.cs-btn--accent,
+.cs-form .jf__submit {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.cs-btn--accent:hover,
+.cs-form .jf__submit:hover {
+  background: var(--fg);
+  color: #0e1114;
+}
+
+.cs-btn--line {
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--fg);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.cs-btn--line:hover {
+  box-shadow: inset 0 0 0 1px var(--fg);
+}
+
+.cs-btn--sm {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 15px;
+}
+
+/* ---------- HUD atas ---------- */
+.cs-hud-top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 10px var(--pad-x);
+  background: linear-gradient(180deg, rgba(14, 17, 20, 0.95), rgba(14, 17, 20, 0.72));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+
+.cs-hud-top__mark {
+  font-family: 'Saira Stencil One', sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  text-decoration: none;
+  justify-self: start;
+}
+
+.cs-hud-top__right {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cs-status {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.cs-status--cancelled {
+  color: var(--danger);
+}
+
+.cs-status--ended,
+.cs-status--unscheduled {
+  color: var(--muted);
+}
+
+.cs-score {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.cs-score__side {
+  display: grid;
+  place-items: center;
+  min-width: 56px;
+  padding: 2px 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: 'Rajdhani', sans-serif;
+  line-height: 1;
+}
+
+.cs-score__side--right {
+  background: rgba(232, 230, 225, 0.1);
+  color: var(--fg);
+}
+
+.cs-score__side b {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.cs-score__side small {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cs-timer {
+  display: grid;
+  place-items: center;
+  min-width: 150px;
+  padding: 4px 14px;
+  background: rgba(0, 0, 0, 0.55);
+  font-family: 'Rajdhani', sans-serif;
+  line-height: 1;
+}
+
+.cs-timer__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cs-timer__value {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: baseline;
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-timer__value i {
+  font-style: normal;
+  font-size: 16px;
+  margin: 0 6px 0 1px;
+  color: var(--muted);
+}
+
+.cs-timer.is-live .cs-timer__value {
+  color: var(--danger);
+}
+
+.cs-timer--text {
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cs-timer--cancelled {
+  color: var(--danger);
+}
+
+.cs .digits .digit {
+  display: inline-block;
+  animation: cs-digit 0.25s steps(2, jump-none);
+}
+
+@keyframes cs-digit {
+  from {
+    opacity: 0.2;
+  }
+}
+
+/* ---------- Hero ---------- */
+.cs-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100svh - 66px);
+  display: grid;
+  align-content: center;
+  padding: 56px var(--pad-x) 200px;
+  overflow: hidden;
+}
+
+.cs-hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.cs-hero__photo {
+  filter: sepia(0.3) saturate(0.85) brightness(0.5) contrast(1.1);
+}
+
+/* Vignette dan gradien kiri menjaga teks tetap terbaca di atas screenshot game. */
+.cs-hero__bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgba(14, 17, 20, 0.96) 0%, rgba(14, 17, 20, 0.8) 45%, rgba(14, 17, 20, 0.35) 100%),
+    radial-gradient(ellipse at 70% 40%, transparent 30%, rgba(14, 17, 20, 0.85) 100%);
+}
+
+.cs-site {
+  position: absolute;
+  right: 7vw;
+  top: 50%;
+  z-index: 1;
+  transform: translateY(-56%);
+  padding: 0 0.12em;
+  border: clamp(8px, 1.2vw, 16px) solid currentColor;
+  font-family: 'Saira Stencil One', sans-serif;
+  font-size: clamp(220px, 32vw, 500px);
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.2;
+}
+
+.cs-spray {
+  position: absolute;
+  right: 36vw;
+  top: 14%;
+  z-index: 3;
+  height: 62%;
+  width: auto;
+}
+
+.cs-spray__core {
+  fill: var(--fg);
+}
+
+.cs-spray__ring {
+  fill: none;
+  stroke: var(--fg);
+  stroke-opacity: 0.35;
+  stroke-width: 1.2;
+}
+
+.cs-hero__main {
+  position: relative;
+  z-index: 3;
+  max-width: 820px;
+}
+
+.cs-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cs-kicker code {
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--accent);
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.cs-hero__title {
+  --scale: 1;
+  margin: 18px 0 20px;
+  font-family: 'Saira Stencil One', sans-serif;
+  font-weight: 400;
+  font-size: clamp(56px, calc(10vw * var(--scale)), calc(168px * var(--scale)));
+  line-height: 0.92;
+  text-transform: uppercase;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  overflow-wrap: anywhere;
+}
+
+.cs-hero__sub {
+  max-width: 48ch;
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.55;
+  color: #c9cdd2;
+}
+
+.cs-hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+/* ---------- Panel HUD ---------- */
+.cs-hud {
+  position: absolute;
+  z-index: 3;
+  bottom: 36px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.cs-hud--left {
+  left: var(--pad-x);
+  display: flex;
+}
+
+.cs-hud--right {
+  right: var(--pad-x);
+  display: grid;
+  justify-items: end;
+  padding: 14px 20px;
+}
+
+.cs-hud__cell {
+  display: grid;
+  gap: 2px;
+  padding: 14px 22px;
+}
+
+.cs-hud__cell + .cs-hud__cell {
+  border-left: 1px solid var(--line);
+}
+
+.cs-hud__label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cs-hud__big {
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-hud__small {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.cs-ammo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  line-height: 1;
+}
+
+.cs-ammo b {
+  font-size: 64px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.cs-ammo span {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/* Siku sudut HUD (identitas visual): kiri atas dan kanan bawah. */
+.cs-corner::before,
+.cs-corner::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 0 solid var(--accent);
+}
+
+.cs-corner::before {
+  left: -1px;
+  top: -1px;
+  border-width: 2px 0 0 2px;
+}
+
+.cs-corner::after {
+  right: -1px;
+  bottom: -1px;
+  border-width: 0 2px 2px 0;
+}
+
+/* ---------- Section umum ---------- */
+.cs main > section:not(.cs-hero) {
+  padding: clamp(64px, 9vw, 112px) var(--pad-x);
+}
+
+.cs main > section:not(.cs-hero) > * {
+  max-width: 1320px;
+  margin-inline: auto;
+}
+
+.cs-title {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-family: 'Saira Stencil One', sans-serif;
+  font-weight: 400;
+  font-size: clamp(40px, 6vw, 72px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.cs-title::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  min-width: 40px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+/* ---------- Info match ---------- */
+.cs-info {
+  display: grid;
+  gap: 48px;
+  border-top: 1px solid var(--line);
+}
+
+@media (min-width: 1024px) {
+  .cs-info {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+    gap: 72px;
+  }
+  .cs-info > * {
+    margin: 0;
+  }
+}
+
+.cs-info__list {
+  margin: 36px 0 0;
+}
+
+.cs-info__row {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  min-height: 66px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.cs-info__row dt {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cs-info__row dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 21px;
+  overflow-wrap: anywhere;
+}
+
+.cs-info__row .cs-mono {
+  font-size: 22px;
+}
+
+.cs-info__note {
+  padding: 2px 8px;
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.cs-radar {
+  margin: 0;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.cs-radar svg {
+  width: min(100%, 340px);
+  height: auto;
+}
+
+.cs-radar__disc {
+  fill: rgba(232, 230, 225, 0.03);
+}
+
+.cs-radar__rim {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 2;
+}
+
+.cs-radar__walls {
+  fill: rgba(232, 230, 225, 0.1);
+  stroke: rgba(232, 230, 225, 0.35);
+  stroke-width: 1.5;
+}
+
+.cs-radar__lane {
+  fill: none;
+  stroke: rgba(232, 230, 225, 0.25);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 5;
+}
+
+.cs-radar__site {
+  fill: rgba(232, 230, 225, 0.06);
+  stroke: rgba(232, 230, 225, 0.4);
+  stroke-width: 1.5;
+}
+
+.cs-radar__site.is-target {
+  fill: color-mix(in srgb, var(--accent) 22%, transparent);
+  stroke: var(--accent);
+}
+
+.cs-radar__letter {
+  font-family: 'Saira Stencil One', sans-serif;
+  font-size: 24px;
+  fill: var(--fg);
+  text-anchor: middle;
+}
+
+.cs-radar__player {
+  fill: var(--accent);
+  stroke: #0e1114;
+  stroke-width: 1.5;
+}
+
+.cs-radar__sweep {
+  fill: var(--accent);
+  fill-opacity: 0.12;
+}
+
+.cs-radar__cap {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- Scoreboard ---------- */
+.cs-board__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cs-board__head .cs-title {
+  flex: 1;
+}
+
+.cs-board__meta {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.cs-board__grid {
+  display: grid;
+  gap: 24px;
+  margin-top: 36px;
+}
+
+@media (min-width: 1024px) {
+  .cs-board__grid {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: start;
+  }
+}
+
+.cs-board__table {
+  background: var(--panel-solid);
+  border: 1px solid var(--line);
+}
+
+.cs-board__row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr) 120px;
+  align-items: center;
+  gap: 8px;
+  min-height: 54px;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--line);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.cs-board__row:last-child {
+  border-bottom: 0;
+}
+
+.cs-board__row:nth-child(odd):not(.cs-board__row--head) {
+  background: rgba(232, 230, 225, 0.025);
+}
+
+.cs-board__row--head {
+  min-height: 40px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.cs-board__name {
+  font-family: 'Noto Sans', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+
+.cs-board__sub {
+  display: none;
+}
+
+.cs-board__tag {
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: 'Rajdhani', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+}
+
+.cs-board__status {
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+}
+
+.cs-board__row.is-maybe .cs-board__status {
+  color: var(--muted);
+}
+
+.cs-board__row.is-maybe .cs-board__name {
+  color: #c9cdd2;
+}
+
+.cs-board__row.is-empty {
+  color: var(--muted);
+}
+
+.cs-board__empty a {
+  color: var(--accent);
+  font-weight: 700;
+  text-underline-offset: 4px;
+}
+
+.cs-feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  align-content: start;
+}
+
+.cs-feed__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(232, 230, 225, 0.12);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.cs-feed__name {
+  color: var(--accent);
+}
+
+.cs-feed__gun {
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+  color: #d5d8dc;
+}
+
+.cs-feed__verb {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ---------- Buy menu / join ---------- */
+.cs-join {
+  display: grid;
+  gap: 32px;
+  background: #12161a;
+  border-block: 1px solid var(--line);
+}
+
+@media (min-width: 1024px) {
+  .cs-join {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: 64px;
+  }
+  .cs-join > * {
+    margin: 0;
+  }
+}
+
+.cs-join__text {
+  max-width: 38ch;
+  margin-top: 20px;
+  font-size: 18px;
+  line-height: 1.55;
+  color: #c9cdd2;
+}
+
+.cs-form .jf__field--role,
+.cs-form .jf__field--pick {
+  grid-column: 1 / -1;
+}
+
+.cs-form .jf__label {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cs-form .jf__input {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  color: var(--fg);
+}
+
+.cs-form .jf__input::placeholder {
+  color: #8d949c;
+}
+
+.cs-form .jf__input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.cs-chip span {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cs-chip:hover span {
+  border-color: var(--fg);
+}
+
+.cs-chip input:checked + span {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.cs-chip input:focus-visible + span,
+.cs-buy__item input:focus-visible + .cs-buy__card {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.cs-buy {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(46%, 150px), 1fr));
+  gap: 6px;
+}
+
+.cs-buy__item {
+  position: relative;
+}
+
+.cs-buy__item input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.cs-buy__card {
+  position: relative;
+  display: grid;
+  align-content: end;
+  gap: 2px;
+  min-height: 76px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.cs-buy__item:hover .cs-buy__card {
+  border-color: var(--fg);
+}
+
+.cs-buy__item input:checked + .cs-buy__card {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.cs-buy__key {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.cs-buy__name {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.cs-buy__kind {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cs-buy__kind em {
+  margin-left: 6px;
+  font-style: normal;
+  color: var(--accent);
+}
+
+.cs-form .jf__submit {
+  min-height: 60px;
+  padding: 0 40px;
+  font-size: 22px;
+}
+
+.cs-form .jf__submit:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 3px;
+}
+
+.cs-form .jf__hint {
+  color: #c9cdd2;
+}
+
+.cs-form .jf__error {
+  color: var(--danger);
+}
+
+.cs-form .jf__sent a {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ---------- Aturan ---------- */
+.cs-notes__list {
+  list-style: none;
+  margin-top: 32px;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.cs-notes__list li {
+  display: flex;
+  gap: 18px;
+  align-items: baseline;
+  padding: 16px 20px;
+  background: var(--panel-solid);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.cs-notes__num {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--accent);
+}
+
+/* ---------- Jadwal lain & footer ---------- */
+.cs .cs-sched {
+  padding: 0 var(--pad-x) clamp(56px, 8vw, 96px);
+  max-width: calc(1320px + 2 * var(--pad-x));
+  margin: 0 auto;
+}
+
+.cs-sched .sched__title {
+  margin-bottom: 20px;
+  font-family: 'Saira Stencil One', sans-serif;
+  font-weight: 400;
+  font-size: clamp(32px, 4vw, 48px);
+  text-transform: uppercase;
+}
+
+.cs-sched .sched__row {
+  background: var(--panel-solid);
+  border: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.cs-sched .sched__row:hover {
+  border-color: var(--accent);
+}
+
+.cs-sched .sched__slots {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 20px;
+  color: var(--accent);
+}
+
+.cs-foot {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.cs-foot a {
+  color: var(--fg);
+}
+
+/* ---------- Banner siap ---------- */
+.cs-ready {
+  position: fixed;
+  left: 50%;
+  top: 92px;
+  z-index: 280;
+  translate: -50% 0;
+  width: max-content;
+  max-width: 92vw;
+  padding: 14px 22px;
+  background: rgba(0, 0, 0, 0.85);
+  border-top: 3px solid var(--accent);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ---------- Intro ---------- */
+.cs-intro {
+  background: #050607;
+  color: #e8e6e1;
+  display: grid;
+  place-items: center;
+}
+
+.cs-intro__content {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.cs-intro__label {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #a4abb3;
+}
+
+.cs-intro__count {
+  font-weight: 700;
+  font-size: clamp(96px, 18vw, 180px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-intro__flash {
+  position: absolute;
+  inset: 0;
+  background: #fffdf5;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cs-intro .intro__skip {
+  color: #e8e6e1;
+}
+
+/* ---------- Layar kecil ---------- */
+@media (max-width: 900px) {
+  .cs-hero {
+    min-height: 0;
+    padding-bottom: 40px;
+  }
+  .cs-hud {
+    position: relative;
+    inset: auto;
+    margin-top: 20px;
+    justify-self: start;
+  }
+  .cs-hud--right {
+    justify-items: start;
+  }
+  .cs-site {
+    right: -6vw;
+    top: 30%;
+    font-size: 64vw;
+  }
+  .cs-spray {
+    right: 6vw;
+    top: 6%;
+    height: 34%;
+    opacity: 0.6;
+  }
+}
+
+@media (max-width: 720px) {
+  .cs-hud-top {
+    grid-template-columns: auto 1fr auto;
+    padding-inline: 12px;
+    gap: 8px;
+  }
+  .cs-hud-top__mark {
+    font-size: 15px;
+  }
+  .cs-hud-top__right .cs-btn--sm {
+    padding: 0 10px;
+    font-size: 14px;
+  }
+  .cs-timer__label {
+    display: none;
+  }
+  .cs-status {
+    display: none;
+  }
+  .cs-score {
+    justify-self: center;
+  }
+  .cs-score__side {
+    min-width: 34px;
+    padding: 2px 5px;
+  }
+  .cs-score__side b {
+    font-size: 22px;
+  }
+  .cs-score__side small {
+    font-size: 10px;
+  }
+  .cs-timer {
+    min-width: 0;
+    padding: 4px 8px;
+  }
+  .cs-timer__value {
+    font-size: 18px;
+  }
+  .cs-timer__value i {
+    font-size: 13px;
+    margin: 0 4px 0 1px;
+  }
+  .cs-hero__cta > * {
+    flex: 1 1 100%;
+  }
+  .cs-hud__cell {
+    padding: 12px 16px;
+  }
+  .cs-hud__big {
+    font-size: 34px;
+  }
+  .cs-info__row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .cs-board__row {
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    padding: 8px 12px;
+  }
+  .cs-board__row > :nth-child(3),
+  .cs-board__row > :nth-child(4) {
+    display: none;
+  }
+  .cs-board__sub {
+    display: block;
+    margin-top: 2px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .cs-feed {
+    justify-items: start;
+  }
+}
+
+.cs-share__ico {
+  display: none;
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 420px) {
+  .cs-share {
+    width: 44px;
+    padding: 0;
+  }
+  .cs-share__ico {
+    display: block;
+  }
+  .cs-share__txt {
+    display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .cs-hud-top__mark {
+    font-size: 13px;
+  }
+  .cs-timer__value {
+    font-size: 16px;
+  }
+  .cs-hud-top {
+    gap: 6px;
+  }
+}
