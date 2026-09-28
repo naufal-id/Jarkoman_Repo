@@ -1,25 +1,25 @@
 # Jarkoman
 
-Halaman ajakan mabar (jarkoman) untuk **VALORANT**, **CS2**, **Mobile Legends: Bang Bang**, dan **R.E.P.O.**, lengkap dengan dashboard admin. Setiap game punya tampilan sendiri: font, warna, layout, dan animasi yang diambil dari identitas game itu. Pemain konfirmasi lewat WhatsApp ke **0882-2336-7352** (bisa diganti per jarkoman).
+Halaman ajakan mabar (jarkoman) untuk **VALORANT**, **CS2**, **Mobile Legends: Bang Bang**, dan **R.E.P.O.**, lengkap dengan dashboard admin. Setiap game punya tampilan sendiri: font, warna, layout, dan animasi yang diambil dari identitas game itu. Pemain konfirmasi lewat WhatsApp
 
 Riset, arah desain, dan alasan tiap keputusan ada di [`docs/PLAN.md`](docs/PLAN.md).
 
 ## Isi
 
-| Halaman | Fungsi |
-|---|---|
-| `/` | Jarkoman utama: judul, jadwal, hitung mundur, detail match, skuad, form konfirmasi ke WhatsApp, simpan ke kalender, bagikan, jadwal lain |
-| `/?id=<id>` | Jarkoman tertentu (link ini yang dibagikan ke grup) |
-| `/admin/` | Dashboard: login, buat/duplikat/hapus jarkoman, ganti game, judul, jadwal, mode, map, rank, pemain, catatan, nomor WA, gambar utama, musik, preview langsung, teks siap tempel untuk grup WA, ekspor/impor cadangan |
+| Halaman     | Fungsi                                                                                                                                                                                                              |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`         | Jarkoman utama: judul, jadwal, hitung mundur, detail match, skuad, form konfirmasi ke WhatsApp, simpan ke kalender, bagikan, jadwal lain                                                                            |
+| `/?id=<id>` | Jarkoman tertentu (link ini yang dibagikan ke grup)                                                                                                                                                                 |
+| `/admin/`   | Dashboard: login, buat/duplikat/hapus jarkoman, ganti game, judul, jadwal, mode, map, rank, pemain, catatan, nomor WA, gambar utama, musik, preview langsung, teks siap tempel untuk grup WA, ekspor/impor cadangan |
 
 Tema per game:
 
-| Game | Font | Ciri |
-|---|---|---|
-| VALORANT | Anton + Barlow | Key art di panel diagonal bertepi merah, ink/bone, kartu agent select, tombol LOCK IN, varian terang/gelap |
-| CS2 | Saira Stencil One + Rajdhani + Noto Sans | Key art di layar ber-HUD dengan pola recoil AK-47, latar cahaya oranye dari key art, radar, scoreboard, buy menu, sisi T/CT |
-| MLBB | Cinzel + Kanit | Poster sebagai banner lobby yang memudar ke biru malam, emas metalik, lineup ala loading screen, peta 3 lane, callout FIRST BLOOD sampai SAVAGE |
-| R.E.P.O. | Teko + VT323 + Archivo Narrow | Key art diputar di monitor CRT truk, senter mengikuti kursor, semibot bermata besar, kuota hazard, mode lampu nyala |
+| Game     | Font                                     | Ciri                                                                                                                                            |
+| -------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| VALORANT | Anton + Barlow                           | Key art di panel diagonal bertepi merah, ink/bone, kartu agent select, tombol LOCK IN, varian terang/gelap                                      |
+| CS2      | Saira Stencil One + Rajdhani + Noto Sans | Key art di layar ber-HUD dengan pola recoil AK-47, latar cahaya oranye dari key art, radar, scoreboard, buy menu, sisi T/CT                     |
+| MLBB     | Cinzel + Kanit                           | Poster sebagai banner lobby yang memudar ke biru malam, emas metalik, lineup ala loading screen, peta 3 lane, callout FIRST BLOOD sampai SAVAGE |
+| R.E.P.O. | Teko + VT323 + Archivo Narrow            | Key art diputar di monitor CRT truk, senter mengikuti kursor, semibot bermata besar, kuota hazard, mode lampu nyala                             |
 
 ## Deploy ke Netlify lewat GitHub
 
@@ -44,22 +44,16 @@ Tidak ada database yang perlu disiapkan: data disimpan di **Netlify Blobs**, yan
 
 Status "slot penuh", "lagi main", dan "selesai" dihitung otomatis dari jumlah pemain dan jam. Status "dibatalkan" diset manual.
 
-## Gambar game
-
-- Key art resmi keempat game (dari host) ada di `public/games/` dalam format WebP, dan dipakai sebagai gambar utama tiap tema. Karena disimpan di situs sendiri, gambar selalu tampil tanpa bergantung server lain.
-- CS2 (616 px) dan R.E.P.O. (460 px) ditampilkan dalam bingkai seukuran aslinya supaya tetap tajam. Poster MLBB dipotong di bagian bawah supaya tanggal event Asian Games di poster tidak tertukar dengan jadwal mabar.
-- Di dashboard bagian **Gambar utama**, pilih "Key art bawaan", gambar dari galeri resmi tambahan, atau tempel URL gambar sendiri. Galeri tambahan diambil function `/api/media` dari [valorant-api.com](https://valorant-api.com), Steam, dan App Store, lalu di-cache CDN Netlify. Kalau URL pilihan gagal dimuat, halaman kembali ke key art bawaan.
-
 ## Musik
 
 Tiap jarkoman bisa punya musik, diatur di dashboard bagian **Musik**:
 
-| Pilihan | Keterangan |
-|---|---|
+| Pilihan      | Keterangan                                                                                                                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Musik bawaan | Lagu orisinal per game yang disintesis langsung di browser (tanpa file): "Protocol" (VALORANT), "Freeze Time" (CS2), "Land of Dawn" (MLBB), "Night Shift" (R.E.P.O.). Ikut berganti kalau game diganti |
-| Upload lagu | MP3, M4A, OGG, WAV, atau FLAC maksimal 4,5 MB, disimpan di Netlify Blobs dan diputar berulang. Pakai lagu yang boleh kamu gunakan |
-| Link audio | Link langsung ke file audio (`https://…/lagu.mp3`). Link YouTube/Spotify tidak bisa dipakai sebagai musik latar |
-| Tanpa musik | Tombol musik tidak ditampilkan |
+| Upload lagu  | MP3, M4A, OGG, WAV, atau FLAC maksimal 4,5 MB, disimpan di Netlify Blobs dan diputar berulang. Pakai lagu yang boleh kamu gunakan                                                                      |
+| Link audio   | Link langsung ke file audio (`https://…/lagu.mp3`). Link YouTube/Spotify tidak bisa dipakai sebagai musik latar                                                                                        |
+| Tanpa musik  | Tombol musik tidak ditampilkan                                                                                                                                                                         |
 
 Musik tidak pernah berbunyi sendiri (browser juga memblokir itu). Pengunjung menyalakannya lewat tombol musik di kiri bawah; kalau pernah dinyalakan, musik lanjut setelah klik pertama di kunjungan berikutnya. Musik berhenti saat tab disembunyikan. Lagu upload yang tidak dipakai lagi dihapus otomatis setelah 24 jam saat admin menyimpan.
 
