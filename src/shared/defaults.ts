@@ -28,6 +28,8 @@ export function createJarkoman(game: GameId, now = Date.now()): Jarkoman {
     wa: DEFAULT_WA,
     bg: '',
     variant: def.variants[0].id,
+    music: '',
+    musicLabel: '',
     updatedAt: now,
   }
 }

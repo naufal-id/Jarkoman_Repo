@@ -61,3 +61,112 @@ export function stateStore(): KV {
     },
   }
 }
+
+/* ---------- File audio (lagu upload admin) ---------- */
+
+export interface AudioFile {
+  data: ArrayBuffer
+  contentType: string
+  uploadedAt: number
+}
+
+export interface AudioStore {
+  get(key: string): Promise<AudioFile | null>
+  set(key: string, data: ArrayBuffer, contentType: string, uploadedAt: number): Promise<void>
+  delete(key: string): Promise<void>
+  list(): Promise<{ key: string; uploadedAt: number }[]>
+}
+
+let audioOverride: AudioStore | null = null
+
+export function setAudioStoreForTests(s: AudioStore | null) {
+  audioOverride = s
+}
+
+export function memoryAudioStore(): AudioStore {
+  const map = new Map<string, AudioFile>()
+  return {
+    async get(key) {
+      return map.get(key) ?? null
+    },
+    async set(key, data, contentType, uploadedAt) {
+      map.set(key, { data, contentType, uploadedAt })
+    },
+    async delete(key) {
+      map.delete(key)
+    },
+    async list() {
+      return [...map.entries()].map(([key, f]) => ({ key, uploadedAt: f.uploadedAt }))
+    },
+  }
+}
+
+function fileAudioStore(dir: string): AudioStore {
+  const base = join(dir, 'audio')
+  const safe = (key: string) => key.replace(/[^a-z0-9]/gi, '_')
+  return {
+    async get(key) {
+      try {
+        const meta = JSON.parse(await readFile(join(base, `${safe(key)}.json`), 'utf8')) as { contentType: string; uploadedAt: number }
+        const buf = await readFile(join(base, `${safe(key)}.bin`))
+        return { data: buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer, ...meta }
+      } catch {
+        return null
+      }
+    },
+    async set(key, data, contentType, uploadedAt) {
+      await mkdir(base, { recursive: true })
+      await writeFile(join(base, `${safe(key)}.bin`), Buffer.from(data))
+      await writeFile(join(base, `${safe(key)}.json`), JSON.stringify({ contentType, uploadedAt }))
+    },
+    async delete(key) {
+      const { rm } = await import('node:fs/promises')
+      await rm(join(base, `${safe(key)}.bin`), { force: true })
+      await rm(join(base, `${safe(key)}.json`), { force: true })
+    },
+    async list() {
+      const { readdir } = await import('node:fs/promises')
+      try {
+        const files = (await readdir(base)).filter((f) => f.endsWith('.json'))
+        return Promise.all(
+          files.map(async (f) => {
+            const meta = JSON.parse(await readFile(join(base, f), 'utf8')) as { uploadedAt: number }
+            return { key: f.replace(/\.json$/, ''), uploadedAt: meta.uploadedAt }
+          }),
+        )
+      } catch {
+        return []
+      }
+    },
+  }
+}
+
+export function audioStore(): AudioStore {
+  if (audioOverride) return audioOverride
+  const dir = process.env.JARKOMAN_DEV_STORE
+  if (dir) return fileAudioStore(dir)
+  const store = getStore({ name: 'jarkoman-audio', consistency: 'strong' })
+  return {
+    async get(key) {
+      const res = await store.getWithMetadata(key, { type: 'arrayBuffer' })
+      if (!res) return null
+      const meta = res.metadata as { contentType?: string; uploadedAt?: number }
+      return { data: res.data, contentType: meta.contentType ?? 'audio/mpeg', uploadedAt: Number(meta.uploadedAt ?? 0) }
+    },
+    async set(key, data, contentType, uploadedAt) {
+      await store.set(key, data, { metadata: { contentType, uploadedAt } })
+    },
+    async delete(key) {
+      await store.delete(key)
+    },
+    async list() {
+      const { blobs } = await store.list()
+      return Promise.all(
+        blobs.map(async (b) => {
+          const meta = await store.getMetadata(b.key)
+          return { key: b.key, uploadedAt: Number((meta?.metadata as { uploadedAt?: number } | undefined)?.uploadedAt ?? 0) }
+        }),
+      )
+    },
+  }
+}

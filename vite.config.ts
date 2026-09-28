@@ -9,6 +9,7 @@ const API_ROUTES: Record<string, string> = {
   '/api/state': '/netlify/functions/state.mts',
   '/api/login': '/netlify/functions/login.mts',
   '/api/media': '/netlify/functions/media.mts',
+  '/api/audio': '/netlify/functions/audio.mts',
 }
 
 function readBody(req: IncomingMessage): Promise<Buffer> {

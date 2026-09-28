@@ -46,6 +46,17 @@ export function cleanUrl(v: unknown): string {
   }
 }
 
+export const AUDIO_PATH = /^\/api\/audio\?id=[a-z0-9]{8,40}$/
+
+/** '' (musik bawaan), 'none', file upload (/api/audio?id=...), atau URL http/https. */
+export function cleanMusic(v: unknown): string {
+  if (v === 'none') return 'none'
+  const s = typeof v === 'string' ? v.trim() : ''
+  if (!s) return ''
+  if (AUDIO_PATH.test(s)) return s
+  return cleanUrl(s)
+}
+
 const cleanId = (v: unknown) => {
   const s = typeof v === 'string' ? v.toLowerCase() : ''
   return /^[a-z0-9-]{4,40}$/.test(s) ? s : uid()
@@ -107,6 +118,8 @@ export function cleanJarkoman(v: unknown, now = Date.now()): Jarkoman | null {
     wa: wa.replace(/\D/g, '').length >= 9 ? wa : DEFAULT_WA,
     bg: cleanUrl(v.bg),
     variant,
+    music: cleanMusic(v.music),
+    musicLabel: cleanText(v.musicLabel, 60),
     updatedAt: Number.isFinite(updatedAt) && updatedAt > 0 ? updatedAt : now,
   }
 }

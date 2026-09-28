@@ -141,15 +141,42 @@ select.jf__input option {
 
 .sched__row {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
   grid-template-areas:
-    'game headline slots'
-    'game when slots';
+    'thumb game headline slots'
+    'thumb game when slots';
   column-gap: 16px;
   align-items: center;
   padding: 14px 16px;
   text-decoration: none;
   min-height: 64px;
+}
+
+.sched__thumb {
+  grid-area: thumb;
+  width: 80px;
+  height: 45px;
+  object-fit: cover;
+}
+
+.sched__row[data-game='valorant'] .sched__thumb {
+  object-position: 36% 30%;
+}
+.sched__row[data-game='mlbb'] .sched__thumb {
+  object-position: 50% 18%;
+}
+.sched__row[data-game='repo'] .sched__thumb {
+  object-position: 88% 50%;
+}
+
+@media (max-width: 420px) {
+  .sched__thumb {
+    width: 56px;
+    height: 32px;
+  }
+  .sched__row {
+    column-gap: 10px;
+  }
 }
 
 .sched__game {
@@ -241,3 +268,116 @@ select.jf__input option {
   display: block;
 }
 
+
+/* ---------- Tombol musik (struktur; warna dan font diatur tiap tema) ---------- */
+.music {
+  position: fixed;
+  left: max(16px, env(safe-area-inset-left));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 32px);
+  pointer-events: none;
+}
+
+.music > * {
+  pointer-events: auto;
+}
+
+.music__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0 16px;
+  border: 0;
+}
+
+.music__btn:disabled {
+  cursor: progress;
+}
+
+.music__eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+}
+
+.music__eq i {
+  width: 3px;
+  height: 30%;
+  background: currentColor;
+}
+
+.music__eq i:nth-child(2) {
+  height: 60%;
+}
+
+.music__eq i:nth-child(3) {
+  height: 45%;
+}
+
+/* Bar bergerak hanya selama musik benar-benar berbunyi: menandai status, bukan dekorasi. */
+.music[data-playing] .music__eq i {
+  animation: music-eq 0.9s ease-in-out infinite alternate;
+}
+
+.music[data-playing] .music__eq i:nth-child(2) {
+  animation-duration: 0.7s;
+  animation-delay: -0.3s;
+}
+
+.music[data-playing] .music__eq i:nth-child(3) {
+  animation-duration: 1.1s;
+  animation-delay: -0.5s;
+}
+
+.music[data-playing] .music__eq i:nth-child(4) {
+  animation-duration: 0.8s;
+  animation-delay: -0.2s;
+}
+
+@keyframes music-eq {
+  from {
+    height: 18%;
+  }
+  to {
+    height: 100%;
+  }
+}
+
+.music__now {
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.3;
+  max-width: 42ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .music__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .music__btn {
+    padding: 0;
+    justify-content: center;
+  }
+  .music__now {
+    max-width: calc(100vw - 96px);
+  }
+  /* Toast naik supaya tidak menutupi tombol musik. */
+  .toast-region {
+    bottom: 80px;
+  }
+}

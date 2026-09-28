@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react'
+import { artThumb } from '../shared/art'
 import { GAMES, gameDef } from '../shared/games'
 import { cleanUrl } from '../shared/sanitize'
 import { liveState } from '../shared/time'
@@ -7,10 +8,12 @@ import type { GameId, Jarkoman, ManualStatus, Tz } from '../shared/types'
 import { DEFAULT_WA, formatPhoneDisplay, normalizePhone } from '../shared/wa'
 import { ChoiceField, Counter, Field } from './fields'
 import { MediaPicker } from './MediaPicker'
+import { MusicEditor } from './MusicEditor'
 import { PlayersEditor } from './PlayersEditor'
 
 interface EditorProps {
   item: Jarkoman
+  token: string
   onPatch: (patch: Partial<Jarkoman>) => void
   onGame: (game: GameId) => void
 }
@@ -23,7 +26,7 @@ const AUTO_STATUS: Record<ReturnType<typeof liveState>, string> = {
   unscheduled: 'Tanggal atau jam belum valid',
 }
 
-export function Editor({ item, onPatch, onGame }: EditorProps) {
+export function Editor({ item, token, onPatch, onGame }: EditorProps) {
   const def = gameDef(item.game)
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
@@ -44,6 +47,7 @@ export function Editor({ item, onPatch, onGame }: EditorProps) {
           {GAME_IDS.map((g) => (
             <label key={g} className={`adm-game ${item.game === g ? 'is-on' : ''}`} data-game={g} style={{ '--acc': GAMES[g].accent } as CSSProperties}>
               <input type="radio" name="game" value={g} checked={item.game === g} onChange={() => onGame(g)} />
+              <img className="adm-game__art" src={artThumb(g)} alt="" loading="lazy" />
               <span className="adm-game__name">{GAMES[g].name}</span>
               <span className="adm-game__pub">{GAMES[g].publisher}</span>
             </label>
@@ -217,9 +221,16 @@ export function Editor({ item, onPatch, onGame }: EditorProps) {
 
       <section className="adm-sec" aria-labelledby="sec-bg">
         <h2 className="adm-sec__title" id="sec-bg">
-          Gambar latar
+          Gambar utama
         </h2>
         <MediaPicker game={item.game} value={item.bg} onChange={(bg) => onPatch({ bg })} />
+      </section>
+
+      <section className="adm-sec" aria-labelledby="sec-music">
+        <h2 className="adm-sec__title" id="sec-music">
+          Musik
+        </h2>
+        <MusicEditor item={item} token={token} onPatch={onPatch} />
       </section>
     </div>
   )

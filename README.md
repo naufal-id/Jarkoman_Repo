@@ -10,16 +10,16 @@ Riset, arah desain, dan alasan tiap keputusan ada di [`docs/PLAN.md`](docs/PLAN.
 |---|---|
 | `/` | Jarkoman utama: judul, jadwal, hitung mundur, detail match, skuad, form konfirmasi ke WhatsApp, simpan ke kalender, bagikan, jadwal lain |
 | `/?id=<id>` | Jarkoman tertentu (link ini yang dibagikan ke grup) |
-| `/admin/` | Dashboard: login, buat/duplikat/hapus jarkoman, ganti game, judul, jadwal, mode, map, rank, pemain, catatan, nomor WA, gambar latar, preview langsung, teks siap tempel untuk grup WA, ekspor/impor cadangan |
+| `/admin/` | Dashboard: login, buat/duplikat/hapus jarkoman, ganti game, judul, jadwal, mode, map, rank, pemain, catatan, nomor WA, gambar utama, musik, preview langsung, teks siap tempel untuk grup WA, ekspor/impor cadangan |
 
 Tema per game:
 
 | Game | Font | Ciri |
 |---|---|---|
-| VALORANT | Anton + Barlow | Ink/bone, merah `#FF4655`, wipe diagonal, kartu agent select, tombol LOCK IN, varian terang/gelap |
-| CS2 | Saira Stencil One + Rajdhani + Noto Sans | HUD (skor, timer ronde), pola recoil AK-47, radar, scoreboard, buy menu, sisi T/CT |
-| MLBB | Cinzel + Kanit | Emas metalik, lineup ala loading screen, peta 3 lane, callout FIRST BLOOD sampai SAVAGE sesuai jumlah pemain, blue/red side |
-| R.E.P.O. | Teko + VT323 + Archivo Narrow | Senter mengikuti kursor, monitor CRT truk, semibot berwarna, kuota hazard, mode lampu nyala |
+| VALORANT | Anton + Barlow | Key art di panel diagonal bertepi merah, ink/bone, kartu agent select, tombol LOCK IN, varian terang/gelap |
+| CS2 | Saira Stencil One + Rajdhani + Noto Sans | Key art di layar ber-HUD dengan pola recoil AK-47, latar cahaya oranye dari key art, radar, scoreboard, buy menu, sisi T/CT |
+| MLBB | Cinzel + Kanit | Poster sebagai banner lobby yang memudar ke biru malam, emas metalik, lineup ala loading screen, peta 3 lane, callout FIRST BLOOD sampai SAVAGE |
+| R.E.P.O. | Teko + VT323 + Archivo Narrow | Key art diputar di monitor CRT truk, senter mengikuti kursor, semibot bermata besar, kuota hazard, mode lampu nyala |
 
 ## Deploy ke Netlify lewat GitHub
 
@@ -46,12 +46,22 @@ Status "slot penuh", "lagi main", dan "selesai" dihitung otomatis dari jumlah pe
 
 ## Gambar game
 
-- Artwork utama tiap tema digambar dengan kode (SVG/CSS), jadi halaman selalu utuh walaupun sumber gambar luar sedang mati.
-- Gambar resmi diambil saat runtime oleh function `/api/media`, lalu di-cache CDN Netlify:
-  - VALORANT: [valorant-api.com](https://valorant-api.com) (splash map dan portrait agent).
-  - CS2 dan R.E.P.O.: Steam (`appdetails` app 730 dan 3241660).
-  - MLBB: App Store (iTunes Lookup, app 1160056295).
-- Di dashboard bagian **Gambar latar**, pilih "Otomatis", pilih dari galeri resmi, atau tempel URL gambar sendiri.
+- Key art resmi keempat game (dari host) ada di `public/games/` dalam format WebP, dan dipakai sebagai gambar utama tiap tema. Karena disimpan di situs sendiri, gambar selalu tampil tanpa bergantung server lain.
+- CS2 (616 px) dan R.E.P.O. (460 px) ditampilkan dalam bingkai seukuran aslinya supaya tetap tajam. Poster MLBB dipotong di bagian bawah supaya tanggal event Asian Games di poster tidak tertukar dengan jadwal mabar.
+- Di dashboard bagian **Gambar utama**, pilih "Key art bawaan", gambar dari galeri resmi tambahan, atau tempel URL gambar sendiri. Galeri tambahan diambil function `/api/media` dari [valorant-api.com](https://valorant-api.com), Steam, dan App Store, lalu di-cache CDN Netlify. Kalau URL pilihan gagal dimuat, halaman kembali ke key art bawaan.
+
+## Musik
+
+Tiap jarkoman bisa punya musik, diatur di dashboard bagian **Musik**:
+
+| Pilihan | Keterangan |
+|---|---|
+| Musik bawaan | Lagu orisinal per game yang disintesis langsung di browser (tanpa file): "Protocol" (VALORANT), "Freeze Time" (CS2), "Land of Dawn" (MLBB), "Night Shift" (R.E.P.O.). Ikut berganti kalau game diganti |
+| Upload lagu | MP3, M4A, OGG, WAV, atau FLAC maksimal 4,5 MB, disimpan di Netlify Blobs dan diputar berulang. Pakai lagu yang boleh kamu gunakan |
+| Link audio | Link langsung ke file audio (`https://…/lagu.mp3`). Link YouTube/Spotify tidak bisa dipakai sebagai musik latar |
+| Tanpa musik | Tombol musik tidak ditampilkan |
+
+Musik tidak pernah berbunyi sendiri (browser juga memblokir itu). Pengunjung menyalakannya lewat tombol musik di kiri bawah; kalau pernah dinyalakan, musik lanjut setelah klik pertama di kunjungan berikutnya. Musik berhenti saat tab disembunyikan. Lagu upload yang tidak dipakai lagi dihapus otomatis setelah 24 jam saat admin menyimpan.
 
 ## Preview link di WhatsApp
 
@@ -69,7 +79,7 @@ Mode dev menjalankan handler Functions yang sama dengan penyimpanan file di `.da
 Perintah lain:
 
 ```bash
-npm test           # unit test (waktu/zona, pesan WA, kalender, sanitasi, login, simpan, konflik, media, edge function)
+npm test           # unit test (waktu/zona, pesan WA, kalender, sanitasi, login, simpan, konflik, media, audio, edge function)
 npm run typecheck
 npm run build
 npm run preview    # menyajikan hasil build, API tetap jalan
@@ -81,8 +91,10 @@ npm run preview    # menyajikan hasil build, API tetap jalan
 index.html, admin/index.html   entri halaman publik dan admin
 src/shared/                    logika bersama (tipe, katalog game, waktu, WA, kalender, sanitasi, API client)
 src/public/                    halaman publik, komponen bersama, dan 4 tema di src/public/themes/
+src/public/audio/              engine musik bawaan (Web Audio) dan pemutar file
 src/admin/                     dashboard admin
-netlify/functions/             /api/state, /api/login, /api/media (Netlify Functions v2)
+public/games/                  key art keempat game (WebP)
+netlify/functions/             /api/state, /api/login, /api/media, /api/audio (Netlify Functions v2)
 netlify/lib/                   auth token, penyimpanan Blobs, sumber media
 netlify/edge-functions/og.ts   meta preview link untuk bot
 public/og/                     gambar preview link per game
@@ -94,6 +106,7 @@ docs/PLAN.md                   riset, desain, dan rencana
 
 - Password hanya dicek di server (Netlify Function). Token login ditandatangani HMAC-SHA256 dan berlaku 7 hari; mengganti `ADMIN_PASSWORD` membatalkan semua token lama.
 - Semua data dari dashboard divalidasi ulang di server (panjang teks, URL hanya http/https, jumlah slot, dll).
+- Upload lagu butuh login admin, hanya menerima tipe audio, dan dibatasi 4,5 MB.
 - Simpan dari dua perangkat sekaligus tidak saling menimpa diam-diam: dashboard menampilkan pilihan saat ada versi lebih baru.
 
 ## Catatan

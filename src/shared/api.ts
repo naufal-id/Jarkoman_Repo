@@ -1,5 +1,14 @@
 import type { GameId, MediaPayload, SiteState, StateResponse } from './types'
 
+const EXT_TYPES: Record<string, string> = { mp3: 'audio/mpeg', m4a: 'audio/mp4', aac: 'audio/aac', ogg: 'audio/ogg', oga: 'audio/ogg', wav: 'audio/wav', flac: 'audio/flac', webm: 'audio/webm' }
+
+/** Beberapa browser tidak mengisi file.type untuk .m4a/.flac, jadi tebak dari ekstensi. */
+export function audioType(file: Pick<File, 'type' | 'name'>): string {
+  if (file.type.startsWith('audio/')) return file.type
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
+  return EXT_TYPES[ext] ?? 'application/octet-stream'
+}
+
 export class ApiError extends Error {
   status: number
   code: string
@@ -57,6 +66,13 @@ export const api = {
       body: JSON.stringify({ state, baseUpdatedAt, force }),
     })
     return data.state
+  },
+  uploadAudio(file: File, token: string) {
+    return request<{ url: string; size: number }>(
+      '/api/audio',
+      { method: 'POST', headers: { 'content-type': audioType(file), authorization: `Bearer ${token}` }, body: file },
+      90000,
+    )
   },
   media(game: GameId) {
     return request<MediaPayload>(`/api/media?game=${game}`, {}, 15000)

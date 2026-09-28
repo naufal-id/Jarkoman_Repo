@@ -196,18 +196,13 @@ p {
   }
 }
 
-/* Gambar latar resmi: muncul halus setelah termuat, hilang kalau gagal. */
-.bg-photo {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* Key art: muncul halus setelah termuat. */
+.art-img {
   opacity: 0;
-  transition: opacity 0.9s ease;
+  transition: opacity 0.7s ease;
 }
 
-.bg-photo.is-loaded {
+.art-img.is-loaded {
   opacity: 1;
 }
 

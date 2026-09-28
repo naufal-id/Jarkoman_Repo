@@ -1,3 +1,4 @@
+import { artThumb } from '../../shared/art'
 import { gameDef } from '../../shared/games'
 import { formatClock, formatDateShort, liveState, startEpoch } from '../../shared/time'
 import type { Jarkoman, MediaPayload } from '../../shared/types'
@@ -47,6 +48,7 @@ export function Schedule({ items, className = '', title }: ScheduleProps) {
           return (
             <li key={i.id}>
               <a className="sched__row" href={`/?id=${encodeURIComponent(i.id)}`} data-game={i.game}>
+                <img className="sched__thumb" src={artThumb(i.game)} alt="" loading="lazy" width={96} height={54} />
                 <span className="sched__game">{def.name}</span>
                 <span className="sched__headline">{i.headline}</span>
                 <span className="sched__when">

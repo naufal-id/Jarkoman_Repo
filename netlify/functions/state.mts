@@ -1,6 +1,7 @@
 import type { Config } from '@netlify/functions'
 import { cleanState } from '../../src/shared/sanitize'
 import type { SiteState } from '../../src/shared/types'
+import { cleanupAudio } from '../lib/audio'
 import { bearer, isConfigured, verifyToken } from '../lib/auth'
 import { error, json, readJson } from '../lib/http'
 import { stateStore } from '../lib/store'
@@ -43,6 +44,8 @@ export default async function handler(req: Request): Promise<Response> {
       }
       const next: SiteState = { ...cleaned.state, updatedAt: Math.max(Date.now(), (current?.updatedAt ?? 0) + 1) }
       await store.setJSON(KEY, next)
+      // Bersihkan lagu upload yang sudah tidak dipakai. Gagal di sini tidak membatalkan simpan.
+      await cleanupAudio(next).catch((err) => console.warn('[state] cleanup audio gagal', err))
       return json({ state: next, dropped: cleaned.dropped })
     } catch (err) {
       console.error('[state] write failed', err)

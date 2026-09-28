@@ -100,7 +100,7 @@ body:has(.val[data-variant='bone']) {
 .val-top__share {
   min-height: 44px;
   padding: 0 16px;
-  background: transparent;
+  background: var(--bg);
   border: 1px solid var(--line);
   color: var(--fg);
   font-weight: 800;
@@ -133,69 +133,64 @@ body:has(.val[data-variant='bone']) {
   overflow: hidden;
 }
 
-.val-hero__photo {
-  filter: grayscale(1) contrast(1.2) brightness(0.62);
+/* Key art di panel kanan dengan tepi diagonal (bahasa bentuk Valorant). Judul tetap di sisi ink
+   sehingga kontras teks tidak bergantung pada warna gambar. */
+.val-hero__art {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 40%;
+  right: 0;
+  z-index: 1;
+  overflow: hidden;
+  clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%);
 }
 
-.val[data-variant='bone'] .val-hero__photo {
-  filter: grayscale(1) contrast(1.1) brightness(1.15);
-  mix-blend-mode: multiply;
+.val-hero__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 34% 28%;
 }
 
-/* Gradien menjaga kontras teks di sisi kiri tetap tinggi walau ada foto map di belakangnya. */
-.val-hero__bg::after {
+/* Sisi kiri dan bawah gambar memudar ke warna dasar supaya panel menyatu dengan halaman. */
+.val-hero__art::after {
   content: '';
   position: absolute;
   inset: 0;
-  z-index: 1;
   background:
-    linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 90%, transparent) 42%, color-mix(in srgb, var(--bg) 30%, transparent) 78%, color-mix(in srgb, var(--bg) 55%, transparent) 100%),
-    linear-gradient(0deg, var(--bg) 0%, transparent 40%);
+    linear-gradient(90deg, color-mix(in srgb, var(--ink) 55%, transparent) 0%, transparent 30%),
+    linear-gradient(0deg, var(--bg) 0%, transparent 26%);
+  pointer-events: none;
+}
+
+.val-hero__edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 40%;
+  right: 0;
+  z-index: 2;
+  background: var(--red);
+  clip-path: polygon(calc(16% - 14px) 0, 16% 0, 14px 100%, 0 100%);
+  pointer-events: none;
 }
 
 .val-hero__ghost {
   position: absolute;
-  right: -1vw;
+  left: -1vw;
   bottom: -3.2vw;
-  z-index: 2;
+  z-index: 0;
   font-family: 'Anton', sans-serif;
-  font-size: clamp(140px, 27vw, 480px);
+  font-size: clamp(140px, 24vw, 420px);
   line-height: 0.8;
   text-transform: uppercase;
   white-space: nowrap;
   color: transparent;
-  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--fg) 20%, transparent);
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--fg) 10%, transparent);
   pointer-events: none;
-}
-
-.val-hero__slab {
-  position: absolute;
-  z-index: 2;
-  background: var(--red);
-  transform: skewX(-16deg);
-}
-
-.val-hero__slab--a {
-  right: 9vw;
-  top: 84px;
-  width: 6vw;
-  height: 40%;
-}
-
-.val-hero__slab--b {
-  right: 17.5vw;
-  top: 150px;
-  width: 1.1vw;
-  height: 24%;
-}
-
-.val-hero__slab--c {
-  right: -2vw;
-  top: 30%;
-  width: 4vw;
-  height: 14%;
-  background: var(--fg);
-  opacity: 0.12;
 }
 
 .val-hero__inner {
@@ -213,6 +208,9 @@ body:has(.val[data-variant='bone']) {
     grid-template-columns: minmax(0, 1fr) 380px;
     align-items: end;
     gap: 56px;
+  }
+  .val-hero__main {
+    max-width: calc(40vw - var(--pad-x));
   }
 }
 
@@ -236,7 +234,7 @@ body:has(.val[data-variant='bone']) {
   font-family: 'Anton', sans-serif;
   font-weight: 400;
   text-transform: uppercase;
-  font-size: clamp(60px, calc(12vw * var(--scale)), calc(200px * var(--scale)));
+  font-size: clamp(60px, calc(10.5vw * var(--scale)), calc(176px * var(--scale)));
   line-height: 0.88;
   letter-spacing: 0.004em;
   overflow-wrap: anywhere;
@@ -262,26 +260,6 @@ body:has(.val[data-variant='bone']) {
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 32px;
-}
-
-.val-hero__side {
-  display: none;
-}
-
-@media (min-width: 1280px) {
-  .val-hero__side {
-    display: block;
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    z-index: 3;
-    writing-mode: vertical-rl;
-    transform: translateY(-50%) rotate(180deg);
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 0.3em;
-    color: var(--muted);
-  }
 }
 
 /* ---------- Tombol ---------- */
@@ -1157,6 +1135,35 @@ body:has(.val[data-variant='bone']) {
   color: var(--ink);
 }
 
+/* ---------- Key art di layar sempit dan tablet: banner atas ---------- */
+@media (max-width: 1023px) {
+  .val-hero__art {
+    left: 0;
+    bottom: auto;
+    height: min(64vw, 400px);
+    clip-path: polygon(0 0, 100% 0, 100% 84%, 0 100%);
+  }
+  .val-hero__img {
+    object-position: 38% 26%;
+  }
+  .val-hero__art::after {
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--bg) 78%, transparent) 0%, transparent 34%),
+      linear-gradient(0deg, color-mix(in srgb, var(--bg) 70%, transparent) 0%, transparent 40%);
+  }
+  .val-hero__edge {
+    left: 0;
+    bottom: auto;
+    top: calc(min(64vw, 400px) * 0.84 - 7px);
+    height: calc(min(64vw, 400px) * 0.16 + 14px);
+    clip-path: polygon(0 calc(100% - 14px), 100% 0, 100% 14px, 0 100%);
+  }
+  .val-hero {
+    min-height: 0;
+    padding-top: calc(min(64vw, 400px) + 12px);
+  }
+}
+
 /* ---------- Layar kecil ---------- */
 @media (max-width: 560px) {
   .val-top {
@@ -1176,9 +1183,9 @@ body:has(.val[data-variant='bone']) {
   .val-top__share {
     padding: 0 12px;
   }
-  .val-hero {
-    min-height: 0;
-    padding-top: 172px;
+  /* Di layar sempit, geser fokus supaya logo VALORANT di key art tampil utuh. */
+  .val-hero__img {
+    object-position: 96% 28%;
   }
   .val-hero__cta > * {
     flex: 1 1 100%;
@@ -1192,21 +1199,46 @@ body:has(.val[data-variant='bone']) {
   .val-cd__num {
     font-size: 34px;
   }
-  .val-hero__slab--a {
-    top: 70px;
-    right: 8vw;
-    width: 13vw;
-    height: 84px;
-  }
-  .val-hero__slab--b {
-    top: 78px;
-    right: 28vw;
-    width: 3vw;
-    height: 60px;
-  }
-  .val-hero__slab--c {
-    top: 70px;
-    right: -4vw;
-    height: 84px;
-  }
+}
+
+/* ---------- Tombol musik ---------- */
+.val .music__btn {
+  background: var(--ink);
+  color: var(--bone);
+  font-family: 'Barlow', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow: inset 0 0 0 1px rgba(236, 232, 225, 0.25);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+}
+
+.val .music__eq {
+  color: var(--red);
+}
+
+.val .music[data-playing] .music__btn {
+  background: var(--red);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.val .music[data-playing] .music__eq {
+  color: var(--ink);
+}
+
+.val .music__btn:focus-visible {
+  outline: 3px solid var(--bone);
+  outline-offset: -6px;
+}
+
+.val .music[data-playing] .music__btn:focus-visible {
+  outline-color: var(--ink);
+}
+
+.val .music__now {
+  background: var(--ink);
+  color: var(--bone);
+  font-weight: 600;
 }

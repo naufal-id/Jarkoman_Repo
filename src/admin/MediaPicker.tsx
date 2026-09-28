@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../shared/api'
+import { artThumb } from '../shared/art'
 import { cleanUrl } from '../shared/sanitize'
 import type { GameId, MediaPayload } from '../shared/types'
 
@@ -48,14 +49,14 @@ export function MediaPicker({ game, value, onChange }: Props) {
   }
 
   const gallery = state.kind === 'ready' ? state.data.gallery : []
-  const autoLabel = game === 'valorant' ? 'Otomatis (splash map yang dipilih)' : 'Otomatis (gambar resmi pertama)'
 
   return (
     <div className="adm-media">
       <div className="adm-media__grid" role="radiogroup" aria-label="Pilihan gambar latar">
-        <label className={`adm-media__opt adm-media__opt--auto ${value === '' ? 'is-on' : ''}`}>
+        <label className={`adm-media__opt ${value === '' ? 'is-on' : ''}`}>
           <input type="radio" name="bg" checked={value === ''} onChange={() => onChange('')} />
-          <span>{autoLabel}</span>
+          <img src={artThumb(game)} alt="" loading="lazy" />
+          <span className="adm-media__cap">Key art bawaan</span>
         </label>
         {state.kind === 'loading' &&
           Array.from({ length: 3 }, (_, i) => (
@@ -77,7 +78,7 @@ export function MediaPicker({ game, value, onChange }: Props) {
       )}
       {state.kind === 'error' && (
         <div className="adm-note adm-note--warn">
-          <p>Galeri resmi belum bisa dimuat (sumbernya sedang tidak bisa diakses dari server). Halaman tetap memakai artwork bawaan, dan kamu bisa menempel URL gambar sendiri.</p>
+          <p>Galeri tambahan belum bisa dimuat (sumbernya sedang tidak bisa diakses dari server). Key art bawaan tetap dipakai, dan kamu bisa menempel URL gambar sendiri.</p>
           <button type="button" className="adm-btn adm-btn--ghost adm-btn--sm" onClick={() => setAttempt((n) => n + 1)}>
             Coba muat lagi
           </button>

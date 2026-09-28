@@ -42,9 +42,13 @@ export interface Jarkoman {
   notes: string
   status: ManualStatus
   wa: string
-  /** URL gambar latar pilihan admin, kosong = otomatis */
+  /** URL gambar utama pilihan admin, kosong = key art bawaan */
   bg: string
   variant: string
+  /** '' = musik bawaan (orisinal, per game), 'none' = tanpa musik, atau URL file audio */
+  music: string
+  /** Judul lagu yang tampil saat musik diputar (untuk lagu upload/link) */
+  musicLabel: string
   updatedAt: number
 }
 

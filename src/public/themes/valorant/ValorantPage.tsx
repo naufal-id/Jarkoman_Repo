@@ -10,7 +10,7 @@ import { gameDef, roleOfPick } from '../../../shared/games'
 import { dateBlocks, formatTimeRange } from '../../../shared/time'
 import type { Player } from '../../../shared/types'
 import { copyText } from '../../common/actions'
-import { BgPhoto } from '../../common/BgPhoto'
+import { ArtImage } from '../../common/ArtImage'
 import { usePage, type ThemeProps } from '../../common/context'
 import { Digits } from '../../common/Digits'
 import { Schedule, SiteFooter, useActions } from '../../common/Extras'
@@ -18,6 +18,7 @@ import { gsap, MOTION_OK, useGSAP } from '../../common/gsap'
 import { isClosed, joinTitle, statusLabel, useSession, type SessionInfo } from '../../common/hooks'
 import { useIntroGate } from '../../common/intro'
 import { JoinForm } from '../../common/JoinForm'
+import { MusicDock } from '../../common/Music'
 import { Split } from '../../common/Split'
 import { useToast } from '../../common/Toast'
 
@@ -32,7 +33,6 @@ export default function ValorantPage({ j }: ThemeProps) {
   const root = useRef<HTMLDivElement>(null)
   const [lockKey, setLockKey] = useState(0)
 
-  const bg = j.bg || media?.maps?.[j.map.toLowerCase()]
   const date = dateBlocks(j.date)
   const scale = j.headline.length <= 14 ? 1 : j.headline.length <= 24 ? 0.8 : 0.62
 
@@ -42,7 +42,10 @@ export default function ValorantPage({ j }: ThemeProps) {
       mm.add(MOTION_OK, () => {
         if (!intro.ready) return
         const tl = gsap.timeline({ defaults: { ease: 'power4.out' } })
-        tl.from('.val-hero__slab', { xPercent: 130, duration: 1.1, stagger: 0.09 }, 0)
+        // Panel key art masuk dari kanan, garis merah menyusul sepanjang diagonal.
+        tl.from('.val-hero__art', { clipPath: 'polygon(100% 0, 100% 0, 100% 100%, 100% 100%)', duration: 1.1, ease: 'power4.inOut' }, 0)
+          .from('.val-hero__edge', { xPercent: 60, opacity: 0, duration: 0.9 }, 0.25)
+          .from('.val-hero__img', { scale: 1.18, duration: 1.8, ease: 'power3.out' }, 0)
           .from('.val-hero__ghost', { opacity: 0, x: 80, duration: 1.4, ease: 'power2.out' }, 0)
           .from('.val-hero__title .split-char', { yPercent: 115, duration: 0.85, stagger: 0.022 }, 0.12)
           .from('.val-kicker', { clipPath: 'inset(0 100% 0 0)', duration: 0.6, ease: 'power3.inOut' }, 0.2)
@@ -130,11 +133,11 @@ export default function ValorantPage({ j }: ThemeProps) {
       <main id="main">
         <section className="val-hero" aria-labelledby="val-title">
           <div className="val-hero__bg" aria-hidden="true">
-            <BgPhoto src={bg} className="val-hero__photo" />
             <span className="val-hero__ghost">{j.map || def.name}</span>
-            <span className="val-hero__slab val-hero__slab--a" />
-            <span className="val-hero__slab val-hero__slab--b" />
-            <span className="val-hero__slab val-hero__slab--c" />
+            <div className="val-hero__art">
+              <ArtImage game="valorant" custom={j.bg} className="val-hero__img" sizes="(max-width: 1023px) 100vw, 62vw" priority />
+            </div>
+            <span className="val-hero__edge" />
           </div>
 
           <div className="val-hero__inner">
@@ -176,9 +179,6 @@ export default function ValorantPage({ j }: ThemeProps) {
               </div>
             </aside>
           </div>
-          <p className="val-hero__side" aria-hidden="true">
-            JARKOMAN // {def.name} // {date.day} {date.month} {date.year}
-          </p>
         </section>
 
         <section className="val-intel" aria-labelledby="val-intel-title">
@@ -279,6 +279,8 @@ export default function ValorantPage({ j }: ThemeProps) {
       </main>
 
       <SiteFooter media={media} className="val-foot" />
+
+      <MusicDock j={j} />
 
       <div className="val-locked" aria-hidden="true">
         <span className="val-locked__text">LOCKED IN</span>

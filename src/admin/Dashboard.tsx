@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { api, ApiError } from '../shared/api'
+import { artThumb } from '../shared/art'
 import { createJarkoman, defaultState, switchGame } from '../shared/defaults'
 import { GAMES, gameDef } from '../shared/games'
 import { uid } from '../shared/ids'
@@ -408,7 +409,7 @@ function DashboardInner({ token, onLogout }: Props) {
               <p className="adm-editor__help">
                 Jarkoman utama tampil di alamat utama situs. Yang lain bisa dibuka lewat link masing-masing dan muncul di bagian "jadwal lain".
               </p>
-              <Editor key={current.id} item={current} onPatch={patchCurrent} onGame={changeGame} />
+              <Editor key={current.id} item={current} token={token} onPatch={patchCurrent} onGame={changeGame} />
             </>
           ) : (
             <div className="adm-empty">
@@ -449,6 +450,7 @@ function DashboardInner({ token, onLogout }: Props) {
         <div className="adm-new">
           {GAME_IDS.map((g) => (
             <button key={g} type="button" className="adm-game adm-game--btn" data-game={g} style={{ '--acc': GAMES[g].accent } as CSSProperties} onClick={() => addItem(g)}>
+              <img className="adm-game__art" src={artThumb(g)} alt="" loading="lazy" />
               <span className="adm-game__name">{GAMES[g].name}</span>
               <span className="adm-game__pub">{GAMES[g].publisher}</span>
             </button>

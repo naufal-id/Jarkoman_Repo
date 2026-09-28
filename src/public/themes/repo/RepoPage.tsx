@@ -12,13 +12,14 @@ import { gameDef, REPO_COLORS } from '../../../shared/games'
 import { dateBlocks, formatClock, formatDateLong, formatTimeRange, pad2 } from '../../../shared/time'
 import type { Player } from '../../../shared/types'
 import { copyText } from '../../common/actions'
-import { BgPhoto } from '../../common/BgPhoto'
+import { ArtImage } from '../../common/ArtImage'
 import { usePage, type ThemeProps } from '../../common/context'
 import { Schedule, SiteFooter, useActions } from '../../common/Extras'
 import { gsap, MOTION_OK, useGSAP } from '../../common/gsap'
 import { isClosed, joinTitle, statusLabel, useSession, type SessionInfo } from '../../common/hooks'
 import { useIntroGate } from '../../common/intro'
 import { JoinForm } from '../../common/JoinForm'
+import { MusicDock } from '../../common/Music'
 import { Split } from '../../common/Split'
 import { useToast } from '../../common/Toast'
 
@@ -37,7 +38,6 @@ export default function RepoPage({ j }: ThemeProps) {
   const hero = useRef<HTMLElement>(null)
   const [sentKey, setSentKey] = useState(0)
 
-  const bg = j.bg || media?.hero
   const flashlight = j.variant !== 'lampu'
   const scale = j.headline.length <= 14 ? 1 : j.headline.length <= 24 ? 0.78 : 0.6
   const slots = Array.from({ length: j.slots }, (_, i) => j.players[i] ?? null)
@@ -79,7 +79,8 @@ export default function RepoPage({ j }: ThemeProps) {
           .from('.rp-truck', { opacity: 0, y: 40, duration: 0.8 }, 0.3)
           // Layar CRT menyala: garis tipis melebar jadi layar penuh.
           .fromTo('.rp-crt__screen', { clipPath: 'inset(49.5% 0 49.5% 0)' }, { clipPath: 'inset(0% 0 0% 0)', duration: 0.5, ease: 'power4.out' }, 0.8)
-          .from('.rp-crt__line', { opacity: 0, x: -8, duration: 0.25, stagger: 0.08 }, 1.1)
+          .from('.rp-crt__feed', { opacity: 0, filter: 'brightness(3) contrast(0.4)', duration: 0.6, ease: 'steps(6)' }, 1.05)
+          .from('.rp-crt__line', { opacity: 0, x: -8, duration: 0.25, stagger: 0.08 }, 1.3)
 
         gsap.from('.rp-bot', {
           scrollTrigger: { trigger: '.rp-crew__grid', start: 'top 85%', once: true },
@@ -153,7 +154,6 @@ export default function RepoPage({ j }: ThemeProps) {
       <main id="main">
         <section className={`rp-hero ${flashlight ? 'has-light' : ''}`} ref={hero} aria-labelledby="rp-title">
           <div className="rp-hero__bg" aria-hidden="true">
-            <BgPhoto src={bg} className="rp-hero__photo" />
             <Corridor />
             <span className="rp-eyes rp-eyes--a">
               <i />
@@ -191,6 +191,9 @@ export default function RepoPage({ j }: ThemeProps) {
               <p className="rp-truck__label">Monitor truk</p>
               <div className="rp-crt">
                 <div className="rp-crt__screen">
+                  <div className="rp-crt__feed">
+                    <ArtImage game="repo" custom={j.bg} className="rp-crt__img" sizes="420px" priority />
+                  </div>
                   <p className="rp-crt__line">&gt; {def.mapLabel.toUpperCase()}: {(j.map || 'Acak').toUpperCase()}</p>
                   {j.rank && <p className="rp-crt__line">&gt; TARGET: {j.rank.toUpperCase()}</p>}
                   <p className="rp-crt__line">
@@ -345,6 +348,8 @@ export default function RepoPage({ j }: ThemeProps) {
 
       <SiteFooter media={media} className="rp-foot" />
 
+      <MusicDock j={j} />
+
       <div className="rp-sent" aria-hidden="true">
         Pesan siap. Kirim di WhatsApp sebelum truk berangkat.
       </div>
@@ -376,26 +381,27 @@ function RpCountdown({ s }: { s: SessionInfo }) {
   )
 }
 
-/** Semibot orisinal: badan kapsul, kepala bulat dengan visor dua mata. Warna mengikuti pilihan pemain. */
+/** Semibot: badan kapsul dan kepala bulat dengan dua mata besar, seperti di key art. Warna mengikuti pilihan pemain. */
 function Semibot({ color, dim }: { color: string; dim?: boolean }) {
   return (
     <svg className={`rp-bot__svg ${dim ? 'is-dim' : ''}`} viewBox="0 0 100 132" aria-hidden="true" style={{ '--bot': color } as CSSProperties}>
       <ellipse cx="50" cy="126" rx="30" ry="5" className="rp-bot__shadow" />
-      <rect x="23" y="56" width="54" height="66" rx="27" className="rp-bot__body" />
-      <rect x="23" y="56" width="54" height="66" rx="27" className="rp-bot__shade" />
-      <rect x="44" y="50" width="12" height="10" rx="3" className="rp-bot__neck" />
+      <rect x="24" y="58" width="52" height="64" rx="26" className="rp-bot__body" />
+      <rect x="24" y="58" width="52" height="64" rx="26" className="rp-bot__shade" />
+      <rect x="44" y="52" width="12" height="10" rx="3" className="rp-bot__neck" />
       <g className="rp-bot__head">
-        <circle cx="50" cy="32" r="25" className="rp-bot__body" />
-        <circle cx="50" cy="32" r="25" className="rp-bot__shade" />
-        <rect x="31" y="22" width="38" height="20" rx="10" className="rp-bot__visor" />
+        <ellipse cx="50" cy="36" rx="25" ry="22" className="rp-bot__body" />
+        <ellipse cx="50" cy="36" rx="25" ry="22" className="rp-bot__shade" />
         {dim ? (
-          <text x="50" y="38" className="rp-bot__q">
+          <text x="50" y="42" className="rp-bot__q">
             ?
           </text>
         ) : (
           <>
-            <ellipse cx="42" cy="32" rx="3.4" ry="4.6" className="rp-bot__eye" />
-            <ellipse cx="58" cy="32" rx="3.4" ry="4.6" className="rp-bot__eye" />
+            <circle cx="39" cy="28" r="10" className="rp-bot__eyeball" />
+            <circle cx="61" cy="28" r="10" className="rp-bot__eyeball" />
+            <circle cx="41.5" cy="29.5" r="4.2" className="rp-bot__pupil" />
+            <circle cx="58.5" cy="29.5" r="4.2" className="rp-bot__pupil" />
           </>
         )}
       </g>

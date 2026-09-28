@@ -11,7 +11,7 @@ import { gameDef } from '../../../shared/games'
 import { dayName, formatClock, formatDateShort, pad2 } from '../../../shared/time'
 import type { Player } from '../../../shared/types'
 import { copyText } from '../../common/actions'
-import { BgPhoto } from '../../common/BgPhoto'
+import { ArtImage } from '../../common/ArtImage'
 import { usePage, type ThemeProps } from '../../common/context'
 import { Digits } from '../../common/Digits'
 import { Schedule, SiteFooter, useActions } from '../../common/Extras'
@@ -19,6 +19,7 @@ import { gsap, MOTION_OK, useGSAP } from '../../common/gsap'
 import { isClosed, joinTitle, statusLabel, useSession, type SessionInfo } from '../../common/hooks'
 import { useIntroGate } from '../../common/intro'
 import { JoinForm } from '../../common/JoinForm'
+import { MusicDock } from '../../common/Music'
 import { Split } from '../../common/Split'
 import { useToast } from '../../common/Toast'
 
@@ -74,10 +75,8 @@ export default function Cs2Page({ j }: ThemeProps) {
   const root = useRef<HTMLDivElement>(null)
   const [readyKey, setReadyKey] = useState(0)
 
-  const bg = j.bg || media?.hero
   // Huruf bombsite hanya "diklaim" kalau judul memang menyebut site A atau B.
   const named = /\bA\b/.test(j.headline.toUpperCase()) ? 'A' : /\bB\b/.test(j.headline.toUpperCase()) ? 'B' : null
-  const site = named ?? 'A'
   const mapCode = MAP_CODES[j.map] ?? (j.map ? j.map.toLowerCase().replace(/\s+/g, '_') : '')
   const scale = j.headline.length <= 14 ? 1 : j.headline.length <= 24 ? 0.8 : 0.64
   const slots = Array.from({ length: j.slots }, (_, i) => j.players[i] ?? null)
@@ -93,7 +92,8 @@ export default function Cs2Page({ j }: ThemeProps) {
         tl.from('.cs-hud-top', { y: -70, opacity: 0, duration: 0.6 }, 0)
           .from('.cs-hud--left', { x: -80, opacity: 0, duration: 0.7 }, 0.15)
           .from('.cs-hud--right', { x: 80, opacity: 0, duration: 0.7 }, 0.15)
-          .from('.cs-site', { scale: 1.3, opacity: 0, duration: 0.9, ease: 'power4.out' }, 0.1)
+          .from('.cs-screen', { opacity: 0, x: 70, duration: 0.8, ease: 'power4.out' }, 0.1)
+          .from('.cs-screen__tag', { opacity: 0, y: -10, duration: 0.4 }, 0.6)
           .from('.cs-hero__title .split-word', { y: 60, opacity: 0, duration: 0.6, stagger: 0.08 }, 0.2)
           .from('.cs-kicker, .cs-hero__sub', { opacity: 0, x: -24, duration: 0.5, stagger: 0.08 }, 0.35)
           .from('.cs-hero__cta > *', { opacity: 0, y: 20, duration: 0.45, stagger: 0.07 }, 0.55)
@@ -192,9 +192,7 @@ export default function Cs2Page({ j }: ThemeProps) {
       <main id="main">
         <section className="cs-hero" aria-labelledby="cs-title">
           <div className="cs-hero__bg" aria-hidden="true">
-            <BgPhoto src={bg} className="cs-hero__photo" />
-            <span className="cs-site">{site}</span>
-            <Spray />
+            <ArtImage game="cs2" custom={j.bg} className="cs-hero__blur" sizes="40vw" />
           </div>
 
           <div className="cs-hero__main">
@@ -215,6 +213,15 @@ export default function Cs2Page({ j }: ThemeProps) {
               )}
             </div>
           </div>
+
+          <figure className="cs-screen" aria-hidden="true">
+            <span className="cs-corner" />
+            <div className="cs-screen__frame">
+              <ArtImage game="cs2" custom={j.bg} className="cs-screen__img" sizes="(max-width: 900px) 92vw, 46vw" priority />
+            </div>
+            <figcaption className="cs-screen__tag">{mapCode || 'counter-strike 2'}</figcaption>
+            <Spray />
+          </figure>
 
           <div className="cs-hud cs-hud--left">
             <HudCorner />
@@ -366,6 +373,8 @@ export default function Cs2Page({ j }: ThemeProps) {
       </main>
 
       <SiteFooter media={media} className="cs-foot" />
+
+      <MusicDock j={j} />
 
       <div className="cs-ready" aria-hidden="true">
         Siap. Tinggal kirim pesannya di WhatsApp.

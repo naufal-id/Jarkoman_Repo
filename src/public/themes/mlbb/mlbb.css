@@ -20,6 +20,8 @@
   --enemy: #e0475b;
   --focus: var(--gold-hi);
   --pad-x: clamp(16px, 4vw, 48px);
+  /* Tinggi banner poster di atas hero */
+  --bh: clamp(320px, 62vh, 640px);
   min-height: 100vh;
   background: var(--bg);
   color: var(--fg);
@@ -76,6 +78,7 @@ body:has(.ml[data-variant='red']) {
 .ml-status {
   padding: 6px 12px;
   border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
   font-weight: 600;
   font-size: 13px;
   letter-spacing: 0.1em;
@@ -171,10 +174,9 @@ body:has(.ml[data-variant='red']) {
 .ml-hero {
   position: relative;
   isolation: isolate;
-  min-height: 100svh;
   display: grid;
-  place-items: center;
-  padding: 104px var(--pad-x) 72px;
+  justify-items: center;
+  padding: calc(var(--bh) - 70px) var(--pad-x) 72px;
   overflow: hidden;
   text-align: center;
 }
@@ -187,23 +189,43 @@ body:has(.ml[data-variant='red']) {
   background: radial-gradient(ellipse at 50% 30%, var(--royal) 0%, var(--bg) 70%);
 }
 
-.ml-hero__photo {
-  filter: blur(3px) saturate(1.2) brightness(0.42);
-  transform: scale(1.05);
+/* Poster resmi sebagai banner lobby: tampil penuh warna di atas, memudar ke warna malam di bawah.
+   Tinggi gambar 135% dari banner supaya teks tanggal event di bagian bawah poster terpotong. */
+.ml-banner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 0;
+  height: var(--bh);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 42%, transparent 94%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 42%, transparent 94%);
 }
 
-.ml-hero__bg::after {
+.ml-banner::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse at 50% 42%, color-mix(in srgb, var(--bg) 55%, transparent) 0%, color-mix(in srgb, var(--bg) 88%, transparent) 60%, var(--bg) 100%);
+  inset: 0 0 auto;
+  z-index: 1;
+  height: 140px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 88%, transparent), transparent);
+}
+
+.ml-banner__img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 135%;
+  object-fit: cover;
+  object-position: 50% 0%;
 }
 
 .ml-rays {
   position: absolute;
   left: 50%;
-  top: 30%;
+  top: var(--bh);
   z-index: 1;
   width: 170vmax;
   height: 170vmax;
@@ -1230,6 +1252,12 @@ body:has(.ml[data-variant='red']) {
 }
 
 /* ---------- Layar kecil ---------- */
+@media (max-width: 720px) {
+  .ml {
+    --bh: clamp(260px, 64vw + 40px, 440px);
+  }
+}
+
 @media (max-width: 560px) {
   .ml-top__mark {
     font-size: 20px;
@@ -1240,9 +1268,6 @@ body:has(.ml[data-variant='red']) {
   }
   .ml-top .ml-btn--sm {
     padding: 0 16px;
-  }
-  .ml-hero {
-    padding-top: 92px;
   }
   .ml-hero__cta > * {
     flex: 1 1 100%;
@@ -1276,5 +1301,36 @@ body:has(.ml[data-variant='red']) {
   }
   .ml-title__text {
     text-wrap: balance;
+  }
+}
+
+/* ---------- Tombol musik ---------- */
+.ml .music__btn {
+  padding: 0 26px;
+  background: linear-gradient(180deg, #ffe7a3, #f0c45c 52%, #c48a2c);
+  color: var(--gold-ink);
+  font-family: 'Kanit', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%);
+}
+
+.ml .music__btn:focus-visible {
+  outline: 2px solid var(--gold-ink);
+  outline-offset: -6px;
+}
+
+.ml .music__now {
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  border: 1px solid var(--line);
+  color: var(--gold-hi);
+}
+
+@media (max-width: 560px) {
+  .ml .music__btn {
+    min-width: 58px;
+    padding: 0;
   }
 }

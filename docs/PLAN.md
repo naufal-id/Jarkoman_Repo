@@ -180,6 +180,21 @@ Fitur fungsional:
 - Build produksi tanpa error.
 - Playwright: screenshot 4 tema di desktop dan HP, klik semua kontrol publik dan admin, cek console error, cek overflow horizontal di 360px.
 
+## 9. Iterasi 2: key art asli dan musik
+
+Host memberikan 4 key art resmi. Keputusan penempatan (alasan satu kalimat per keputusan):
+
+| Game | Ukuran | Penempatan | Alasan |
+|---|---|---|---|
+| VALORANT | 1440×811 | Panel kanan dengan tepi diagonal dan garis merah; banner atas di HP | Judul tetap di area ink sehingga kontras tidak bergantung gambar, dan tepi diagonal adalah bahasa bentuk Valorant |
+| CS2 | 616×353 | Layar ber-HUD seukuran asli, pola recoil "ditembakkan" ke tepinya, versi blur jadi cahaya latar | Gambar kecil tidak boleh diperbesar penuh layar; versi blur membawa oranye key art ke seluruh hero |
+| MLBB | 1170×655 | Banner lobby di atas hero yang memudar ke biru malam, bagian bawah poster dipotong | Poster berisi tanggal event Asian Games; memotongnya mencegah pengunjung salah membaca jadwal |
+| R.E.P.O. | 460×215 | Diputar di monitor CRT truk (ukuran asli) dengan scanline | Gambar paling kecil, dan monitor truk adalah tempat briefing di game |
+
+Semibot roster ikut disesuaikan dengan key art: badan kapsul, dua mata besar putih.
+
+Musik: lagu resmi game dilindungi hak cipta dan tidak bisa diunduh dari container, jadi musik bawaan adalah komposisi orisinal yang disintesis dengan Web Audio (tanpa file). Tempo dan instrumen mengikuti suasana game: synth tegang 104 BPM (VALORANT), drum militer dan bunyi bom 92 BPM (CS2), harpa dan taiko 84 BPM (MLBB), drone dan kotak musik sumbang 70 BPM (R.E.P.O.). Host tetap bisa upload lagu sendiri. Musik tidak pernah autoplay; bar equalizer bergerak hanya saat musik benar-benar berbunyi.
+
 ## Sumber riset
 
 - VALORANT brand dan font: valdb.gg/brand, brandcolorcode.com/valorant

@@ -3,7 +3,7 @@ import loginHandler from '../netlify/functions/login.mts'
 import stateHandler from '../netlify/functions/state.mts'
 import { issueToken, verifyToken } from '../netlify/lib/auth'
 import { hexFromRgba, loadMedia, upscaleAppStore } from '../netlify/lib/media'
-import { memoryStore, setStoreForTests } from '../netlify/lib/store'
+import { memoryAudioStore, memoryStore, setAudioStoreForTests, setStoreForTests } from '../netlify/lib/store'
 import { createJarkoman } from '../src/shared/defaults'
 
 const req = (path: string, init: RequestInit = {}) => new Request(`http://localhost${path}`, init)
@@ -12,9 +12,13 @@ beforeEach(() => {
   process.env.ADMIN_PASSWORD = 'rahasia-mabar'
   delete process.env.JARKOMAN_SECRET
   setStoreForTests(memoryStore())
+  setAudioStoreForTests(memoryAudioStore())
 })
 
-afterEach(() => setStoreForTests(null))
+afterEach(() => {
+  setStoreForTests(null)
+  setAudioStoreForTests(null)
+})
 
 async function login(password = 'rahasia-mabar') {
   const res = await loginHandler(req('/api/login', { method: 'POST', body: JSON.stringify({ password }) }))

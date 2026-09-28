@@ -11,7 +11,7 @@ import { gameDef } from '../../../shared/games'
 import { formatDateLong, formatTimeRange } from '../../../shared/time'
 import type { Player } from '../../../shared/types'
 import { copyText } from '../../common/actions'
-import { BgPhoto } from '../../common/BgPhoto'
+import { ArtImage } from '../../common/ArtImage'
 import { usePage, type ThemeProps } from '../../common/context'
 import { Digits } from '../../common/Digits'
 import { Schedule, SiteFooter, useActions } from '../../common/Extras'
@@ -19,6 +19,7 @@ import { gsap, MOTION_OK, useGSAP } from '../../common/gsap'
 import { isClosed, joinTitle, statusLabel, useSession, type SessionInfo } from '../../common/hooks'
 import { useIntroGate } from '../../common/intro'
 import { JoinForm } from '../../common/JoinForm'
+import { MusicDock } from '../../common/Music'
 import { Split } from '../../common/Split'
 import { useToast } from '../../common/Toast'
 import { Embers } from './Embers'
@@ -46,7 +47,6 @@ export default function MlbbPage({ j }: ThemeProps) {
   const root = useRef<HTMLDivElement>(null)
   const [sentKey, setSentKey] = useState(0)
 
-  const bg = j.bg || media?.hero
   const streak = STREAK[Math.min(s.filled, 5)]
   const scale = j.headline.length <= 16 ? 1 : j.headline.length <= 26 ? 0.8 : 0.64
   const slots = Array.from({ length: j.slots }, (_, i) => j.players[i] ?? null)
@@ -58,7 +58,9 @@ export default function MlbbPage({ j }: ThemeProps) {
       gsap.matchMedia().add(MOTION_OK, () => {
         if (!intro.ready) return
         const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-        tl.from('.ml-rays', { opacity: 0, scale: 0.6, rotate: -30, duration: 1.6, ease: 'power2.out' }, 0)
+        tl.from('.ml-banner', { opacity: 0, duration: 1.2, ease: 'power2.out' }, 0)
+          .from('.ml-banner__img', { scale: 1.12, duration: 2.2, ease: 'power3.out' }, 0)
+          .from('.ml-rays', { opacity: 0, scale: 0.6, rotate: -30, duration: 1.6, ease: 'power2.out' }, 0.2)
           .from('.ml-crest', { scale: 0.4, opacity: 0, duration: 0.9, ease: 'back.out(1.8)' }, 0.1)
           .from('.ml-hero__game', { opacity: 0, letterSpacing: '0.6em', duration: 0.9 }, 0.2)
           .from('.ml-hero__title .split-char', { opacity: 0, scale: 1.6, filter: 'blur(8px)', duration: 0.7, stagger: 0.03 }, 0.3)
@@ -164,7 +166,9 @@ export default function MlbbPage({ j }: ThemeProps) {
       <main id="main">
         <section className="ml-hero" aria-labelledby="ml-title">
           <div className="ml-hero__bg" aria-hidden="true">
-            <BgPhoto src={bg} className="ml-hero__photo" />
+            <div className="ml-banner">
+              <ArtImage game="mlbb" custom={j.bg} className="ml-banner__img" sizes="100vw" priority />
+            </div>
             <div className="ml-rays" />
             <Embers className="ml-embers" />
           </div>
@@ -332,6 +336,8 @@ export default function MlbbPage({ j }: ThemeProps) {
       </main>
 
       <SiteFooter media={media} className="ml-foot" />
+
+      <MusicDock j={j} />
 
       <div className="ml-victory" aria-hidden="true">
         <span>Pesan siap</span>

@@ -152,10 +152,6 @@ body:has(.rp) {
   background: radial-gradient(ellipse at 55% 45%, #1b1712 0%, #0b0a0c 70%);
 }
 
-.rp-hero__photo {
-  filter: saturate(0.7) contrast(1.1) brightness(0.8);
-}
-
 .rp-corridor {
   position: absolute;
   inset: 0;
@@ -262,7 +258,7 @@ body:has(.rp) {
 
 @media (min-width: 1024px) {
   .rp-hero__inner {
-    grid-template-columns: minmax(0, 1fr) 440px;
+    grid-template-columns: minmax(0, 1fr) 480px;
     align-items: center;
   }
 }
@@ -359,6 +355,24 @@ body:has(.rp) {
   inset: 0;
   background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.28) 0 2px, transparent 2px 4px);
   pointer-events: none;
+}
+
+/* Key art diputar di monitor truk: ukurannya mendekati asli (460px) jadi tetap tajam,
+   dan garis scanline layar ikut menutupinya seperti siaran CRT. */
+.rp-crt__feed {
+  position: relative;
+  margin: -4px -6px 14px;
+  aspect-ratio: 460 / 215;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #000;
+}
+
+.rp-crt__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.1) contrast(1.05);
 }
 
 .rp-crt__line {
@@ -516,12 +530,14 @@ body:has(.rp) {
   fill: #2b2721;
 }
 
-.rp-bot__visor {
-  fill: #0e0d0c;
+.rp-bot__eyeball {
+  fill: #f6f3ea;
+  stroke: rgba(0, 0, 0, 0.3);
+  stroke-width: 1;
 }
 
-.rp-bot__eye {
-  fill: #f6f0dc;
+.rp-bot__pupil {
+  fill: #121110;
 }
 
 .rp-bot__q {
@@ -564,9 +580,6 @@ body:has(.rp) {
   display: none;
 }
 
-.rp-bot__svg.is-dim .rp-bot__visor {
-  fill: #1c1915;
-}
 
 .rp-bot__name {
   margin-top: 6px;
@@ -973,4 +986,29 @@ body:has(.rp) {
   .rp-eyes--b {
     top: 12%;
   }
+}
+
+/* ---------- Tombol musik: layar CRT kecil ---------- */
+.rp .music__btn {
+  border-radius: 8px;
+  background: var(--crt-bg);
+  color: var(--phosphor);
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  box-shadow: 0 0 0 4px #2a251e;
+  text-shadow: 0 0 6px rgba(124, 255, 107, 0.5);
+}
+
+.rp .music__btn:focus-visible {
+  outline: 2px solid var(--hazard);
+  outline-offset: 6px;
+}
+
+.rp .music__now {
+  border-radius: 6px;
+  background: var(--crt-bg);
+  color: var(--phosphor);
+  font-family: 'VT323', monospace;
+  font-size: 19px;
+  box-shadow: 0 0 0 3px #2a251e;
 }

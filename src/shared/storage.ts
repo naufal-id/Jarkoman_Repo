@@ -32,4 +32,5 @@ export const KEYS = {
   introSeen: (game: string) => `jk:intro:${game}`,
   joinName: 'jk:join-name',
   previewDevice: 'jk:preview-device',
+  music: 'jk:music',
 }
