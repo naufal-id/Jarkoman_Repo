@@ -123,3 +123,18 @@ describe('sanitasi musik', () => {
     expect(cleanMusic('javascript:alert(1)')).toBe('')
   })
 })
+
+describe('musik bawaan per game', () => {
+  it('VALORANT, MLBB, dan R.E.P.O. memakai lagu bawaan; CS2 tetap sintetis sampai ada lagunya', async () => {
+    const { musicSource, musicLabel } = await import('../src/public/common/Music')
+    for (const game of ['valorant', 'mlbb', 'repo'] as const) {
+      const src = musicSource({ game, music: '' })
+      expect(src.kind).toBe('track')
+      if (src.kind === 'track') expect(src.track.url).toMatch(new RegExp(`${game}.*\\.mp3`))
+    }
+    expect(musicSource({ game: 'cs2', music: '' }).kind).toBe('gen')
+    expect(musicLabel({ game: 'valorant', music: '', musicLabel: '' })).toContain('If The Sun Burns Out Tonight')
+    expect(musicSource({ game: 'mlbb', music: 'none' }).kind).toBe('none')
+    expect(musicSource({ game: 'mlbb', music: '/api/audio?id=abcdefgh' })).toEqual({ kind: 'file', url: '/api/audio?id=abcdefgh' })
+  })
+})

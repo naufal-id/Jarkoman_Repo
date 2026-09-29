@@ -4,6 +4,7 @@ import { GAMES } from '../shared/games'
 import { cleanUrl } from '../shared/sanitize'
 import type { Jarkoman } from '../shared/types'
 import { SONG_TITLES } from '../public/audio/procedural'
+import { trackFor } from '../public/audio/tracks'
 import { useMusic } from '../public/common/Music'
 import { Field } from './fields'
 
@@ -37,6 +38,7 @@ export function MusicEditor({ item, token, onPatch }: Props) {
   const [error, setError] = useState('')
   const [link, setLink] = useState(current === 'link' ? item.music : '')
   const preview = useMusic(item, { autoResume: false })
+  const track = trackFor(item.game)
 
   const choose = (m: Mode) => {
     setMode(m)
@@ -88,12 +90,17 @@ export function MusicEditor({ item, token, onPatch }: Props) {
         ))}
       </div>
 
-      {mode === 'gen' && (
-        <p className="adm-hint">
-          Lagu orisinal "{SONG_TITLES[item.game]}" yang dibuat khusus untuk tema {GAMES[item.game].name} dan disintesis langsung di browser. Tidak butuh file, dan ikut
-          berganti kalau game diganti.
-        </p>
-      )}
+      {mode === 'gen' &&
+        (track ? (
+          <p className="adm-hint">
+            Lagu bawaan {GAMES[item.game].name}: "{track.title}" ({track.artist}). Diputar berulang dengan sambungan halus, dan ikut berganti kalau game diganti.
+          </p>
+        ) : (
+          <p className="adm-hint">
+            {GAMES[item.game].name} belum punya lagu bawaan, jadi dipakai musik sintetis "{SONG_TITLES[item.game]}" yang dibuat langsung di browser. Pilih Upload lagu
+            kalau mau pakai lagu lain.
+          </p>
+        ))}
 
       {mode === 'upload' && (
         <div className="adm-field">

@@ -62,12 +62,14 @@ Di dashboard bagian **Skuad**, setiap jarkoman punya pilihan **Cara pemain masuk
 
 Tiap jarkoman bisa punya musik, diatur di dashboard bagian **Musik**:
 
-| Pilihan      | Keterangan                                                                                                                                                                                             |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Musik bawaan | Lagu orisinal per game yang disintesis langsung di browser (tanpa file): "Protocol" (VALORANT), "Freeze Time" (CS2), "Land of Dawn" (MLBB), "Night Shift" (R.E.P.O.). Ikut berganti kalau game diganti |
-| Upload lagu  | MP3, M4A, OGG, WAV, atau FLAC maksimal 4,5 MB, disimpan di Netlify Blobs dan diputar berulang. Pakai lagu yang boleh kamu gunakan                                                                      |
-| Link audio   | Link langsung ke file audio (`https://…/lagu.mp3`). Link YouTube/Spotify tidak bisa dipakai sebagai musik latar                                                                                        |
-| Tanpa musik  | Tombol musik tidak ditampilkan                                                                                                                                                                         |
+| Pilihan      | Keterangan                                                                                                                                                                                                                                                                                                                              |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Musik bawaan | Lagu bawaan per game: "If The Sun Burns Out Tonight" (VALORANT Champions 2026, Grabbitz ft. Oli Sykes & Courtney LaPlante), "We Own This (Nyalakan Apimu)" (MPL Indonesia, untuk MLBB), dan "Main Menu" (soundtrack R.E.P.O.). CS2 belum punya lagu bawaan, jadi memakai musik sintetis "Freeze Time". Ikut berganti kalau game diganti |
+| Upload lagu  | MP3, M4A, OGG, WAV, atau FLAC maksimal 4,5 MB, disimpan di Netlify Blobs dan diputar berulang. Pakai lagu yang boleh kamu gunakan                                                                                                                                                                                                       |
+| Link audio   | Link langsung ke file audio (`https://…/lagu.mp3`). Link YouTube/Spotify tidak bisa dipakai sebagai musik latar                                                                                                                                                                                                                         |
+| Tanpa musik  | Tombol musik tidak ditampilkan                                                                                                                                                                                                                                                                                                          |
+
+Lagu bawaan adalah klip pendek (18 sampai 58 detik) yang diputar berulang dengan crossfade di titik sambung, dan volumenya disamakan antargame. Untuk menambah lagu bawaan CS2: taruh file di `src/public/audio/tracks/cs2.mp3`, lalu tambahkan entri `cs2` di `DEFAULT_TRACKS` (`src/public/audio/tracks.ts`). Lagu-lagu ini milik pemiliknya masing-masing.
 
 Musik tidak pernah berbunyi sendiri (browser juga memblokir itu). Pengunjung menyalakannya lewat tombol musik di kiri bawah; kalau pernah dinyalakan, musik lanjut setelah klik pertama di kunjungan berikutnya. Musik berhenti saat tab disembunyikan. Lagu upload yang tidak dipakai lagi dihapus otomatis setelah 24 jam saat admin menyimpan.
 
@@ -99,7 +101,7 @@ npm run preview    # menyajikan hasil build, API tetap jalan
 index.html, admin/index.html   entri halaman publik dan admin
 src/shared/                    logika bersama (tipe, katalog game, waktu, WA, kalender, sanitasi, API client)
 src/public/                    halaman publik, komponen bersama, dan 4 tema di src/public/themes/
-src/public/audio/              engine musik bawaan (Web Audio) dan pemutar file
+src/public/audio/              lagu bawaan (tracks/, tracks.ts), musik sintetis CS2 (procedural.ts), pemutar file
 src/admin/                     dashboard admin
 public/games/                  key art keempat game (WebP)
 netlify/functions/             /api/state, /api/login, /api/join, /api/media, /api/audio (Netlify Functions v2)

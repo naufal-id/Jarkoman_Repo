@@ -3,22 +3,35 @@ import { KEYS, readJSON, writeJSON } from '../../shared/storage'
 import type { GameId, Jarkoman } from '../../shared/types'
 import { getContext, startFile } from '../audio/player'
 import { SONG_TITLES, startSong, type Playback } from '../audio/procedural'
+import { startTrack, trackFor, type DefaultTrack } from '../audio/tracks'
 import { usePage } from './context'
 
-export type MusicSource = { kind: 'gen'; game: GameId } | { kind: 'file'; url: string } | { kind: 'none' }
+/**
+ * 'track' = lagu bawaan game (file), 'gen' = musik sintetis untuk game yang belum punya lagu bawaan,
+ * 'file' = lagu upload atau link dari host.
+ */
+export type MusicSource =
+  | { kind: 'track'; game: GameId; track: DefaultTrack }
+  | { kind: 'gen'; game: GameId }
+  | { kind: 'file'; url: string }
+  | { kind: 'none' }
 
 export function musicSource(j: Pick<Jarkoman, 'music' | 'game'>): MusicSource {
   if (j.music === 'none') return { kind: 'none' }
   if (j.music) return { kind: 'file', url: j.music }
-  return { kind: 'gen', game: j.game }
+  const track = trackFor(j.game)
+  return track ? { kind: 'track', game: j.game, track } : { kind: 'gen', game: j.game }
 }
 
 export function musicLabel(j: Pick<Jarkoman, 'music' | 'game' | 'musicLabel'>): string {
   const src = musicSource(j)
+  if (src.kind === 'track') return `"${src.track.title}" · ${src.track.artist}`
   if (src.kind === 'gen') return `"${SONG_TITLES[src.game]}", musik bawaan`
   if (src.kind === 'file') return j.musicLabel || 'Lagu pilihan host'
   return ''
 }
+
+const sourceKey = (src: MusicSource) => (src.kind === 'track' || src.kind === 'gen' ? `${src.kind}:${src.game}` : src.kind === 'file' ? src.url : 'none')
 
 /**
  * Pemutar musik: tidak pernah menyala sendiri tanpa aksi pengunjung (browser juga memblokirnya).
@@ -26,7 +39,7 @@ export function musicLabel(j: Pick<Jarkoman, 'music' | 'game' | 'musicLabel'>): 
  */
 export function useMusic(j: Pick<Jarkoman, 'music' | 'game'>, opts: { autoResume: boolean }) {
   const source = musicSource(j)
-  const key = source.kind === 'gen' ? `gen:${source.game}` : source.kind === 'file' ? source.url : 'none'
+  const key = sourceKey(source)
   const [playing, setPlaying] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -50,7 +63,12 @@ export function useMusic(j: Pick<Jarkoman, 'music' | 'game'>, opts: { autoResume
     setBusy(true)
     setError('')
     try {
-      const h = src.kind === 'gen' ? startSong(await getContext(), src.game) : await startFile(src.url)
+      const h =
+        src.kind === 'track'
+          ? await startTrack(await getContext(), src.track)
+          : src.kind === 'gen'
+            ? startSong(await getContext(), src.game)
+            : await startFile(src.url)
       if (!wanted.current) {
         h.stop()
         return
@@ -60,7 +78,9 @@ export function useMusic(j: Pick<Jarkoman, 'music' | 'game'>, opts: { autoResume
     } catch {
       wanted.current = false
       setPlaying(false)
-      setError(src.kind === 'file' ? 'Lagu gagal diputar. Cek file atau link-nya.' : 'Browser ini tidak bisa memutar musik.')
+      setError(
+        src.kind === 'file' ? 'Lagu gagal diputar. Cek file atau link-nya.' : src.kind === 'track' ? 'Lagu gagal dimuat. Cek koneksi lalu coba lagi.' : 'Browser ini tidak bisa memutar musik.',
+      )
     } finally {
       setBusy(false)
     }
