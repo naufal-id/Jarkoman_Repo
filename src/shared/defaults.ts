@@ -1,8 +1,13 @@
 import { GAMES } from './games'
 import { uid } from './ids'
 import { nextSaturday } from './time'
-import type { GameId, Jarkoman, SiteState } from './types'
+import type { GameId, Jarkoman, Player, SiteState } from './types'
 import { DEFAULT_WA } from './wa'
+
+/** Pemain baru dengan nilai bawaan (ditambahkan admin). */
+export function blankPlayer(patch: Partial<Player> = {}): Player {
+  return { id: uid(), name: '', role: '', pick: '', status: 'in', via: 'admin', note: '', seq: 0, joinedAt: 0, ...patch }
+}
 
 export function createJarkoman(game: GameId, now = Date.now()): Jarkoman {
   const def = GAMES[game]
@@ -30,6 +35,7 @@ export function createJarkoman(game: GameId, now = Date.now()): Jarkoman {
     variant: def.variants[0].id,
     music: '',
     musicLabel: '',
+    autoJoin: true,
     updatedAt: now,
   }
 }
@@ -37,7 +43,7 @@ export function createJarkoman(game: GameId, now = Date.now()): Jarkoman {
 /** State awal sebelum admin menyimpan apa pun. Halaman publik memberi label "contoh" untuk state ini. */
 export function defaultState(now = Date.now()): SiteState {
   const first = createJarkoman('valorant', now)
-  return { version: 1, featuredId: first.id, items: [first], updatedAt: 0 }
+  return { version: 1, featuredId: first.id, items: [first], updatedAt: 0, joinSeq: 0, gone: [] }
 }
 
 /** Pindah game: field yang spesifik game direset ke default game baru, field umum dipertahankan. */

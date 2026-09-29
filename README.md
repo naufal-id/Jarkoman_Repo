@@ -38,11 +38,25 @@ Tidak ada database yang perlu disiapkan: data disimpan di **Netlify Blobs**, yan
 
 1. Di dashboard, pilih game (tampilan halaman langsung berubah di preview).
 2. Isi judul, tanggal, jam, zona waktu, mode, map, rank, host, lobby, dan link voice.
-3. Tambahkan pemain yang sudah konfirmasi. Tandai "Belum pasti" kalau masih ragu. Pemain di luar jumlah slot otomatis jadi cadangan.
+3. Pilih cara pemain masuk skuad (lihat bagian berikut). Kamu tetap bisa menambah pemain sendiri. Tandai "Belum pasti" kalau masih ragu. Pemain di luar jumlah slot otomatis jadi cadangan.
 4. Tekan **Simpan** (atau Ctrl/Cmd + S).
 5. Tekan **Teks untuk grup WA**: salin teks jarkoman, atau langsung kirim lewat WhatsApp. Link di teks itu membuka halaman jarkoman dengan preview gambar sesuai game.
 
 Status "slot penuh", "lagi main", dan "selesai" dihitung otomatis dari jumlah pemain dan jam. Status "dibatalkan" diset manual.
+
+## Pemain masuk skuad sendiri (LOCK IN)
+
+Di dashboard bagian **Skuad**, setiap jarkoman punya pilihan **Cara pemain masuk skuad**:
+
+| Pilihan                         | Yang terjadi saat pengunjung menekan tombol utama (LOCK IN, SIAP TEMPUR, dst.)                                                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Langsung lewat website (bawaan) | Nama, role, dan pick langsung masuk skuad jarkoman itu dan tampil di halaman. Kalau slot penuh, masuk cadangan. Host tidak perlu menginput. Kabari host lewat WhatsApp jadi opsional |
+| Lewat WhatsApp, diisi host      | Tombol membuka WhatsApp dengan pesan konfirmasi, lalu host memasukkan pemain sendiri (cara lama)                                                                                     |
+
+- Pendaftaran selalu terikat ke satu jarkoman (lewat id-nya). Form di jarkoman lain tetap kosong.
+- Nama yang sama tidak bisa didaftarkan dua kali di satu jarkoman.
+- Pemain bisa **Batal ikut** dari perangkat yang dipakai mendaftar. Perangkat lain tidak bisa membatalkan pendaftaran orang lain.
+- Pendaftar baru muncul di dashboard dalam hitungan detik dengan label "Daftar lewat website", tanpa membuang perubahan yang sedang kamu edit. Menyimpan draft lama juga tidak menghapus pendaftar yang masuk setelahnya.
 
 ## Musik
 
@@ -73,7 +87,7 @@ Mode dev menjalankan handler Functions yang sama dengan penyimpanan file di `.da
 Perintah lain:
 
 ```bash
-npm test           # unit test (waktu/zona, pesan WA, kalender, sanitasi, login, simpan, konflik, media, audio, edge function)
+npm test           # unit test (waktu/zona, pesan WA, kalender, sanitasi, login, simpan, konflik, pendaftaran langsung, media, audio, edge function)
 npm run typecheck
 npm run build
 npm run preview    # menyajikan hasil build, API tetap jalan
@@ -88,7 +102,7 @@ src/public/                    halaman publik, komponen bersama, dan 4 tema di s
 src/public/audio/              engine musik bawaan (Web Audio) dan pemutar file
 src/admin/                     dashboard admin
 public/games/                  key art keempat game (WebP)
-netlify/functions/             /api/state, /api/login, /api/media, /api/audio (Netlify Functions v2)
+netlify/functions/             /api/state, /api/login, /api/join, /api/media, /api/audio (Netlify Functions v2)
 netlify/lib/                   auth token, penyimpanan Blobs, sumber media
 netlify/edge-functions/og.ts   meta preview link untuk bot
 public/og/                     gambar preview link per game
@@ -102,6 +116,8 @@ docs/PLAN.md                   riset, desain, dan rencana
 - Semua data dari dashboard divalidasi ulang di server (panjang teks, URL hanya http/https, jumlah slot, dll).
 - Upload lagu butuh login admin, hanya menerima tipe audio, dan dibatasi 4,5 MB.
 - Simpan dari dua perangkat sekaligus tidak saling menimpa diam-diam: dashboard menampilkan pilihan saat ada versi lebih baru.
+- `/api/join` terbuka tanpa login tapi dibatasi: hanya jarkoman yang pendaftaran langsungnya nyala dan belum selesai/dibatalkan, maksimal 20 nama per jarkoman, nama unik, role harus dari daftar game, plus kolom jebakan untuk bot. Kunci pembatalan ditandatangani HMAC dan hanya disimpan di perangkat pendaftar.
+- Setiap tulis ke data memakai tulis bersyarat (ETag Netlify Blobs) dan diulang otomatis kalau bertabrakan, jadi dua orang yang menekan LOCK IN bersamaan tidak saling menimpa.
 
 ## Catatan
 

@@ -57,3 +57,12 @@ export function bearer(req: Request): string | null {
   const match = /^Bearer\s+(.+)$/i.exec(header)
   return match ? match[1].trim() : null
 }
+
+/** Kunci milik perangkat pendaftar untuk membatalkan pendaftarannya sendiri. Tidak disimpan di server. */
+export function joinKey(itemId: string, playerId: string): string {
+  return sign(`join:${itemId}:${playerId}`)
+}
+
+export function verifyJoinKey(itemId: string, playerId: string, key: unknown): boolean {
+  return typeof key === 'string' && key.length > 0 && safeEqual(key, joinKey(itemId, playerId))
+}

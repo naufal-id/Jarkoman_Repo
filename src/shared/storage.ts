@@ -30,7 +30,13 @@ export const KEYS = {
   token: 'jk:admin-token',
   draft: 'jk:admin-draft',
   introSeen: (game: string) => `jk:intro:${game}`,
-  joinName: 'jk:join-name',
+  /** Nama yang diketik di form join, per jarkoman (bukan global, supaya tidak ikut muncul di jarkoman lain) */
+  joinName: (id: string) => `jk:join-name:${id}`,
+  /** Bukti pendaftaran langsung di perangkat ini: id pemain dan kunci untuk membatalkan */
+  joined: (id: string) => `jk:joined:${id}`,
   previewDevice: 'jk:preview-device',
   music: 'jk:music',
 }
+
+/** Kunci lama yang sudah tidak dipakai. `jk:join-name` dulu global sehingga nama ikut terisi di semua jarkoman. */
+export const LEGACY_KEYS = ['jk:join-name']

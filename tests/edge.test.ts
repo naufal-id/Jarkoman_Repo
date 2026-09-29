@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import og from '../netlify/edge-functions/og'
-import { createJarkoman } from '../src/shared/defaults'
+import { blankPlayer, createJarkoman } from '../src/shared/defaults'
 
 const HTML = `<html><head>
     <!--og-->
@@ -26,7 +26,7 @@ describe('edge function og', () => {
   it('mengganti meta untuk bot WhatsApp sesuai jarkoman yang diminta', async () => {
     const item = createJarkoman('mlbb')
     item.headline = 'Push "Rank" <Malam>'
-    item.players = [{ id: 'p1', name: 'A', role: '', pick: '', status: 'in' }]
+    item.players = [blankPlayer({ id: 'p1', name: 'A', role: '', pick: '', status: 'in' })]
     const other = createJarkoman('cs2')
     vi.stubGlobal(
       'fetch',

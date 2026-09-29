@@ -1,4 +1,4 @@
-import type { GameId, MediaPayload, SiteState, StateResponse } from './types'
+import type { GameId, Jarkoman, MediaPayload, Player, SiteState, StateResponse } from './types'
 
 const EXT_TYPES: Record<string, string> = { mp3: 'audio/mpeg', m4a: 'audio/mp4', aac: 'audio/aac', ogg: 'audio/ogg', oga: 'audio/ogg', wav: 'audio/wav', flac: 'audio/flac', webm: 'audio/webm' }
 
@@ -73,6 +73,21 @@ export const api = {
       { method: 'POST', headers: { 'content-type': audioType(file), authorization: `Bearer ${token}` }, body: file },
       90000,
     )
+  },
+  /** Pemain mendaftar sendiri. `key` disimpan di perangkat untuk membatalkan nanti. */
+  join(input: { id: string; name: string; role: string; pick: string; note: string; website: string }) {
+    return request<{ item: Jarkoman; player: Player; key: string; slot: number | null }>('/api/join', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(input),
+    })
+  },
+  leave(id: string, player: string, key: string) {
+    return request<{ item: Jarkoman }>('/api/join', {
+      method: 'DELETE',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id, player, key }),
+    })
   },
   media(game: GameId) {
     return request<MediaPayload>(`/api/media?game=${game}`, {}, 15000)

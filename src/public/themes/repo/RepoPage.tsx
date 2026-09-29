@@ -18,7 +18,7 @@ import { Schedule, SiteFooter, useActions } from '../../common/Extras'
 import { gsap, MOTION_OK, useGSAP } from '../../common/gsap'
 import { isClosed, joinTitle, statusLabel, useSession, type SessionInfo } from '../../common/hooks'
 import { useIntroGate } from '../../common/intro'
-import { JoinForm } from '../../common/JoinForm'
+import { JoinForm, type SentKind } from '../../common/JoinForm'
 import { MusicDock } from '../../common/Music'
 import { Split } from '../../common/Split'
 import { useToast } from '../../common/Toast'
@@ -37,6 +37,7 @@ export default function RepoPage({ j }: ThemeProps) {
   const root = useRef<HTMLDivElement>(null)
   const hero = useRef<HTMLElement>(null)
   const [sentKey, setSentKey] = useState(0)
+  const [sentKind, setSentKind] = useState<SentKind>('joined')
 
   const flashlight = j.variant !== 'lampu'
   const scale = j.headline.length <= 14 ? 1 : j.headline.length <= 24 ? 0.78 : 0.6
@@ -297,7 +298,11 @@ export default function RepoPage({ j }: ThemeProps) {
 
         <section className="rp-join" id="join" aria-labelledby="rp-join-title">
           <SectionTitle id="rp-join-title" text={joinTitle(s, 'Daftar shift')} />
-          <p className="rp-lead">Pilih warna semibot dan tugasmu. Tombol di bawah membuka WhatsApp dengan pesan konfirmasi siap kirim.</p>
+          <p className="rp-lead">
+            {j.autoJoin
+              ? 'Pilih warna semibot dan tugasmu. Tekan tombolnya dan semibot kamu langsung terdaftar di truk.'
+              : 'Pilih warna semibot dan tugasmu. Tombol di bawah membuka WhatsApp dengan pesan konfirmasi siap kirim.'}
+          </p>
           <JoinForm
             j={j}
             session={s}
@@ -324,7 +329,10 @@ export default function RepoPage({ j }: ThemeProps) {
                 ))}
               </div>
             )}
-            onSent={() => setSentKey((k) => k + 1)}
+            onSent={(kind) => {
+              setSentKind(kind)
+              setSentKey((k) => k + 1)
+            }}
           />
         </section>
 
@@ -351,7 +359,7 @@ export default function RepoPage({ j }: ThemeProps) {
       <MusicDock j={j} />
 
       <div className="rp-sent" aria-hidden="true">
-        Pesan siap. Kirim di WhatsApp sebelum truk berangkat.
+        {sentKind === 'joined' ? 'Semibot terdaftar. Sampai ketemu di truk.' : 'Pesan siap. Kirim di WhatsApp sebelum truk berangkat.'}
       </div>
     </div>
   )

@@ -18,7 +18,7 @@ import { Schedule, SiteFooter, useActions } from '../../common/Extras'
 import { gsap, MOTION_OK, useGSAP } from '../../common/gsap'
 import { isClosed, joinTitle, statusLabel, useSession, type SessionInfo } from '../../common/hooks'
 import { useIntroGate } from '../../common/intro'
-import { JoinForm } from '../../common/JoinForm'
+import { JoinForm, type SentKind } from '../../common/JoinForm'
 import { MusicDock } from '../../common/Music'
 import { Split } from '../../common/Split'
 import { useToast } from '../../common/Toast'
@@ -74,6 +74,7 @@ export default function Cs2Page({ j }: ThemeProps) {
   const toast = useToast()
   const root = useRef<HTMLDivElement>(null)
   const [readyKey, setReadyKey] = useState(0)
+  const [sentKind, setSentKind] = useState<SentKind>('joined')
 
   // Huruf bombsite hanya "diklaim" kalau judul memang menyebut site A atau B.
   const named = /\bA\b/.test(j.headline.toUpperCase()) ? 'A' : /\bB\b/.test(j.headline.toUpperCase()) ? 'B' : null
@@ -316,7 +317,9 @@ export default function Cs2Page({ j }: ThemeProps) {
           <div className="cs-join__intro">
             <SectionTitle id="cs-join-title" text={joinTitle(s, 'Buy menu')} />
             <p className="cs-join__text">
-              Pilih role dan senjata andalan, lalu konfirmasi. WhatsApp terbuka dengan pesan siap kirim ke host.
+              {j.autoJoin
+                ? 'Pilih role dan senjata andalan, lalu konfirmasi. Namamu langsung masuk scoreboard tanpa menunggu host.'
+                : 'Pilih role dan senjata andalan, lalu konfirmasi. WhatsApp terbuka dengan pesan siap kirim ke host.'}
             </p>
           </div>
           <JoinForm
@@ -351,7 +354,10 @@ export default function Cs2Page({ j }: ThemeProps) {
                 ))}
               </div>
             )}
-            onSent={() => setReadyKey((k) => k + 1)}
+            onSent={(kind) => {
+              setSentKind(kind)
+              setReadyKey((k) => k + 1)
+            }}
           />
         </section>
 
@@ -377,7 +383,7 @@ export default function Cs2Page({ j }: ThemeProps) {
       <MusicDock j={j} />
 
       <div className="cs-ready" aria-hidden="true">
-        Siap. Tinggal kirim pesannya di WhatsApp.
+        {sentKind === 'joined' ? 'Ready. Kamu sudah masuk scoreboard.' : 'Siap. Tinggal kirim pesannya di WhatsApp.'}
       </div>
     </div>
   )

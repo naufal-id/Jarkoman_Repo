@@ -100,7 +100,11 @@ export function buildBroadcast(j: Jarkoman, link: string): string {
     lines.push(j.notes.trim())
   }
   lines.push('')
-  lines.push(`Konfirmasi ke WA ${formatPhoneDisplay(j.wa || DEFAULT_WA)}${link ? ' atau isi di sini:' : ''}`)
+  if (j.autoJoin && link) {
+    lines.push('Mau ikut? Isi nama di link ini, langsung masuk skuad:')
+  } else {
+    lines.push(`Konfirmasi ke WA ${formatPhoneDisplay(j.wa || DEFAULT_WA)}${link ? ' atau isi di sini:' : ''}`)
+  }
   if (link) lines.push(link)
   return lines.join('\n')
 }

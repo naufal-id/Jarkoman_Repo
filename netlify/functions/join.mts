@@ -1,0 +1,79 @@
+import type { Config } from '@netlify/functions'
+import { addWebPlayer, JoinError, removeWebPlayer, slotOf, type JoinErrorCode } from '../../src/shared/joins'
+import { cleanState, ID_PATTERN } from '../../src/shared/sanitize'
+import type { SiteState } from '../../src/shared/types'
+import { joinKey, verifyJoinKey } from '../lib/auth'
+import { error, json, readJson } from '../lib/http'
+import { stateStore, updateJSON, WriteConflictError } from '../lib/store'
+
+const KEY = 'state'
+
+const STATUS: Record<JoinErrorCode, number> = {
+  'not-found': 404,
+  manual: 403,
+  closed: 409,
+  'list-full': 409,
+  'name-taken': 409,
+  invalid: 400,
+}
+
+type Body = Record<string, unknown>
+
+const text = (v: unknown) => (typeof v === 'string' ? v : '')
+
+function load(current: SiteState | null): SiteState {
+  const state = current ? cleanState(current)?.state : null
+  if (!state) throw new JoinError('not-found', 'Jarkoman ini belum dipublikasikan host.')
+  return state
+}
+
+/**
+ * Pendaftaran langsung dari halaman publik (tanpa login).
+ * POST: tambah pemain ke skuad. DELETE: batalkan pendaftaran sendiri memakai kunci dari POST.
+ */
+export default async function handler(req: Request): Promise<Response> {
+  if (req.method !== 'POST' && req.method !== 'DELETE') return error(405, 'Metode tidak didukung.')
+
+  let body: Body
+  try {
+    body = (await readJson(req, 4_000)) as Body
+  } catch {
+    return error(400, 'Data pendaftaran tidak valid.')
+  }
+  if (!body || typeof body !== 'object') return error(400, 'Data pendaftaran tidak valid.')
+  const id = text(body.id)
+  if (!ID_PATTERN.test(id)) return error(400, 'Jarkoman tidak dikenali.')
+  // Kolom jebakan untuk bot: manusia tidak pernah melihat atau mengisinya.
+  if (text(body.website)) return error(400, 'Data pendaftaran tidak valid.')
+
+  const store = stateStore()
+  try {
+    if (req.method === 'POST') {
+      const out = await updateJSON<SiteState, ReturnType<typeof addWebPlayer>>(store, KEY, (current) => {
+        const result = addWebPlayer(load(current), { id, name: text(body.name), role: text(body.role), pick: text(body.pick), note: text(body.note) })
+        return { value: result.state, result }
+      })
+      return json({ item: out.item, player: out.player, key: joinKey(id, out.player.id), slot: slotOf(out.item, out.player.id) })
+    }
+
+    const playerId = text(body.player)
+    if (!ID_PATTERN.test(playerId) || !verifyJoinKey(id, playerId, body.key)) {
+      return error(403, 'Pendaftaran ini tidak bisa dibatalkan dari perangkat ini. Hubungi host.', { code: 'forbidden' })
+    }
+    const out = await updateJSON<SiteState, ReturnType<typeof removeWebPlayer>>(store, KEY, (current) => {
+      const result = removeWebPlayer(load(current), id, playerId)
+      return { value: result.state, result }
+    })
+    return json({ item: out.item })
+  } catch (err) {
+    if (err instanceof JoinError) return error(STATUS[err.code], err.message, { code: err.code })
+    if (err instanceof WriteConflictError) return error(503, 'Lagi ramai yang daftar. Coba tekan lagi.', { code: 'busy' })
+    console.error('[join] gagal', err)
+    return error(500, 'Pendaftaran gagal disimpan. Coba lagi sebentar.')
+  }
+}
+
+export const config: Config = {
+  path: '/api/join',
+  method: ['POST', 'DELETE'],
+}

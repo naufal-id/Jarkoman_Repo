@@ -6,15 +6,13 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
+import { api, ApiError } from "../../shared/api";
 import { gameDef, picksFor, roleOfPick } from "../../shared/games";
-import { KEYS, readJSON, writeJSON } from "../../shared/storage";
+import { slotOf } from "../../shared/joins";
+import { KEYS, readJSON, removeKey, writeJSON } from "../../shared/storage";
 import type { Jarkoman } from "../../shared/types";
-import {
-  buildJoinMessage,
-  DEFAULT_WA,
-  formatPhoneDisplay,
-  waLink,
-} from "../../shared/wa";
+import { buildJoinMessage, waLink } from "../../shared/wa";
+import { usePage } from "./context";
 import { pageLink, type SessionInfo } from "./hooks";
 
 export interface PickerProps {
@@ -25,6 +23,9 @@ export interface PickerProps {
   role?: string;
 }
 
+/** 'joined' = langsung masuk skuad, 'wa' = pesan WhatsApp dibuka (pendaftaran langsung mati) */
+export type SentKind = "joined" | "wa";
+
 interface JoinFormProps {
   j: Jarkoman;
   session: SessionInfo;
@@ -34,8 +35,15 @@ interface JoinFormProps {
   renderRole?: (p: PickerProps) => ReactNode;
   /** Picker kustom untuk pick (misalnya buy menu CS2) */
   renderPick?: (p: PickerProps) => ReactNode;
-  onSent?: () => void;
+  onSent?: (kind: SentKind) => void;
   className?: string;
+}
+
+/** Bukti pendaftaran langsung yang disimpan di perangkat ini, per jarkoman. */
+interface JoinedRecord {
+  player: string;
+  key: string;
+  name: string;
 }
 
 export function JoinForm({
@@ -48,24 +56,45 @@ export function JoinForm({
   className = "",
 }: JoinFormProps) {
   const def = gameDef(j.game);
+  const { preview, replaceItem } = usePage();
   const base = useId();
   const nameRef = useRef<HTMLInputElement>(null);
-  const [name, setName] = useState(() => readJSON<string>(KEYS.joinName) ?? "");
+  const [name, setName] = useState(
+    () => readJSON<string>(KEYS.joinName(j.id)) ?? "",
+  );
   const [role, setRole] = useState("");
   const [pick, setPick] = useState("");
   const [note, setNote] = useState("");
+  const [trap, setTrap] = useState("");
   const [error, setError] = useState("");
+  const [failure, setFailure] = useState("");
+  const [busy, setBusy] = useState(false);
   const [sentHref, setSentHref] = useState("");
+  const [previewNote, setPreviewNote] = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
+  const [joined, setJoined] = useState<JoinedRecord | null>(() =>
+    readJSON<JoinedRecord>(KEYS.joined(j.id)),
+  );
 
-  // Pilihan role/pick harus ikut berubah kalau admin mengganti game saat preview.
+  // Isi form selalu milik jarkoman yang sedang dibuka. Di preview admin, pindah jarkoman atau game
+  // tidak boleh membawa nama, pilihan, atau status dari jarkoman sebelumnya.
   useEffect(() => {
+    setName(readJSON<string>(KEYS.joinName(j.id)) ?? "");
+    setJoined(readJSON<JoinedRecord>(KEYS.joined(j.id)));
     setRole("");
     setPick("");
+    setNote("");
+    setError("");
+    setFailure("");
     setSentHref("");
-  }, [j.game]);
+    setPreviewNote(false);
+    setConfirmLeave(false);
+  }, [j.id, j.game]);
 
   const closed = session.state === "ended" || session.state === "cancelled";
-  const phone = formatPhoneDisplay(j.wa || DEFAULT_WA);
+  const auto = j.autoJoin;
+  // Pendaftaran dianggap aktif hanya kalau pemainnya masih ada di skuad (host bisa saja menghapusnya).
+  const me = joined ? j.players.find((p) => p.id === joined.player) : undefined;
 
   if (closed) {
     const ask = waLink(
@@ -92,17 +121,7 @@ export function JoinForm({
     );
   }
 
-  const pickOptions = picksFor(def, role);
-
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      setError("Isi nama dulu, biar host tahu siapa yang join.");
-      nameRef.current?.focus();
-      return;
-    }
-    setError("");
-    writeJSON(KEYS.joinName, name.trim());
+  const openWhatsApp = () => {
     const message = buildJoinMessage(
       j,
       { name, role, pick, note },
@@ -112,7 +131,155 @@ export function JoinForm({
     const win = window.open(href, "_blank");
     if (win) win.opener = null;
     setSentHref(href);
-    onSent?.();
+    onSent?.("wa");
+  };
+
+  if (me && joined) {
+    const slot = slotOf(j, me.id);
+    const reserveNo = j.players.indexOf(me) - j.slots + 1;
+    const detail = [me.role, me.pick].filter(Boolean).join(" · ");
+    const tellHost = waLink(
+      j.wa,
+      `Halo, aku sudah lock in di jarkoman ${def.name} "${j.headline}" atas nama ${me.name}${slot ? ` (slot ${slot})` : " (cadangan)"}.\n${pageLink(j)}`,
+    );
+    const leave = async () => {
+      setBusy(true);
+      setFailure("");
+      try {
+        const res = await api.leave(j.id, joined.player, joined.key);
+        removeKey(KEYS.joined(j.id));
+        setJoined(null);
+        setConfirmLeave(false);
+        replaceItem(res.item);
+      } catch (err) {
+        setFailure(
+          err instanceof ApiError
+            ? err.message
+            : "Gagal membatalkan. Coba lagi.",
+        );
+      } finally {
+        setBusy(false);
+      }
+    };
+    return (
+      <div className={`jf jf--done ${className}`} role="status">
+        <div className="jf__done">
+          <p className="jf__done-kicker">
+            {slot ? `Slot ${slot} terkunci` : `Cadangan ke-${reserveNo}`}
+          </p>
+          <p className="jf__done-name">{me.name}</p>
+          <p className="jf__done-text">
+            {detail ? `${detail}. ` : ""}
+            {slot
+              ? "Nama kamu sudah tampil di skuad. Host tidak perlu memasukkanmu lagi."
+              : "Skuad sudah penuh, jadi kamu masuk cadangan. Kalau ada yang batal, kamu naik otomatis."}
+          </p>
+        </div>
+        <div className="jf__foot">
+          <a
+            className="jf__submit"
+            href={tellHost}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Kabari host di WhatsApp
+          </a>
+          <p className="jf__hint">Opsional. Slot kamu sudah tersimpan.</p>
+          {confirmLeave ? (
+            <div className="jf__confirm">
+              <span>Yakin batal ikut? Slotmu akan dibuka untuk orang lain.</span>
+              <button
+                type="button"
+                className="jf__alt"
+                onClick={leave}
+                disabled={busy}
+              >
+                {busy ? "Membatalkan…" : "Ya, batal ikut"}
+              </button>
+              <button
+                type="button"
+                className="jf__alt"
+                onClick={() => setConfirmLeave(false)}
+                disabled={busy}
+              >
+                Tidak jadi
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="jf__alt"
+              onClick={() => setConfirmLeave(true)}
+            >
+              Batal ikut
+            </button>
+          )}
+          {failure && (
+            <p className="jf__error" role="alert">
+              {failure}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  const pickOptions = picksFor(def, role);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (busy) return;
+    if (!name.trim()) {
+      setError("Isi nama dulu, biar host tahu siapa yang join.");
+      nameRef.current?.focus();
+      return;
+    }
+    setError("");
+    setFailure("");
+    writeJSON(KEYS.joinName(j.id), name.trim());
+    if (!auto) {
+      openWhatsApp();
+      return;
+    }
+    if (preview) {
+      // Preview admin tidak menulis ke data asli.
+      setPreviewNote(true);
+      onSent?.("joined");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await api.join({
+        id: j.id,
+        name: name.trim(),
+        role,
+        pick,
+        note,
+        website: trap,
+      });
+      const record: JoinedRecord = {
+        player: res.player.id,
+        key: res.key,
+        name: res.player.name,
+      };
+      writeJSON(KEYS.joined(j.id), record);
+      setJoined(record);
+      replaceItem(res.item);
+      onSent?.("joined");
+    } catch (err) {
+      if (err instanceof ApiError && err.code === "name-taken") {
+        setError(err.message);
+        nameRef.current?.focus();
+      } else {
+        setFailure(
+          err instanceof ApiError
+            ? err.message
+            : "Gagal terhubung. Coba lagi.",
+        );
+      }
+    } finally {
+      setBusy(false);
+    }
   };
 
   const onPick = (value: string) => {
@@ -126,7 +293,12 @@ export function JoinForm({
   const pickId = `${base}-pick`;
 
   return (
-    <form className={`jf ${className}`} onSubmit={submit} noValidate>
+    <form
+      className={`jf ${className}`}
+      onSubmit={submit}
+      noValidate
+      aria-busy={busy || undefined}
+    >
       <div className="jf__field jf__field--name">
         <label className="jf__label" htmlFor={`${base}-name`}>
           Nama / nickname
@@ -221,23 +393,50 @@ export function JoinForm({
           className="jf__input jf__textarea"
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          maxLength={200}
+          maxLength={auto ? 120 : 200}
           rows={2}
           placeholder="Misalnya: telat 15 menit, bisa sampai jam 11"
         />
       </div>
 
+      {/* Jebakan bot: tersembunyi dari pengunjung dan pembaca layar. */}
+      <div className="jf__trap" aria-hidden="true">
+        <label>
+          Website
+          <input
+            tabIndex={-1}
+            autoComplete="off"
+            value={trap}
+            onChange={(e) => setTrap(e.target.value)}
+          />
+        </label>
+      </div>
+
       <div className="jf__foot">
-        <button type="submit" className="jf__submit">
-          {cta}
+        <button type="submit" className="jf__submit" disabled={busy}>
+          {busy ? "Mengunci slot…" : cta}
         </button>
         <p className="jf__hint">
-          {session.full
-            ? "Slot sudah penuh, kamu akan masuk daftar cadangan. "
-            : ""}
-          Tombol ini membuka WhatsApp dengan pesan yang sudah terisi. Tinggal
-          tekan kirim.
+          {auto
+            ? session.full
+              ? "Slot sudah penuh. Kamu langsung masuk daftar cadangan dan naik otomatis kalau ada yang batal."
+              : "Nama kamu langsung masuk skuad di halaman ini. Host tidak perlu memasukkanmu lagi."
+            : `${session.full ? "Slot sudah penuh, kamu akan masuk daftar cadangan. " : ""}Tombol ini membuka WhatsApp dengan pesan yang sudah terisi. Tinggal tekan kirim.`}
         </p>
+        {previewNote && (
+          <p className="jf__sent" role="status">
+            Ini preview, jadi tidak ada yang disimpan. Di halaman asli, pemain
+            langsung masuk skuad.
+          </p>
+        )}
+        {failure && (
+          <p className="jf__error" role="alert">
+            {failure}{" "}
+            <button type="button" className="jf__alt" onClick={openWhatsApp}>
+              Konfirmasi lewat WhatsApp saja
+            </button>
+          </p>
+        )}
         {sentHref && (
           <p className="jf__sent" role="status">
             WhatsApp tidak terbuka?{" "}

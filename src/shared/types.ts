@@ -6,6 +6,9 @@ export const TZS: readonly Tz[] = ['WIB', 'WITA', 'WIT']
 
 export type PlayerStatus = 'in' | 'maybe'
 
+/** 'admin' = diisi host di dashboard, 'web' = pemain mendaftar sendiri lewat tombol LOCK IN */
+export type PlayerVia = 'admin' | 'web'
+
 export interface Player {
   id: string
   name: string
@@ -14,6 +17,13 @@ export interface Player {
   /** Valorant: agent, CS2: senjata, MLBB: hero, R.E.P.O.: tugas */
   pick: string
   status: PlayerStatus
+  via: PlayerVia
+  /** Catatan dari pemain saat mendaftar lewat web (untuk host) */
+  note: string
+  /** Nomor urut pendaftaran web (SiteState.joinSeq saat mendaftar), 0 untuk pemain dari admin */
+  seq: number
+  /** Waktu mendaftar lewat web (epoch ms), 0 untuk pemain dari admin */
+  joinedAt: number
 }
 
 /** Status yang diset manual oleh admin. "Penuh", "sedang main", dan "selesai" dihitung otomatis dari data. */
@@ -49,14 +59,26 @@ export interface Jarkoman {
   music: string
   /** Judul lagu yang tampil saat musik diputar (untuk lagu upload/link) */
   musicLabel: string
+  /** Tombol LOCK IN di halaman langsung memasukkan pemain ke skuad. Mati = konfirmasi lewat WhatsApp saja. */
+  autoJoin: boolean
   updatedAt: number
+}
+
+/** Jejak pemain web yang membatalkan diri, supaya simpanan admin dengan draft lama tidak memunculkannya lagi. */
+export interface GonePlayer {
+  id: string
+  seq: number
 }
 
 export interface SiteState {
   version: 1
   featuredId: string
   items: Jarkoman[]
+  /** Versi simpanan admin. Pendaftaran lewat web tidak mengubah nilai ini. */
   updatedAt: number
+  /** Naik setiap ada pemain mendaftar atau batal lewat web */
+  joinSeq: number
+  gone: GonePlayer[]
 }
 
 export interface StateResponse {

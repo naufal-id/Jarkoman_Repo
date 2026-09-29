@@ -3,7 +3,7 @@ import { api, ApiError } from '../shared/api'
 import { defaultState } from '../shared/defaults'
 import { gameDef } from '../shared/games'
 import { cleanJarkoman, cleanState } from '../shared/sanitize'
-import { KEYS, readJSON, writeJSON } from '../shared/storage'
+import { KEYS, LEGACY_KEYS, readJSON, removeKey, writeJSON } from '../shared/storage'
 import type { GameId, Jarkoman, SiteState } from '../shared/types'
 import { PageCtx, type ThemeProps } from './common/context'
 import { useMedia } from './common/hooks'
@@ -25,6 +25,10 @@ type Load =
 const params = new URLSearchParams(location.search)
 const PREVIEW = params.get('preview') === '1'
 const WANTED = params.get('id')
+/** Skuad di halaman ikut diperbarui saat orang lain mendaftar, tanpa memuat ulang halaman. */
+const REFRESH_MS = 45_000
+
+LEGACY_KEYS.forEach((k) => removeKey(k))
 
 export function App() {
   const [load, setLoad] = useState<Load>({ kind: 'loading' })
@@ -59,6 +63,44 @@ export function App() {
       }
     }
   }, [])
+
+  // Ambil ulang tanpa layar loading. Hanya menimpa data kalau isinya memang berubah.
+  const refreshQuietly = useCallback(async () => {
+    const id = ++reqId.current
+    try {
+      const remote = await api.getState()
+      const cleaned = remote ? cleanState(remote)?.state : null
+      if (id !== reqId.current || !cleaned || !cleaned.items.length) return
+      writeJSON(KEYS.lastState, cleaned)
+      setLoad((l) => (l.kind === 'ready' && !l.sample && JSON.stringify(l.state) === JSON.stringify(cleaned) ? l : { kind: 'ready', state: cleaned, sample: false, offline: false }))
+    } catch {
+      // Diam saja: data yang sedang tampil tetap dipakai.
+    }
+  }, [])
+
+  const replaceItem = useCallback((item: Jarkoman) => {
+    if (PREVIEW) return
+    reqId.current++
+    setLoad((l) => {
+      if (l.kind !== 'ready') return l
+      const state = { ...l.state, items: l.state.items.map((i) => (i.id === item.id ? item : i)) }
+      writeJSON(KEYS.lastState, state)
+      return { ...l, state, offline: false }
+    })
+  }, [])
+
+  useEffect(() => {
+    if (PREVIEW) return
+    const tick = () => {
+      if (!document.hidden) refreshQuietly()
+    }
+    const timer = window.setInterval(tick, REFRESH_MS)
+    document.addEventListener('visibilitychange', tick)
+    return () => {
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', tick)
+    }
+  }, [refreshQuietly])
 
   useEffect(() => {
     if (!PREVIEW) {
@@ -157,6 +199,7 @@ export function App() {
         item={view.item}
         others={view.others}
         replay={replay}
+        replaceItem={replaceItem}
         banner={
           view.sample ? (
             <>
@@ -177,10 +220,11 @@ interface StageProps {
   item: Jarkoman
   others: Jarkoman[]
   replay: number
+  replaceItem: (item: Jarkoman) => void
   banner: React.ReactNode
 }
 
-function Stage({ item, others, replay, banner }: StageProps) {
+function Stage({ item, others, replay, replaceItem, banner }: StageProps) {
   const def = gameDef(item.game)
   const media = useMedia(item.game)
   const Theme = THEMES[item.game]
@@ -192,7 +236,7 @@ function Stage({ item, others, replay, banner }: StageProps) {
   }, [item.game, item.headline, def])
 
   return (
-    <PageCtx.Provider value={{ preview: PREVIEW, others, replay, media, ready: true }}>
+    <PageCtx.Provider value={{ preview: PREVIEW, others, replay, media, ready: true, replaceItem }}>
       <a className="skip-link" href="#join">
         Langsung ke form konfirmasi
       </a>

@@ -87,6 +87,84 @@ select.jf__input option {
   margin-bottom: 8px;
 }
 
+.jf__submit:disabled {
+  cursor: progress;
+  opacity: 0.72;
+}
+
+/* Tombol teks sekunder (batal ikut, konfirmasi lewat WA saja). */
+.jf__alt {
+  justify-self: start;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.jf__alt:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.jf__confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.jf__confirm span {
+  flex-basis: 100%;
+}
+
+/* Status setelah LOCK IN berhasil. */
+.jf.jf--done {
+  grid-template-columns: 1fr;
+}
+
+.jf__done {
+  display: grid;
+  gap: 6px;
+  padding: 22px 24px;
+}
+
+.jf__done-kicker {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.jf__done-name {
+  font-size: clamp(28px, 6vw, 44px);
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.jf__done-text {
+  font-size: 15px;
+  line-height: 1.5;
+  max-width: 56ch;
+}
+
+/* Jebakan bot: tetap ada di DOM tapi tidak terlihat dan tidak bisa difokus. */
+.jf__trap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 @media (min-width: 720px) {
   .jf {
     grid-template-columns: 1fr 1fr;

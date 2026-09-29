@@ -986,6 +986,34 @@ body:has(.cs) {
   font-weight: 700;
 }
 
+.cs-form .jf__done {
+  background: var(--panel-solid);
+  border: 1px solid var(--line);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.cs-form .jf__done-kicker {
+  color: var(--accent);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+}
+
+.cs-form .jf__done-name {
+  font-family: 'Saira Stencil One', sans-serif;
+}
+
+.cs-form .jf__done-text,
+.cs-form .jf__confirm {
+  color: var(--muted);
+}
+
+.cs-form .jf__alt {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 /* ---------- Aturan ---------- */
 .cs-notes__list {
   list-style: none;

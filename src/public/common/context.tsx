@@ -11,9 +11,11 @@ export interface PageContext {
   media: MediaPayload | null
   /** Intro selesai (atau dilewati), animasi hero boleh jalan */
   ready: boolean
+  /** Ganti data satu jarkoman dengan versi terbaru dari server (misalnya setelah pemain mendaftar) */
+  replaceItem: (item: Jarkoman) => void
 }
 
-export const PageCtx = createContext<PageContext>({ preview: false, others: [], replay: 0, media: null, ready: true })
+export const PageCtx = createContext<PageContext>({ preview: false, others: [], replay: 0, media: null, ready: true, replaceItem: () => {} })
 
 export const usePage = () => useContext(PageCtx)
 

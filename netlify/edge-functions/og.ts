@@ -23,6 +23,7 @@ interface Item {
   tz: string
   slots: number
   status: string
+  autoJoin?: boolean
   players: { status: string }[]
 }
 
@@ -42,7 +43,8 @@ function describe(item: Item): string {
     [item.mode, item.map].filter(Boolean).join(' di '),
     item.status === 'cancelled' ? 'DIBATALKAN' : filled >= item.slots ? `Slot penuh (${filled}/${item.slots}), cadangan boleh` : `${filled}/${item.slots} slot terisi`,
   ].filter(Boolean)
-  return `${parts.join(' · ')}. ${item.subline || 'Konfirmasi lewat WhatsApp.'}`.slice(0, 280)
+  const fallback = item.autoJoin === false ? 'Konfirmasi lewat WhatsApp.' : 'Isi nama, langsung masuk skuad.'
+  return `${parts.join(' · ')}. ${item.subline || fallback}`.slice(0, 280)
 }
 
 function metaBlock(item: Item, origin: string, pageUrl: string): string {

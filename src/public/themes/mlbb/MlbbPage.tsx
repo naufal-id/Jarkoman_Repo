@@ -18,7 +18,7 @@ import { Schedule, SiteFooter, useActions } from '../../common/Extras'
 import { gsap, MOTION_OK, useGSAP } from '../../common/gsap'
 import { isClosed, joinTitle, statusLabel, useSession, type SessionInfo } from '../../common/hooks'
 import { useIntroGate } from '../../common/intro'
-import { JoinForm } from '../../common/JoinForm'
+import { JoinForm, type SentKind } from '../../common/JoinForm'
 import { MusicDock } from '../../common/Music'
 import { Split } from '../../common/Split'
 import { useToast } from '../../common/Toast'
@@ -46,6 +46,7 @@ export default function MlbbPage({ j }: ThemeProps) {
   const toast = useToast()
   const root = useRef<HTMLDivElement>(null)
   const [sentKey, setSentKey] = useState(0)
+  const [sentKind, setSentKind] = useState<SentKind>('joined')
 
   const streak = STREAK[Math.min(s.filled, 5)]
   const scale = j.headline.length <= 16 ? 1 : j.headline.length <= 26 ? 0.8 : 0.64
@@ -272,7 +273,11 @@ export default function MlbbPage({ j }: ThemeProps) {
 
         <section className="ml-join" id="join" aria-labelledby="ml-join-title">
           <SectionTitle id="ml-join-title" text={joinTitle(s, 'Pilih lane kamu')} />
-          <p className="ml-lead">Pilih lane dan hero andalan. Tombolnya membuka WhatsApp dengan pesan konfirmasi yang sudah jadi.</p>
+          <p className="ml-lead">
+            {j.autoJoin
+              ? 'Pilih lane dan hero andalan. Tekan tombolnya dan namamu langsung masuk lineup.'
+              : 'Pilih lane dan hero andalan. Tombolnya membuka WhatsApp dengan pesan konfirmasi yang sudah jadi.'}
+          </p>
           <div className="ml-join__panel">
             <span className="ml-orn ml-orn--tl" aria-hidden="true" />
             <span className="ml-orn ml-orn--br" aria-hidden="true" />
@@ -316,7 +321,10 @@ export default function MlbbPage({ j }: ThemeProps) {
                   </datalist>
                 </>
               )}
-              onSent={() => setSentKey((k) => k + 1)}
+              onSent={(kind) => {
+                setSentKind(kind)
+                setSentKey((k) => k + 1)
+              }}
             />
           </div>
         </section>
@@ -340,8 +348,8 @@ export default function MlbbPage({ j }: ThemeProps) {
       <MusicDock j={j} />
 
       <div className="ml-victory" aria-hidden="true">
-        <span>Pesan siap</span>
-        <small>Kirim di WhatsApp untuk mengunci slot</small>
+        <span>{sentKind === 'joined' ? 'Slot terkunci' : 'Pesan siap'}</span>
+        <small>{sentKind === 'joined' ? 'Namamu sudah masuk lineup' : 'Kirim di WhatsApp untuk mengunci slot'}</small>
       </div>
     </div>
   )

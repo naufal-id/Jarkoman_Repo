@@ -1,14 +1,23 @@
 import { gameDef, picksFor } from '../shared/games'
-import { uid } from '../shared/ids'
+import { blankPlayer } from '../shared/defaults'
 import type { Jarkoman, Player } from '../shared/types'
 
 interface Props {
   item: Jarkoman
   onChange: (players: Player[]) => void
   onSlots: (slots: number) => void
+  onAutoJoin: (autoJoin: boolean) => void
 }
 
-export function PlayersEditor({ item, onChange, onSlots }: Props) {
+function since(ms: number): string {
+  const m = Math.round((Date.now() - ms) / 60_000)
+  if (m < 1) return 'barusan'
+  if (m < 60) return `${m} menit lalu`
+  const h = Math.round(m / 60)
+  return h < 24 ? `${h} jam lalu` : `${Math.round(h / 24)} hari lalu`
+}
+
+export function PlayersEditor({ item, onChange, onSlots, onAutoJoin }: Props) {
   const def = gameDef(item.game)
   const players = item.players
   const inCount = players.filter((p) => p.status === 'in').length
@@ -22,7 +31,7 @@ export function PlayersEditor({ item, onChange, onSlots }: Props) {
     onChange(next)
   }
   const add = () => {
-    onChange([...players, { id: uid(), name: '', role: '', pick: '', status: 'in' }])
+    onChange([...players, blankPlayer()])
     // Fokus ke input nama baris baru setelah render.
     requestAnimationFrame(() => {
       const inputs = document.querySelectorAll<HTMLInputElement>('.adm-player__name')
@@ -30,8 +39,35 @@ export function PlayersEditor({ item, onChange, onSlots }: Props) {
     })
   }
 
+  const webCount = players.filter((p) => p.via === 'web').length
+
   return (
     <div className="adm-players">
+      <div className="adm-field">
+        <span className="adm-label" id="autojoin-label">
+          Cara pemain masuk skuad
+        </span>
+        <div className="adm-seg" role="radiogroup" aria-labelledby="autojoin-label">
+          {(
+            [
+              [true, 'Langsung lewat website'],
+              [false, 'Lewat WhatsApp, diisi host'],
+            ] as [boolean, string][]
+          ).map(([v, label]) => (
+            <label key={label} className={`adm-seg__opt ${item.autoJoin === v ? 'is-on' : ''}`}>
+              <input type="radio" name="autojoin" checked={item.autoJoin === v} onChange={() => onAutoJoin(v)} />
+              <span>{label}</span>
+            </label>
+          ))}
+        </div>
+        <p className="adm-hint">
+          {item.autoJoin
+            ? `Pengunjung yang menekan ${def.cta} langsung masuk daftar di bawah dan tampil di halaman, tanpa perlu kamu input. Kamu tetap bisa mengubah atau menghapusnya.`
+            : `Tombol ${def.cta} membuka WhatsApp ke nomor konfirmasi. Kamu memasukkan pemain sendiri di daftar ini.`}
+          {webCount > 0 && ` ${webCount} pemain di daftar ini mendaftar lewat website.`}
+        </p>
+      </div>
+
       <div className="adm-slots">
         <span className="adm-label" id="slots-label">
           Jumlah slot
@@ -60,7 +96,11 @@ export function PlayersEditor({ item, onChange, onSlots }: Props) {
 
       {players.length === 0 ? (
         <div className="adm-empty">
-          <p>Belum ada pemain. Tambahkan yang sudah konfirmasi lewat WhatsApp, atau biarkan kosong supaya semua slot terlihat terbuka.</p>
+          <p>
+            {item.autoJoin
+              ? 'Belum ada pemain. Yang mendaftar lewat website akan muncul di sini otomatis. Kamu juga bisa menambahkan pemain sendiri.'
+              : 'Belum ada pemain. Tambahkan yang sudah konfirmasi lewat WhatsApp, atau biarkan kosong supaya semua slot terlihat terbuka.'}
+          </p>
         </div>
       ) : (
         <ol className="adm-player-list">
@@ -132,6 +172,12 @@ export function PlayersEditor({ item, onChange, onSlots }: Props) {
                     </svg>
                   </button>
                 </div>
+                {(p.via === 'web' || p.note) && (
+                  <p className="adm-player__meta">
+                    {p.via === 'web' && <span className="adm-badge adm-badge--web">Daftar lewat website{p.joinedAt ? ` · ${since(p.joinedAt)}` : ''}</span>}
+                    {p.note && <span className="adm-player__note">“{p.note}”</span>}
+                  </p>
+                )}
               </li>
             )
           })}

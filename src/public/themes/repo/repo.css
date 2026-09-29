@@ -841,6 +841,28 @@ body:has(.rp) {
   font-weight: 700;
 }
 
+.rp-form .jf__done {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 10px solid transparent;
+  border-image: repeating-linear-gradient(-45deg, var(--hazard) 0 12px, var(--hazard-ink) 12px 24px) 10 0 0 0 / 10px 0 0 0;
+}
+
+.rp-form .jf__done-kicker {
+  color: var(--hazard);
+}
+
+.rp-form .jf__done-name {
+  font-family: 'Teko', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.rp-form .jf__done-text,
+.rp-form .jf__confirm {
+  color: var(--muted);
+}
+
 /* ---------- Memo CRT ---------- */
 .rp-memo {
   margin-top: 32px;

@@ -993,6 +993,37 @@ body:has(.val[data-variant='bone']) {
   font-weight: 800;
 }
 
+.val-form .jf__done {
+  position: relative;
+  background: var(--bg);
+  color: var(--fg);
+  border-left: 6px solid var(--red);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+}
+
+.val-form .jf__done-kicker {
+  color: var(--red-text);
+  font-family: 'Barlow', sans-serif;
+}
+
+.val-form .jf__done-name {
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.val-form .jf__done-text,
+.val-form .jf__confirm {
+  color: var(--muted);
+}
+
+.val-form .jf__alt {
+  font-family: 'Barlow', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
 /* ---------- Briefing ---------- */
 .val-brief__list {
   list-style: none;

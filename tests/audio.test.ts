@@ -92,7 +92,7 @@ describe('pembersihan lagu', () => {
     await audio.set('yatimbaruaaaaaaa', new ArrayBuffer(4), 'audio/mpeg', now - 60_000)
     const item = createJarkoman('repo')
     item.music = '/api/audio?id=dipakaiaaaaaaaaa'
-    const removed = await cleanupAudio({ version: 1, featuredId: item.id, items: [item], updatedAt: 1 }, now)
+    const removed = await cleanupAudio({ version: 1, featuredId: item.id, items: [item], updatedAt: 1, joinSeq: 0, gone: [] }, now)
     expect(removed).toBe(1)
     const keys = (await audio.list()).map((f) => f.key).sort()
     expect(keys).toEqual(['dipakaiaaaaaaaaa', 'yatimbaruaaaaaaa'])

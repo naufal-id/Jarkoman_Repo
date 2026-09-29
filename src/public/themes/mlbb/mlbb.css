@@ -1104,6 +1104,29 @@ body:has(.ml[data-variant='red']) {
   font-weight: 600;
 }
 
+.ml-form .jf__done {
+  text-align: center;
+  justify-items: center;
+  border: 1px solid var(--line);
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--gold) 18%, transparent), transparent 70%);
+}
+
+.ml-form .jf__done-kicker {
+  color: var(--gold);
+}
+
+.ml-form .jf__done-name {
+  background: var(--gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ml-form .jf__done-text,
+.ml-form .jf__confirm {
+  color: var(--muted);
+}
+
 /* ---------- Aturan ---------- */
 .ml-notes__list {
   list-style: none;

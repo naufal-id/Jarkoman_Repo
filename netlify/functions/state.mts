@@ -1,10 +1,11 @@
 import type { Config } from '@netlify/functions'
+import { applyWebChanges } from '../../src/shared/joins'
 import { cleanState } from '../../src/shared/sanitize'
 import type { SiteState } from '../../src/shared/types'
 import { cleanupAudio } from '../lib/audio'
 import { bearer, isConfigured, verifyToken } from '../lib/auth'
 import { error, json, readJson } from '../lib/http'
-import { stateStore } from '../lib/store'
+import { stateStore, updateJSON, WriteConflictError } from '../lib/store'
 
 const KEY = 'state'
 
@@ -36,18 +37,26 @@ export default async function handler(req: Request): Promise<Response> {
     if (!cleaned) return error(400, 'Format data tidak dikenali.')
     if (cleaned.state.items.length === 0) return error(400, 'Minimal harus ada satu jarkoman.')
 
+    const incoming = cleaned.state
+    const base = Number(input.baseUpdatedAt ?? 0)
     try {
-      const current = await store.getJSON<SiteState>(KEY)
-      const base = Number(input.baseUpdatedAt ?? 0)
-      if (current && input.force !== true && current.updatedAt !== base) {
-        return error(409, 'Ada versi lebih baru yang disimpan dari perangkat lain.', { code: 'conflict', state: current })
+      const outcome = await updateJSON<SiteState, { conflict: SiteState } | { saved: SiteState }>(store, KEY, (raw) => {
+        const current = raw ? (cleanState(raw)?.state ?? null) : null
+        if (current && input.force !== true && current.updatedAt !== base) return { result: { conflict: current } }
+        // Pemain yang mendaftar atau batal lewat web setelah admin membuka dashboard tidak boleh hilang
+        // hanya karena draft admin belum memuatnya. Pendaftaran web tidak mengubah updatedAt, jadi tidak bikin konflik.
+        const merged = current ? applyWebChanges(incoming, current, incoming.joinSeq) : incoming
+        const saved: SiteState = { ...merged, updatedAt: Math.max(Date.now(), (current?.updatedAt ?? 0) + 1) }
+        return { value: saved, result: { saved } }
+      })
+      if ('conflict' in outcome) {
+        return error(409, 'Ada versi lebih baru yang disimpan dari perangkat lain.', { code: 'conflict', state: outcome.conflict })
       }
-      const next: SiteState = { ...cleaned.state, updatedAt: Math.max(Date.now(), (current?.updatedAt ?? 0) + 1) }
-      await store.setJSON(KEY, next)
       // Bersihkan lagu upload yang sudah tidak dipakai. Gagal di sini tidak membatalkan simpan.
-      await cleanupAudio(next).catch((err) => console.warn('[state] cleanup audio gagal', err))
-      return json({ state: next, dropped: cleaned.dropped })
+      await cleanupAudio(outcome.saved).catch((err) => console.warn('[state] cleanup audio gagal', err))
+      return json({ state: outcome.saved, dropped: cleaned.dropped })
     } catch (err) {
+      if (err instanceof WriteConflictError) return error(503, 'Data sedang ramai diubah. Coba simpan lagi.')
       console.error('[state] write failed', err)
       return error(500, 'Gagal menyimpan. Coba lagi sebentar.')
     }

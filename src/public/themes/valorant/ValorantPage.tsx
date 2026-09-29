@@ -237,7 +237,9 @@ export default function ValorantPage({ j }: ThemeProps) {
           <div className="val-join__intro">
             <SectionTitle id="val-join-title" index="03" text={joinTitle(s, 'Kunci slot kamu')} />
             <p className="val-join__text">
-              Isi nama dan role, lalu tekan tombolnya. WhatsApp terbuka dengan pesan konfirmasi yang sudah lengkap, host tinggal memasukkan kamu ke skuad.
+              {j.autoJoin
+                ? 'Isi nama dan role, lalu tekan LOCK IN. Nama kamu langsung terkunci di skuad tanpa perlu menunggu host.'
+                : 'Isi nama dan role, lalu tekan tombolnya. WhatsApp terbuka dengan pesan konfirmasi yang sudah lengkap, host tinggal memasukkan kamu ke skuad.'}
             </p>
           </div>
           <JoinForm
@@ -247,7 +249,7 @@ export default function ValorantPage({ j }: ThemeProps) {
             cta={
               <>
                 <span>{def.cta}</span>
-                <span className="val-form__cta-sub">kirim ke WhatsApp</span>
+                <span className="val-form__cta-sub">{j.autoJoin ? 'langsung masuk skuad' : 'kirim ke WhatsApp'}</span>
               </>
             }
             renderRole={({ value, onChange, options, labelId }) => (

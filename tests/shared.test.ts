@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createJarkoman, switchGame } from '../src/shared/defaults'
+import { blankPlayer, createJarkoman, switchGame } from '../src/shared/defaults'
 import { buildIcs } from '../src/shared/ics'
 import { cleanState, cleanUrl } from '../src/shared/sanitize'
 import {
@@ -91,7 +91,7 @@ describe('whatsapp', () => {
   it('pesan join memuat detail dan status cadangan saat penuh', () => {
     const j = createJarkoman('valorant', NOW)
     j.slots = 1
-    j.players = [{ id: 'p1', name: 'Raka', role: 'Duelist', pick: 'Jett', status: 'in' }]
+    j.players = [blankPlayer({ id: 'p1', name: 'Raka', role: 'Duelist', pick: 'Jett', status: 'in' })]
     const msg = buildJoinMessage(j, { name: ' Dimas ', role: 'Sentinel', pick: 'Killjoy', note: '' }, 'https://x.test/?id=abc')
     expect(msg).toContain('Nama: Dimas')
     expect(msg).toContain('Agent: Killjoy')
@@ -103,13 +103,14 @@ describe('whatsapp', () => {
   it('teks broadcast menampilkan slot dan skuad', () => {
     const j = createJarkoman('mlbb', NOW)
     j.players = [
-      { id: 'p1', name: 'Sinta', role: 'Gold Lane', pick: 'Beatrix', status: 'in' },
-      { id: 'p2', name: 'Bayu', role: 'Roam', pick: '', status: 'maybe' },
+      blankPlayer({ id: 'p1', name: 'Sinta', role: 'Gold Lane', pick: 'Beatrix', status: 'in' }),
+      blankPlayer({ id: 'p2', name: 'Bayu', role: 'Roam', pick: '', status: 'maybe' }),
     ]
     const text = buildBroadcast(j, 'https://x.test')
     expect(text).toContain('Slot  : 1/5 terisi (4 kosong)')
     expect(text).toContain('2. Bayu (Roam) (belum pasti)')
-    expect(text).toContain('0882-2336-7352')
+    expect(text).toContain('langsung masuk skuad')
+    expect(buildBroadcast({ ...j, autoJoin: false }, 'https://x.test')).toContain('0882-2336-7352')
   })
 })
 
@@ -153,7 +154,7 @@ describe('sanitasi', () => {
 
   it('ganti game menyesuaikan field khusus game', () => {
     const j = createJarkoman('valorant', NOW)
-    j.players = [{ id: 'p1', name: 'A', role: 'Duelist', pick: 'Jett', status: 'in' }]
+    j.players = [blankPlayer({ id: 'p1', name: 'A', role: 'Duelist', pick: 'Jett', status: 'in' })]
     const next = switchGame(j, 'repo')
     expect(next.game).toBe('repo')
     expect(next.slots).toBe(6)

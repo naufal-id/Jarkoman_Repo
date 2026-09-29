@@ -1,11 +1,42 @@
+import { createHash } from 'node:crypto'
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { getStore } from '@netlify/blobs'
 
+export interface Versioned<T> {
+  value: T | null
+  /** Versi isi saat dibaca. null = key belum ada. */
+  etag: string | null
+}
+
 export interface KV {
   getJSON<T>(key: string): Promise<T | null>
   setJSON(key: string, value: unknown): Promise<void>
+  getVersioned<T>(key: string): Promise<Versioned<T>>
+  /** Tulis hanya kalau isi belum berubah sejak dibaca (etag null = hanya kalau key belum ada). false = kalah balapan. */
+  setIfMatch(key: string, value: unknown, etag: string | null): Promise<boolean>
 }
+
+/** Balapan tulis yang terus kalah setelah beberapa kali coba. */
+export class WriteConflictError extends Error {}
+
+/**
+ * Baca, ubah, lalu tulis bersyarat. Kalau ada penulis lain di antaranya (misalnya dua pemain menekan
+ * LOCK IN bersamaan, atau admin menyimpan), baca ulang dan ulangi supaya tidak ada perubahan yang tertimpa.
+ * `change` bisa mengembalikan `value: undefined` (atau melempar error) untuk selesai tanpa menulis apa pun.
+ */
+export async function updateJSON<T, R>(kv: KV, key: string, change: (current: T | null) => { value?: T; result: R }, attempts = 6): Promise<R> {
+  for (let i = 0; i < attempts; i++) {
+    const { value, etag } = await kv.getVersioned<T>(key)
+    const next = change(value)
+    if (next.value === undefined) return next.result
+    if (await kv.setIfMatch(key, next.value, etag)) return next.result
+    await new Promise((r) => setTimeout(r, 15 + Math.random() * 40 * (i + 1)))
+  }
+  throw new WriteConflictError('Terlalu banyak perubahan bersamaan.')
+}
+
+const hash = (raw: string) => createHash('sha1').update(raw).digest('hex')
 
 let override: KV | null = null
 
@@ -24,25 +55,54 @@ export function memoryStore(): KV {
     async setJSON(key, value) {
       map.set(key, JSON.stringify(value))
     },
+    async getVersioned<T>(key: string) {
+      const raw = map.get(key)
+      return raw ? { value: JSON.parse(raw) as T, etag: hash(raw) } : { value: null, etag: null }
+    },
+    async setIfMatch(key, value, etag) {
+      const raw = map.get(key)
+      if ((raw === undefined ? null : hash(raw)) !== etag) return false
+      map.set(key, JSON.stringify(value))
+      return true
+    },
   }
 }
 
 /** Penyimpanan file untuk `npm run dev` (tanpa Netlify CLI). */
 function fileStore(dir: string): KV {
   const path = (key: string) => join(dir, `${key.replace(/[^a-z0-9-]/gi, '_')}.json`)
+  const raw = (key: string): Promise<string | null> => readFile(path(key), 'utf8').catch(() => null)
+  const write = async (key: string, value: unknown) => {
+    await mkdir(dir, { recursive: true })
+    const tmp = `${path(key)}.${process.pid}.${Date.now()}.tmp`
+    await writeFile(tmp, JSON.stringify(value, null, 2))
+    await rename(tmp, path(key))
+  }
   return {
     async getJSON<T>(key: string) {
+      const text = await raw(key)
       try {
-        return JSON.parse(await readFile(path(key), 'utf8')) as T
+        return text ? (JSON.parse(text) as T) : null
       } catch {
         return null
       }
     },
-    async setJSON(key, value) {
-      await mkdir(dir, { recursive: true })
-      const tmp = `${path(key)}.tmp`
-      await writeFile(tmp, JSON.stringify(value, null, 2))
-      await rename(tmp, path(key))
+    setJSON: write,
+    async getVersioned<T>(key: string) {
+      const text = await raw(key)
+      if (!text) return { value: null, etag: null }
+      try {
+        return { value: JSON.parse(text) as T, etag: hash(text) }
+      } catch {
+        return { value: null, etag: hash(text) }
+      }
+    },
+    // Cukup untuk dev lokal (satu proses); di Netlify dipakai tulis bersyarat milik Blobs.
+    async setIfMatch(key, value, etag) {
+      const text = await raw(key)
+      if ((text === null ? null : hash(text)) !== etag) return false
+      await write(key, value)
+      return true
     },
   }
 }
@@ -58,6 +118,14 @@ export function stateStore(): KV {
     },
     async setJSON(key, value) {
       await store.setJSON(key, value)
+    },
+    async getVersioned<T>(key: string) {
+      const res = await store.getWithMetadata(key, { type: 'json' })
+      return res ? { value: res.data as T, etag: res.etag ?? null } : { value: null, etag: null }
+    },
+    async setIfMatch(key, value, etag) {
+      const res = await store.setJSON(key, value, etag ? { onlyIfMatch: etag } : { onlyIfNew: true })
+      return res.modified
     },
   }
 }

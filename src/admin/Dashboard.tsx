@@ -4,6 +4,7 @@ import { artThumb } from '../shared/art'
 import { createJarkoman, defaultState, switchGame } from '../shared/defaults'
 import { GAMES, gameDef } from '../shared/games'
 import { uid } from '../shared/ids'
+import { applyWebChanges, newWebPlayers } from '../shared/joins'
 import { cleanState } from '../shared/sanitize'
 import { KEYS, readJSON, removeKey, writeJSON } from '../shared/storage'
 import { formatClock, formatDateShort, parseDate } from '../shared/time'
@@ -74,6 +75,9 @@ function DashboardInner({ token, onLogout }: Props) {
   const [replay, setReplay] = useState(0)
   const [now, setNow] = useState(() => Date.now())
   const fileRef = useRef<HTMLInputElement>(null)
+  // Nilai terbaru untuk dipakai timer tanpa memasang ulang interval tiap render.
+  const live = useRef({ saved, draft, saving })
+  live.current = { saved, draft, saving }
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 30_000)
@@ -103,6 +107,43 @@ function DashboardInner({ token, onLogout }: Props) {
   useEffect(() => {
     fetchState()
   }, [fetchState])
+
+  // Pemain yang mendaftar lewat website muncul di dashboard tanpa reload. Hanya dipakai kalau versi admin
+  // di server masih sama; perubahan yang belum disimpan tetap utuh karena pendaftar baru digabungkan ke draft.
+  useEffect(() => {
+    if (load.kind !== 'ready') return
+    let pulling = false
+    const pull = async () => {
+      if (document.hidden || pulling || live.current.saving) return
+      pulling = true
+      try {
+        const raw = await api.getState()
+        const server = raw ? cleanState(raw)?.state : null
+        const { saved: s, draft: d } = live.current
+        if (!server || !s || !d || live.current.saving) return
+        if (server.updatedAt !== s.updatedAt || server.joinSeq <= s.joinSeq) return
+        const fresh = newWebPlayers(s, server)
+        setSaved(server)
+        setDraft(same(d, s) ? server : applyWebChanges(d, server, s.joinSeq))
+        if (fresh.length === 1) {
+          const { player, item } = fresh[0]
+          toast(`${player.name} masuk skuad lewat website (${GAMES[item.game].name}: ${item.headline}).`)
+        } else if (fresh.length > 1) {
+          toast(`${fresh.length} pemain baru masuk skuad lewat website.`)
+        }
+      } catch {
+        // Coba lagi di putaran berikutnya.
+      } finally {
+        pulling = false
+      }
+    }
+    const timer = window.setInterval(pull, 20_000)
+    window.addEventListener('focus', pull)
+    return () => {
+      window.clearInterval(timer)
+      window.removeEventListener('focus', pull)
+    }
+  }, [load.kind, toast])
 
   const dirty = Boolean(draft && saved && !same(draft, saved))
   const neverSaved = saved?.updatedAt === 0
