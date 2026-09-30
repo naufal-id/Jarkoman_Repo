@@ -11,6 +11,12 @@
   --line: rgba(237, 230, 214, 0.16);
   --hazard: #f5b82e;
   --hazard-ink: #120d02;
+  /* Teks beraksen hazard. Di mode terang kuning tidak terbaca di atas kertas, jadi pakai amber gelap. */
+  --hazard-text: var(--hazard);
+  --soft: #d3cab6;
+  --input-bg: #0f0d0b;
+  --placeholder: #8f8775;
+  --error: #ff9b8c;
   --phosphor: #7cff6b;
   --crt-bg: #07120a;
   --focus: var(--hazard);
@@ -88,7 +94,7 @@ body:has(.rp) {
 
 .rp-btn--line:hover {
   box-shadow: inset 0 0 0 1.5px var(--hazard);
-  color: var(--hazard);
+  color: var(--hazard-text);
 }
 
 .rp-btn--sm {
@@ -116,7 +122,7 @@ body:has(.rp) {
   line-height: 1;
   letter-spacing: 0.02em;
   text-decoration: none;
-  color: var(--hazard);
+  color: var(--hazard-text);
 }
 
 .rp-status {
@@ -130,7 +136,7 @@ body:has(.rp) {
 }
 
 .rp-status--cancelled {
-  color: #ff8a7a;
+  color: var(--error);
 }
 
 /* ---------- Hero ---------- */
@@ -281,7 +287,7 @@ body:has(.rp) {
 
 .rp-tag--game {
   border-color: var(--hazard);
-  color: var(--hazard);
+  color: var(--hazard-text);
 }
 
 .rp-hero__title {
@@ -305,7 +311,7 @@ body:has(.rp) {
   max-width: 44ch;
   font-size: clamp(18px, 1.5vw, 21px);
   line-height: 1.5;
-  color: #d3cab6;
+  color: var(--soft);
 }
 
 .rp-hero__cta {
@@ -432,7 +438,7 @@ body:has(.rp) {
   margin-top: 16px;
   font-size: 18px;
   line-height: 1.55;
-  color: #d3cab6;
+  color: var(--soft);
 }
 
 /* ---------- Kru ---------- */
@@ -454,7 +460,7 @@ body:has(.rp) {
 
 .rp-quota__label b {
   font-weight: 700;
-  color: var(--hazard);
+  color: var(--hazard-text);
 }
 
 .rp-quota__label span {
@@ -630,7 +636,7 @@ body:has(.rp) {
 }
 
 .rp-bot--empty .rp-bot__task {
-  color: var(--hazard);
+  color: var(--hazard-text);
   font-weight: 600;
 }
 
@@ -695,7 +701,7 @@ body:has(.rp) {
   font-weight: 700;
   font-size: 24px;
   text-transform: uppercase;
-  color: var(--hazard);
+  color: var(--hazard-text);
   transform: rotate(-8deg);
   opacity: 0.85;
 }
@@ -725,12 +731,12 @@ body:has(.rp) {
 .rp-form .jf__input {
   border: 1.5px solid var(--line);
   border-radius: 4px;
-  background: #0f0d0b;
+  background: var(--input-bg);
   color: var(--fg);
 }
 
 .rp-form .jf__input::placeholder {
-  color: #8f8775;
+  color: var(--placeholder);
 }
 
 .rp-form .jf__input:focus-visible {
@@ -786,7 +792,7 @@ body:has(.rp) {
 }
 
 .rp-swatch input:checked ~ .rp-swatch__name {
-  color: var(--hazard);
+  color: var(--hazard-text);
 }
 
 .rp-swatch:has(input:focus-visible) {
@@ -829,15 +835,15 @@ body:has(.rp) {
 }
 
 .rp-form .jf__hint {
-  color: #d3cab6;
+  color: var(--soft);
 }
 
 .rp-form .jf__error {
-  color: #ff9b8c;
+  color: var(--error);
 }
 
 .rp-form .jf__sent a {
-  color: var(--hazard);
+  color: var(--hazard-text);
   font-weight: 700;
 }
 
@@ -849,7 +855,7 @@ body:has(.rp) {
 }
 
 .rp-form .jf__done-kicker {
-  color: var(--hazard);
+  color: var(--hazard-text);
 }
 
 .rp-form .jf__done-name {
@@ -906,7 +912,7 @@ body:has(.rp) {
 }
 
 .rp-sched .sched__slots {
-  color: var(--hazard);
+  color: var(--hazard-text);
 }
 
 .rp-foot {
@@ -1033,4 +1039,244 @@ body:has(.rp) {
   font-family: 'VT323', monospace;
   font-size: 19px;
   box-shadow: 0 0 0 3px #2a251e;
+}
+
+/* ---------- Mode "Lampu nyala" (terang) ----------
+   Lampu Service Station menyala: kertas formulir kerja Taxman, tinta hitam, dan outline tebal dengan
+   bayangan keras seperti gaya kartun R.E.P.O. Kuning hazard hanya dipakai sebagai blok dan strip.
+   Monitor CRT truk tetap gelap karena itu benda fisik, bukan bagian ruangan. */
+.rp[data-variant='lampu'] {
+  --bg: #eee8da;
+  --panel: #e4dcc9;
+  --panel-2: #f8f4ea;
+  --fg: #1c1914;
+  --muted: #5b5344;
+  --soft: #3a342a;
+  --line: rgba(28, 25, 20, 0.22);
+  --hazard-text: #7a4e00;
+  --input-bg: #fbf8f1;
+  --placeholder: #6e6656;
+  --error: #b3301c;
+  --ink: #1c1914;
+  --pop: 5px 5px 0 var(--ink);
+}
+
+body:has(.rp[data-variant='lampu']) {
+  background: #eee8da;
+}
+
+/* Hero: lorong yang sama, sekarang terang di bawah lampu tabung. Tidak ada mata monster di tempat terang. */
+.rp[data-variant='lampu'] .rp-hero__bg {
+  background:
+    radial-gradient(ellipse 65% 50% at 50% 0%, rgba(255, 252, 238, 0.95), transparent 72%),
+    linear-gradient(180deg, #f4efe3 0%, #e6ddca 100%);
+}
+
+.rp[data-variant='lampu'] .rp-corridor__lines {
+  stroke: rgba(28, 25, 20, 0.16);
+}
+
+.rp[data-variant='lampu'] .rp-corridor__floor {
+  stroke: rgba(28, 25, 20, 0.09);
+}
+
+.rp[data-variant='lampu'] .rp-corridor__door {
+  fill: rgba(28, 25, 20, 0.05);
+}
+
+.rp[data-variant='lampu'] .rp-corridor__lamp {
+  fill: #fff6d2;
+  filter: drop-shadow(0 0 6px rgba(255, 214, 110, 0.95)) drop-shadow(0 0 22px rgba(255, 214, 110, 0.7));
+}
+
+.rp[data-variant='lampu'] .rp-dark,
+.rp[data-variant='lampu'] .rp-eyes {
+  display: none;
+}
+
+.rp[data-variant='lampu'] .rp-grain {
+  opacity: 0.06;
+  mix-blend-mode: multiply;
+}
+
+.rp[data-variant='lampu'] .rp-top__mark {
+  color: var(--ink);
+}
+
+/* Tombol: outline tinta dan bayangan tegas, tetap bisa "ditekan". */
+.rp[data-variant='lampu'] .rp-btn--hazard,
+.rp[data-variant='lampu'] .rp-form .jf__submit {
+  box-shadow:
+    inset 0 0 0 2px var(--ink),
+    0 6px 0 var(--ink);
+}
+
+.rp[data-variant='lampu'] .rp-btn--hazard:active,
+.rp[data-variant='lampu'] .rp-form .jf__submit:active {
+  box-shadow:
+    inset 0 0 0 2px var(--ink),
+    0 2px 0 var(--ink);
+}
+
+.rp[data-variant='lampu'] .rp-btn--line {
+  background: var(--panel-2);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.rp[data-variant='lampu'] .rp-btn--line:hover {
+  background: var(--hazard);
+  color: var(--hazard-ink);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.rp[data-variant='lampu'] .rp-tag {
+  border: 2px solid var(--ink);
+}
+
+.rp[data-variant='lampu'] .rp-tag--game {
+  background: var(--hazard);
+  color: var(--hazard-ink);
+}
+
+/* Monitor truk: bezel gelap diberi outline dan bayangan keras supaya menempel di ruangan terang. */
+.rp[data-variant='lampu'] .rp-crt {
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 2px var(--ink),
+    8px 10px 0 var(--ink);
+}
+
+/* Kru: kartu kertas dengan outline tebal; semibot ikut bergaris tinta seperti di key art. */
+.rp[data-variant='lampu'] .rp-bot {
+  border: 2px solid var(--ink);
+  box-shadow: var(--pop);
+}
+
+.rp[data-variant='lampu'] .rp-bot__body,
+.rp[data-variant='lampu'] .rp-bot__eyeball {
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+
+.rp[data-variant='lampu'] .rp-bot__neck {
+  fill: var(--ink);
+}
+
+.rp[data-variant='lampu'] .rp-bot__shadow {
+  fill: rgba(28, 25, 20, 0.2);
+}
+
+.rp[data-variant='lampu'] .rp-bot__svg.is-dim .rp-bot__body {
+  stroke: #8a8170;
+  stroke-width: 2;
+}
+
+.rp[data-variant='lampu'] .rp-bot--empty {
+  border: 2px dashed rgba(28, 25, 20, 0.4);
+  background: transparent;
+  box-shadow: none;
+}
+
+.rp[data-variant='lampu'] .rp-bot--empty:hover {
+  border-color: var(--ink);
+  background: var(--panel-2);
+}
+
+.rp[data-variant='lampu'] .rp-bot__tag {
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+
+.rp[data-variant='lampu'] .rp-quota__bar {
+  border-color: var(--ink);
+  background: var(--panel-2);
+}
+
+.rp[data-variant='lampu'] .rp-quota__fill {
+  background: repeating-linear-gradient(135deg, var(--hazard) 0 10px, var(--ink) 10px 20px);
+}
+
+/* Surat tugas: formulir kertas dengan cap merah Taxman. */
+.rp[data-variant='lampu'] .rp-order {
+  border: 2px solid var(--ink);
+  border-top: 8px solid var(--hazard);
+  background: var(--panel-2);
+  box-shadow: var(--pop);
+}
+
+.rp[data-variant='lampu'] .rp-order__row {
+  border-bottom-color: rgba(28, 25, 20, 0.3);
+}
+
+.rp[data-variant='lampu'] .rp-stamp {
+  border-color: var(--error);
+  color: var(--error);
+  mix-blend-mode: multiply;
+  opacity: 0.92;
+}
+
+/* Form join */
+.rp[data-variant='lampu'] .rp-form {
+  border: 2px solid var(--ink);
+  background: var(--panel-2);
+  box-shadow: var(--pop);
+}
+
+.rp[data-variant='lampu'] .rp-form .jf__input {
+  border: 2px solid rgba(28, 25, 20, 0.45);
+}
+
+.rp[data-variant='lampu'] .rp-form .jf__input:focus-visible {
+  border-color: var(--ink);
+  outline-color: var(--ink);
+}
+
+.rp[data-variant='lampu'] .rp-swatch:hover {
+  background: var(--panel);
+}
+
+.rp[data-variant='lampu'] .rp-swatch__dot {
+  box-shadow:
+    inset 0 -6px 0 rgba(0, 0, 0, 0.2),
+    0 0 0 2px var(--ink);
+}
+
+.rp[data-variant='lampu'] .rp-chip span {
+  border: 2px solid rgba(28, 25, 20, 0.35);
+  background: var(--input-bg);
+}
+
+.rp[data-variant='lampu'] .rp-chip input:checked + span {
+  border-color: var(--ink);
+}
+
+.rp[data-variant='lampu'] .rp-chip input:focus-visible + span,
+.rp[data-variant='lampu'] .rp-swatch:has(input:focus-visible),
+.rp[data-variant='lampu'] .rp-form .jf__submit:focus-visible,
+.rp[data-variant='lampu'] .rp-btn--hazard:focus-visible {
+  outline-color: var(--ink);
+}
+
+.rp[data-variant='lampu'] .rp-form .jf__done {
+  background: var(--panel);
+}
+
+.rp[data-variant='lampu'] .rp-sched .sched__row {
+  background: var(--panel-2);
+  box-shadow: inset 0 0 0 2px rgba(28, 25, 20, 0.2);
+}
+
+.rp[data-variant='lampu'] .rp-sched .sched__row:hover {
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+/* Monitor dan tombol musik tetap layar CRT, cukup diberi tepi tinta. */
+.rp[data-variant='lampu'] .rp-memo,
+.rp[data-variant='lampu'] .music__btn,
+.rp[data-variant='lampu'] .music__now {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
+.rp[data-variant='lampu'] .music__btn:focus-visible {
+  outline-color: var(--hazard-text);
 }

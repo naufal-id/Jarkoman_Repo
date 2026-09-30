@@ -14,12 +14,12 @@ Riset, arah desain, dan alasan tiap keputusan ada di [`docs/PLAN.md`](docs/PLAN.
 
 Tema per game:
 
-| Game     | Font                                     | Ciri                                                                                                                                            |
-| -------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| VALORANT | Anton + Barlow                           | Key art di panel diagonal bertepi merah, ink/bone, kartu agent select, tombol LOCK IN, varian terang/gelap                                      |
-| CS2      | Saira Stencil One + Rajdhani + Noto Sans | Key art di layar ber-HUD dengan pola recoil AK-47, latar cahaya oranye dari key art, radar, scoreboard, buy menu, sisi T/CT                     |
-| MLBB     | Cinzel + Kanit                           | Poster sebagai banner lobby yang memudar ke biru malam, emas metalik, lineup ala loading screen, peta 3 lane, callout FIRST BLOOD sampai SAVAGE |
-| R.E.P.O. | Teko + VT323 + Archivo Narrow            | Key art diputar di monitor CRT truk, senter mengikuti kursor, semibot bermata besar, kuota hazard, mode lampu nyala                             |
+| Game     | Font                                     | Ciri                                                                                                                                                                                     |
+| -------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| VALORANT | Anton + Barlow                           | Key art di panel diagonal bertepi merah, ink/bone, kartu agent select, tombol LOCK IN, varian terang/gelap                                                                               |
+| CS2      | Saira Stencil One + Rajdhani + Noto Sans | Key art di layar ber-HUD dengan pola recoil AK-47, latar cahaya oranye dari key art, radar, scoreboard, buy menu, sisi T/CT                                                              |
+| MLBB     | Cinzel + Kanit                           | Poster sebagai banner lobby yang memudar ke biru malam, emas metalik, lineup ala loading screen, peta 3 lane, callout FIRST BLOOD sampai SAVAGE                                          |
+| R.E.P.O. | Teko + VT323 + Archivo Narrow            | Key art diputar di monitor CRT truk, senter mengikuti kursor, semibot bermata besar, kuota hazard, mode terang "Lampu nyala" (kertas formulir Taxman, outline tebal ala kartun R.E.P.O.) |
 
 ## Deploy ke Netlify lewat GitHub
 

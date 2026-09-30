@@ -195,7 +195,7 @@ export const GAMES: Record<GameId, GameDef> = {
     defaultSubline: 'Taxman butuh kuota. Kita butuh orang yang berani pegang barang pecah belah.',
     variants: [
       { id: 'senter', label: 'Senter (gelap)' },
-      { id: 'lampu', label: 'Lampu nyala (tenang)' },
+      { id: 'lampu', label: 'Lampu nyala (terang)' },
     ],
     accent: '#F5B82E',
     themeColor: '#0B0A0C',
