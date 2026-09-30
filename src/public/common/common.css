@@ -272,9 +272,10 @@ select.jf__input option {
   font-size: 17px;
 }
 .sched__row[data-game='cs2'] .sched__game {
-  font-family: 'Saira Stencil One', sans-serif;
-  font-weight: 400;
-  font-size: 17px;
+  font-family: 'Saira Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 19px;
+  text-transform: uppercase;
 }
 .sched__row[data-game='mlbb'] .sched__game {
   font-family: 'Oswald', sans-serif;

@@ -18,7 +18,7 @@
   --warn: #ffd27a;
   --danger: #ff8f8f;
   --font-valorant: 'Anton', sans-serif;
-  --font-cs2: 'Saira Stencil One', sans-serif;
+  --font-cs2: 'Saira Condensed', sans-serif;
   --font-mlbb: 'Oswald', sans-serif;
   --font-repo: 'Teko', sans-serif;
 }
@@ -413,6 +413,8 @@ select.adm-input option {
 }
 .adm-login__games [data-game='cs2'] {
   font-family: var(--font-cs2);
+  font-weight: 800;
+  text-transform: uppercase;
 }
 .adm-login__games [data-game='mlbb'] {
   font-family: var(--font-mlbb);
@@ -631,6 +633,8 @@ select.adm-input option {
 }
 .adm-item[data-game='cs2'] .adm-item__game {
   font-family: var(--font-cs2);
+  font-weight: 800;
+  text-transform: uppercase;
 }
 .adm-item[data-game='mlbb'] .adm-item__game {
   font-family: var(--font-mlbb);
@@ -871,6 +875,8 @@ select.adm-input option {
 }
 .adm-game[data-game='cs2'] .adm-game__name {
   font-family: var(--font-cs2);
+  font-weight: 800;
+  text-transform: uppercase;
   font-size: 26px;
 }
 .adm-game[data-game='mlbb'] .adm-game__name {

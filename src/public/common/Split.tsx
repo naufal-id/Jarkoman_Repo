@@ -26,7 +26,7 @@ export function Split({ text, as: Tag = 'span', className, by = 'chars', id, sty
               /^\s+$/.test(word) ? (
                 ' '
               ) : (
-                <span className="split-word" key={wi}>
+                <span className="split-word" key={wi} data-word={word.length <= 2 ? word.toUpperCase() : undefined}>
                   {by === 'chars'
                     ? Array.from(word).map((ch, ci) => (
                         <span className="split-char" key={ci}>

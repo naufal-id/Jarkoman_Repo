@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import '@fontsource-variable/archivo/wdth.css'
 // Font display tiap game hanya dipakai di kartu pemilih game.
 import '@fontsource/anton/400.css'
-import '@fontsource/saira-stencil-one/400.css'
+import '@fontsource/saira-condensed/800.css'
 import '@fontsource/oswald/700.css'
 import '@fontsource/teko/600.css'
 import './admin.css'

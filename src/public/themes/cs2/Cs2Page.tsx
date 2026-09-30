@@ -1,4 +1,5 @@
-import '@fontsource/saira-stencil-one/400.css'
+import '@fontsource/saira-condensed/700.css'
+import '@fontsource/saira-condensed/800.css'
 import '@fontsource/rajdhani/500.css'
 import '@fontsource/rajdhani/600.css'
 import '@fontsource/rajdhani/700.css'
@@ -6,7 +7,7 @@ import '@fontsource/noto-sans/400.css'
 import '@fontsource/noto-sans/600.css'
 import '@fontsource/noto-sans/700.css'
 import './cs2.css'
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { gameDef } from '../../../shared/games'
 import { dayName, formatClock, formatDateShort, pad2 } from '../../../shared/time'
 import type { Player } from '../../../shared/types'
@@ -15,7 +16,7 @@ import { ArtImage } from '../../common/ArtImage'
 import { usePage, type ThemeProps } from '../../common/context'
 import { Digits } from '../../common/Digits'
 import { Schedule, SiteFooter, useActions } from '../../common/Extras'
-import { gsap, MOTION_OK, useGSAP } from '../../common/gsap'
+import { gsap, MOTION_OK, ScrollTrigger, useGSAP } from '../../common/gsap'
 import { isClosed, joinTitle, statusLabel, useSession, type SessionInfo } from '../../common/hooks'
 import { useIntroGate } from '../../common/intro'
 import { JoinForm, type SentKind } from '../../common/JoinForm'
@@ -26,23 +27,26 @@ import { CS2_MAPS, type Cs2Map, type MapPoint } from './maps'
 
 const def = gameDef('cs2')
 
-/** Kelas senjata dan sisi yang bisa membelinya di buy menu (T saja, CT saja, atau dua-duanya). */
-const WEAPONS: Record<string, { kind: string; side: 'T' | 'CT' | '' }> = {
-  'AK-47': { kind: 'Rifle', side: 'T' },
-  M4A4: { kind: 'Rifle', side: 'CT' },
-  'M4A1-S': { kind: 'Rifle', side: 'CT' },
-  AWP: { kind: 'Sniper', side: '' },
-  'Desert Eagle': { kind: 'Pistol', side: '' },
-  'Galil AR': { kind: 'Rifle', side: 'T' },
-  FAMAS: { kind: 'Rifle', side: 'CT' },
-  'SSG 08': { kind: 'Sniper', side: '' },
-  MP9: { kind: 'SMG', side: 'CT' },
-  'MAC-10': { kind: 'SMG', side: 'T' },
-  P90: { kind: 'SMG', side: '' },
-  Nova: { kind: 'Heavy', side: '' },
-  'USP-S': { kind: 'Pistol', side: 'CT' },
-  'Glock-18': { kind: 'Pistol', side: 'T' },
+/** Kelas senjata, sisi yang bisa membelinya (T saja, CT saja, atau dua-duanya), dan harga di buy menu CS2. */
+const WEAPONS: Record<string, { kind: string; side: 'T' | 'CT' | ''; price: number }> = {
+  'AK-47': { kind: 'Rifle', side: 'T', price: 2700 },
+  M4A4: { kind: 'Rifle', side: 'CT', price: 3100 },
+  'M4A1-S': { kind: 'Rifle', side: 'CT', price: 2900 },
+  AWP: { kind: 'Sniper', side: '', price: 4750 },
+  'Desert Eagle': { kind: 'Pistol', side: '', price: 700 },
+  'Galil AR': { kind: 'Rifle', side: 'T', price: 1800 },
+  FAMAS: { kind: 'Rifle', side: 'CT', price: 2050 },
+  'SSG 08': { kind: 'Sniper', side: '', price: 1700 },
+  MP9: { kind: 'SMG', side: 'CT', price: 1250 },
+  'MAC-10': { kind: 'SMG', side: 'T', price: 1050 },
+  P90: { kind: 'SMG', side: '', price: 2350 },
+  Nova: { kind: 'Heavy', side: '', price: 1050 },
+  'USP-S': { kind: 'Pistol', side: 'CT', price: 200 },
+  'Glock-18': { kind: 'Pistol', side: 'T', price: 200 },
 }
+
+/** Warna pemain CS2 (kuning, ungu, hijau, biru, oranye) dipakai berurutan per slot, di radar dan scoreboard. */
+const pc = (slot: number) => String(slot % 5)
 
 /** Kurang lebih pola recoil AK-47 (naik, ke kiri, lalu ke kanan) dalam kotak 120 x 220. */
 const SPRAY: [number, number][] = [
@@ -60,6 +64,10 @@ export default function Cs2Page({ j }: ThemeProps) {
   const root = useRef<HTMLDivElement>(null)
   const [readyKey, setReadyKey] = useState(0)
   const [sentKind, setSentKind] = useState<SentKind>('joined')
+  // Pilihan di form dicerminkan ke kartu loadout di kolom kiri buy menu.
+  const [loadout, setLoadout] = useState<{ role: string; pick: string }>({ role: '', pick: '' })
+  const mirrorRole = useCallback((role: string) => setLoadout((l) => (l.role === role ? l : { ...l, role })), [])
+  const mirrorPick = useCallback((pick: string) => setLoadout((l) => (l.pick === pick ? l : { ...l, pick })), [])
 
   // Huruf bombsite hanya "diklaim" kalau judul memang menyebut site A atau B.
   const named = /\bA\b/.test(j.headline.toUpperCase()) ? 'A' : /\bB\b/.test(j.headline.toUpperCase()) ? 'B' : null
@@ -122,6 +130,13 @@ export default function Cs2Page({ j }: ThemeProps) {
               ease: 'back.out(3)',
             })
           }
+          // Denyut site target baru mulai saat radar terlihat (lihat .cs-map.is-seen di CSS).
+          ScrollTrigger.create({
+            trigger: '.cs-map',
+            start: 'top 70%',
+            once: true,
+            onEnter: () => root.current?.querySelector('.cs-map')?.classList.add('is-seen'),
+          })
           gsap.from('.cs-mapcard', {
             scrollTrigger: { trigger: '.cs-mapcard', start: 'top 85%', once: true },
             clipPath: 'inset(0 100% 0 0)',
@@ -184,7 +199,13 @@ export default function Cs2Page({ j }: ThemeProps) {
   const copyLobby = async () => toast((await copyText(j.lobby)) ? `${def.lobbyLabel} disalin.` : 'Gagal menyalin.')
 
   return (
-    <div className="cs" data-variant={j.variant} ref={root}>
+    <div
+      className="cs"
+      data-variant={j.variant}
+      data-site={named ?? undefined}
+      ref={root}
+      style={known?.tint ? ({ '--map-tint': known.tint } as CSSProperties) : undefined}
+    >
       {intro.show && <CsIntro onDone={intro.done} />}
 
       <header className="cs-hud-top">
@@ -273,10 +294,10 @@ export default function Cs2Page({ j }: ThemeProps) {
         </section>
 
         <section className="cs-info" aria-labelledby="cs-info-title">
-          <SectionTitle id="cs-info-title" text="Info match" />
+          <SectionTitle id="cs-info-title" no="01" text="Info match" />
           <div className="cs-info__grid">
             {known ? (
-              <MapOverview map={known} name={j.map} players={joined.length} side={j.variant === 'ct' ? 'CT' : 'T'} site={named} />
+              <MapOverview map={known} name={j.map} slots={joined.map((p) => j.players.indexOf(p))} side={j.variant === 'ct' ? 'CT' : 'T'} site={named} />
             ) : (
               <Radar players={joined.length} site={named} />
             )}
@@ -308,13 +329,16 @@ export default function Cs2Page({ j }: ThemeProps) {
 
         <section className="cs-board" aria-labelledby="cs-board-title">
           <div className="cs-board__head">
-            <SectionTitle id="cs-board-title" text="Scoreboard" />
-            <p className="cs-board__meta">
-              {s.filled}/{j.slots} siap{s.full ? ' · penuh' : ''}
-            </p>
+            <SectionTitle id="cs-board-title" no="02" text="Scoreboard" />
           </div>
           <div className="cs-board__grid">
             <div className="cs-board__table" role="table" aria-label="Daftar pemain">
+              <div className="cs-board__team" aria-hidden="true">
+                <span>{j.variant === 'ct' ? 'Counter-Terrorist' : 'Terrorist'}</span>
+                <span className="cs-board__meta">
+                  <b>{s.filled}</b> / {j.slots} siap{s.full ? ' · penuh' : ''}
+                </span>
+              </div>
               <div className="cs-board__row cs-board__row--head" role="row">
                 <span role="columnheader">#</span>
                 <span role="columnheader">Pemain</span>
@@ -332,7 +356,7 @@ export default function Cs2Page({ j }: ThemeProps) {
             {joined.length > 0 && (
               <ul className="cs-feed" aria-label="Pemain yang sudah masuk">
                 {joined.slice(0, 6).map((p) => (
-                  <li className="cs-feed__item" key={p.id}>
+                  <li className="cs-feed__item" key={p.id} data-pc={pc(j.players.indexOf(p))}>
                     <span className="cs-feed__name">{p.name}</span>
                     {p.pick && <span className="cs-feed__gun">{p.pick}</span>}
                     <span className="cs-feed__verb">masuk</span>
@@ -345,12 +369,13 @@ export default function Cs2Page({ j }: ThemeProps) {
 
         <section className="cs-join" id="join" aria-labelledby="cs-join-title">
           <div className="cs-join__intro">
-            <SectionTitle id="cs-join-title" text={joinTitle(s, 'Buy menu')} />
+            <SectionTitle id="cs-join-title" no="03" text={joinTitle(s, 'Buy menu')} />
             <p className="cs-join__text">
               {j.autoJoin
                 ? 'Pilih role dan senjata andalan, lalu konfirmasi. Namamu langsung masuk scoreboard tanpa menunggu host.'
                 : 'Pilih role dan senjata andalan, lalu konfirmasi. WhatsApp terbuka dengan pesan siap kirim ke host.'}
             </p>
+            {!isClosed(s) && <Loadout role={loadout.role} pick={loadout.pick} />}
           </div>
           <JoinForm
             j={j}
@@ -359,6 +384,7 @@ export default function Cs2Page({ j }: ThemeProps) {
             cta={def.cta}
             renderRole={({ value, onChange, options, labelId }) => (
               <div className="chips cs-chips" role="radiogroup" aria-labelledby={labelId}>
+                <Mirror value={value} onValue={mirrorRole} />
                 {options.map((r) => (
                   <label className="chip cs-chip" key={r}>
                     <input type="radio" name="cs-role" value={r} checked={value === r} onChange={() => onChange(r)} />
@@ -369,19 +395,24 @@ export default function Cs2Page({ j }: ThemeProps) {
             )}
             renderPick={({ value, onChange, options, labelId }) => (
               <div className="cs-buy" role="radiogroup" aria-labelledby={labelId}>
-                {options.map((w, i) => (
-                  <label className="cs-buy__item" key={w}>
-                    <input type="radio" name="cs-weapon" value={w} checked={value === w} onChange={() => onChange(w)} />
-                    <span className="cs-buy__card">
-                      <span className="cs-buy__key">{i < 9 ? i + 1 : i === 9 ? 0 : ''}</span>
-                      <span className="cs-buy__name">{w}</span>
-                      <span className="cs-buy__kind">
-                        {WEAPONS[w]?.kind}
-                        {WEAPONS[w]?.side && <em>{WEAPONS[w].side}</em>}
+                <Mirror value={value} onValue={mirrorPick} />
+                {options.map((w, i) => {
+                  const info = WEAPONS[w]
+                  return (
+                    <label className="cs-buy__item" key={w}>
+                      <input type="radio" name="cs-weapon" value={w} checked={value === w} onChange={() => onChange(w)} />
+                      <span className="cs-buy__card" data-kind={info?.kind}>
+                        {info && <span className="cs-buy__price">${info.price}</span>}
+                        <span className="cs-buy__key">{i < 9 ? i + 1 : i === 9 ? 0 : ''}</span>
+                        <span className="cs-buy__name">{w}</span>
+                        <span className="cs-buy__kind">
+                          {info?.kind}
+                          {info?.side && <em data-side={info.side}>{info.side}</em>}
+                        </span>
                       </span>
-                    </span>
-                  </label>
-                ))}
+                    </label>
+                  )
+                })}
               </div>
             )}
             onSent={(kind) => {
@@ -393,12 +424,15 @@ export default function Cs2Page({ j }: ThemeProps) {
 
         {j.notes && (
           <section className="cs-notes" aria-labelledby="cs-notes-title">
-            <SectionTitle id="cs-notes-title" text="Aturan ronde" />
+            <SectionTitle id="cs-notes-title" no="04" text="Aturan ronde" />
             <ol className="cs-notes__list">
               {j.notes.split('\n').filter((l) => l.trim()).map((line, i) => (
                 <li key={i}>
-                  <span className="cs-notes__num">{pad2(i + 1)}</span>
-                  {line}
+                  <span className="cs-notes__num" aria-hidden="true">
+                    <small>Ronde</small>
+                    {pad2(i + 1)}
+                  </span>
+                  <span className="cs-notes__text">{line}</span>
                 </li>
               ))}
             </ol>
@@ -419,11 +453,43 @@ export default function Cs2Page({ j }: ThemeProps) {
   )
 }
 
-function SectionTitle({ id, text }: { id: string; text: string }) {
+function SectionTitle({ id, text, no }: { id: string; text: string; no: string }) {
   return (
     <h2 className="cs-title" id={id}>
-      {text}
+      <span className="cs-title__no" aria-hidden="true">
+        {no}
+      </span>
+      <span className="cs-title__text">{text}</span>
     </h2>
+  )
+}
+
+/** Meneruskan nilai pilihan form ke komponen induk tanpa mengubah state saat render. */
+function Mirror({ value, onValue }: { value: string; onValue: (v: string) => void }) {
+  useEffect(() => onValue(value), [value, onValue])
+  return null
+}
+
+const KIND_LABEL: Record<string, string> = { Pistol: 'Pistol', SMG: 'SMG', Heavy: 'Heavy', Rifle: 'Rifle', Sniper: 'Sniper' }
+
+/** Pratinjau loadout: senjata dan role yang sedang dipilih di form, dengan warna rarity kategorinya. */
+function Loadout({ role, pick }: { role: string; pick: string }) {
+  const info = WEAPONS[pick]
+  return (
+    <div className="cs-loadout" data-kind={info?.kind} aria-hidden="true">
+      <p className="cs-loadout__label">Loadout kamu</p>
+      <p className={`cs-loadout__gun ${pick ? '' : 'is-empty'}`}>{pick || 'Belum pilih senjata'}</p>
+      {info && (
+        <p className="cs-loadout__meta">
+          <span className="cs-loadout__kind">{KIND_LABEL[info.kind] ?? info.kind}</span>
+          {info.side && <span className={`cs-loadout__side cs-loadout__side--${info.side.toLowerCase()}`}>{info.side}</span>}
+          <span className="cs-loadout__price">${info.price}</span>
+        </p>
+      )}
+      <p className="cs-loadout__role">
+        Role <b>{role || 'Bebas'}</b>
+      </p>
+    </div>
   )
 }
 
@@ -469,7 +535,9 @@ function BoardRow({ index, player, host, reserve }: { index: number; player: Pla
   if (!player) {
     return (
       <div className="cs-board__row is-empty" role="row">
-        <span role="cell">{index + 1}</span>
+        <span role="cell" className="cs-board__no">
+          {index + 1}
+        </span>
         <span role="cell" className="cs-board__empty">
           <a href="#join">Slot kosong, ambil</a>
         </span>
@@ -481,8 +549,10 @@ function BoardRow({ index, player, host, reserve }: { index: number; player: Pla
   }
   const isHost = host.trim() && host.trim().toLowerCase() === player.name.trim().toLowerCase()
   return (
-    <div className={`cs-board__row ${player.status === 'maybe' ? 'is-maybe' : ''} ${reserve ? 'is-reserve' : ''}`} role="row">
-      <span role="cell">{index + 1}</span>
+    <div className={`cs-board__row ${player.status === 'maybe' ? 'is-maybe' : ''} ${reserve ? 'is-reserve' : ''}`} role="row" data-pc={pc(index)}>
+      <span role="cell" className="cs-board__no">
+        {index + 1}
+      </span>
       <span role="cell" className="cs-board__name">
         {player.name}
         {isHost && <em className="cs-board__tag">host</em>}
@@ -535,7 +605,8 @@ function around(p: MapPoint, count: number): MapPoint[] {
  * Overview map resmi (radar dari file game) dengan ikon seperti loading screen CS2: spawn T dan CT,
  * bombsite A/B atau sandera. Titik pemain yang sudah masuk berkumpul di spawn sisi yang dipilih host.
  */
-function MapOverview({ map, name, players, side, site }: { map: Cs2Map; name: string; players: number; side: 'T' | 'CT'; site: 'A' | 'B' | null }) {
+function MapOverview({ map, name, slots, side, site }: { map: Cs2Map; name: string; slots: number[]; side: 'T' | 'CT'; site: 'A' | 'B' | null }) {
+  const players = slots.length
   const [level, setLevel] = useState<'upper' | 'lower'>('upper')
   useEffect(() => setLevel('upper'), [map.code])
   const spawn = side === 'T' ? map.t : map.ct
@@ -593,7 +664,7 @@ function MapOverview({ map, name, players, side, site }: { map: Cs2Map; name: st
             </span>
           ))}
           {around(spawn, players).map((p, i) => (
-            <span key={i} className={`cs-map__player ${off(false)}`} style={at(p)} aria-hidden="true" />
+            <span key={i} className={`cs-map__player ${off(false)}`} data-pc={pc(slots[i] ?? i)} style={at(p)} aria-hidden="true" />
           ))}
         </div>
       </div>
