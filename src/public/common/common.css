@@ -278,9 +278,9 @@ select.jf__input option {
   text-transform: uppercase;
 }
 .sched__row[data-game='mlbb'] .sched__game {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: 18px;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 900;
+  font-size: 17px;
   letter-spacing: 0.02em;
 }
 .sched__row[data-game='repo'] .sched__game {

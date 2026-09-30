@@ -115,6 +115,12 @@ const CANOPY = (() => {
   return out
 })()
 
+/** Kunci warna lane (EXP, Gold, Mid, Jungle, Roam) yang dipakai kartu lineup, pemilih lane, dan titik di peta. */
+export function laneKey(role: string): string | undefined {
+  const map: Record<string, string> = { 'EXP Lane': 'exp', 'Gold Lane': 'gold', 'Mid Lane': 'mid', Jungle: 'jungle', Roam: 'roam' }
+  return map[role]
+}
+
 const pct = ([x, y]: Pt): CSSProperties => ({ left: `${(x / S) * 100}%`, top: `${(y / S) * 100}%` })
 
 export function LandOfDawn({ players, side }: { players: Player[]; side: Side }) {
@@ -150,15 +156,45 @@ export function LandOfDawn({ players, side }: { players: Player[]; side: Side })
       <div className="ml-map__frame">
         <svg viewBox={`0 0 ${S} ${S}`} aria-hidden="true">
           <defs>
-            <radialGradient id="ml-terrain" cx="50%" cy="50%" r="70%">
-              <stop offset="0" stopColor="#1f4a33" />
-              <stop offset="1" stopColor="#0d2419" />
+            <radialGradient id="ml-terrain" cx="50%" cy="50%" r="72%">
+              <stop offset="0" stopColor="#2a6a45" />
+              <stop offset="0.55" stopColor="#174230" />
+              <stop offset="1" stopColor="#0a1f17" />
+            </radialGradient>
+            {/* Cahaya bulan dari kiri atas dan bayangan di kanan bawah, supaya hutan terasa bervolume. */}
+            <linearGradient id="ml-moon" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#bfe6ff" stopOpacity="0.14" />
+              <stop offset="0.5" stopColor="#bfe6ff" stopOpacity="0" />
+              <stop offset="1" stopColor="#050b20" stopOpacity="0.35" />
+            </linearGradient>
+            <radialGradient id="ml-leaf-0" cx="35%" cy="30%" r="75%">
+              <stop offset="0" stopColor="#3f8f5c" />
+              <stop offset="1" stopColor="#163d29" />
+            </radialGradient>
+            <radialGradient id="ml-leaf-1" cx="35%" cy="30%" r="75%">
+              <stop offset="0" stopColor="#5cb877" />
+              <stop offset="1" stopColor="#23603d" />
+            </radialGradient>
+            <radialGradient id="ml-leaf-2" cx="35%" cy="30%" r="75%">
+              <stop offset="0" stopColor="#2c6e4a" />
+              <stop offset="1" stopColor="#0f2c1f" />
             </radialGradient>
             <linearGradient id="ml-water" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#2c8fd6" />
-              <stop offset="0.5" stopColor="#3aa8e8" />
-              <stop offset="1" stopColor="#2c8fd6" />
+              <stop offset="0" stopColor="#1f6fc0" />
+              <stop offset="0.3" stopColor="#3fb6f0" />
+              <stop offset="0.5" stopColor="#8ae4ff" />
+              <stop offset="0.7" stopColor="#3fb6f0" />
+              <stop offset="1" stopColor="#1f6fc0" />
             </linearGradient>
+            <linearGradient id="ml-stone" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#e7d09c" />
+              <stop offset="0.5" stopColor="#c9a86c" />
+              <stop offset="1" stopColor="#a8864f" />
+            </linearGradient>
+            <radialGradient id="ml-tower" cx="40%" cy="35%" r="70%">
+              <stop offset="0" stopColor="#23326e" />
+              <stop offset="1" stopColor="#070d2a" />
+            </radialGradient>
             <radialGradient id="ml-glow-ally">
               <stop offset="0" stopColor="#8fd4ff" stopOpacity="0.9" />
               <stop offset="1" stopColor="#4fb3ff" stopOpacity="0" />
@@ -246,6 +282,7 @@ export function LandOfDawn({ players, side }: { players: Player[]; side: Side })
               <path d="M0 -20 L 17 -10 L 17 10 L 0 20 L -17 10 L -17 -10 Z" className="ml-map__base-hex" />
               <path d="M0 -11 L 7 0 L 0 11 L -7 0 Z" className="ml-map__base-gem" />
             </g>
+            <rect x="0" y="0" width={S} height={S} fill="url(#ml-moon)" pointerEvents="none" />
           </g>
           <rect x="10" y="10" width="380" height="380" rx="20" className="ml-map__rim" />
         </svg>
@@ -269,7 +306,7 @@ export function LandOfDawn({ players, side }: { players: Player[]; side: Side })
         </span>
 
         {chips.map(({ p, at, label }) => (
-          <span key={p.id} className={`ml-map__hero ml-map__hero--${label} ${p.status === 'maybe' ? 'is-maybe' : ''}`} style={pct(at)}>
+          <span key={p.id} className={`ml-map__hero ml-map__hero--${label} ${p.status === 'maybe' ? 'is-maybe' : ''}`} data-lane={laneKey(p.role)} style={pct(at)}>
             <span className="ml-map__avatar" aria-hidden="true">
               {p.name.slice(0, 1)}
             </span>

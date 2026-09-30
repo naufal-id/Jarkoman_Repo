@@ -32,8 +32,8 @@ Situs "jarkoman" (jaringan komando, pengumuman ajakan main) untuk ngajak teman m
 | Aspek | Temuan |
 |---|---|
 | Tipografi in-game | `stratum2-bold.ttf` (HUD, angka) dan `notosans-bold.ttf` (UI, scoreboard) |
-| Pengganti gratis | **Rajdhani** untuk Stratum2 (geometris kotak, angka tegas). **Noto Sans** asli dipakai untuk body. **Saira Stencil One** untuk display: huruf stensil seperti cat bombsite A dan B di tembok map |
-| Warna | T gold `#EDA338`, CT blue `#6D9EEB`, gunmetal `#0E1114` |
+| Pengganti gratis | **Saira Condensed** untuk judul (setara Stratum2 Condensed yang dipakai CS2 untuk judul besar), **Rajdhani** untuk angka HUD, **Noto Sans** asli untuk teks. Iterasi awal memakai Saira Stencil One, diganti di iterasi 4 karena UI CS2 tidak memakai huruf stensil |
+| Warna | Dari stylesheet Panorama CS2 (`panorama/styles/csgostyles.css`, `buymenu.css`, `popup_accept_match.css`, `hud/hudwinpanel.css` via SteamDatabase GameTracking-CS2): latar `#1E2D3D` ke `#14202B`, T `#EABE54`, CT `#96C8FA`, warna pemain kuning/ungu/hijau/biru/oranye, rarity `#B0C3D9` sampai `#EB4B4B`, ACCEPT `#4CAF50` ke `#255E28` |
 | Active Duty 2026 | Ancient, Anubis, Dust II, Inferno, Mirage, Nuke, Overpass (Train keluar Januari 2026). Cache kembali ke Competitive/Casual April 2026. Map lain: Train, Vertigo, Office, Italy |
 | Mode | Premier, Competitive, Wingman, Casual, Deathmatch, Arms Race, Retakes, Custom (5v5 privat) |
 | Rank | Premier CS Rating 7 warna per 5.000 poin (Gray, Light Blue, Blue, Purple, Pink, Red, Yellow 30.000+). Competitive 18 skill group: Silver I sampai The Global Elite |
@@ -44,8 +44,8 @@ Situs "jarkoman" (jaringan komando, pengumuman ajakan main) untuk ngajak teman m
 | Aspek | Temuan |
 |---|---|
 | Logo | Sans dengan detail serif dekoratif, emas metalik di atas hitam, kristal di huruf O |
-| Pengganti gratis | **Oswald** (sans condensed tebal seperti tipografi poster dan event resmi MLBB), **Rubik** untuk UI (font yang dipakai wiki komunitas MLBB supaya sama dengan game), Rubik Black Italic untuk callout pertempuran. Iterasi awal memakai Cinzel dan Kanit, diganti di iterasi 3 (lihat bagian 10) |
-| Warna | Night `#070B1C`, royal `#16245C`, emas `#F0C45C` (gradasi metalik hanya untuk teks display), aksen arcane `#5CE1FF` hanya di kristal |
+| Pengganti gratis | Satu keluarga **Rubik** (font UI MLBB menurut wiki komunitasnya): Black kapital dengan isi logam emas atau perak dan tepi gelap untuk judul, Black Italic untuk callout pertempuran. Iterasi awal memakai Cinzel dan Kanit, lalu Oswald di iterasi 3; Oswald terlalu polos dan tidak ada di UI MLBB, jadi diganti di iterasi 4 |
+| Warna | Malam `#04061A` ke `#0F1747`, royal `#1B2A78`, nebula ungu Epic/Mythic `#6B3FD6`, biru mana `#72DCFF`, peach dan sakura dari poster M-series, emas logam `#FFE9A3` ke `#A8560F`. Warna lane: EXP `#FF8A55`, Gold `#FFCF4D`, Mid `#B596FF`, Jungle `#4FE39A`, Roam `#5FD0FF` |
 | Role | Tank, Fighter, Assassin, Mage, Marksman, Support |
 | Lane | EXP Lane, Gold Lane, Mid Lane, Jungle, Roam |
 | Rank | Warrior, Elite, Master, Grandmaster, Epic, Legend, Mythic, Mythical Honor, Mythical Glory, Mythical Immortal |
@@ -207,6 +207,15 @@ Dikerjakan per sprint, masing-masing diverifikasi di browser (Playwright, deskto
 | Map VALORANT dan CS2 | Map terlalu kecil | Map sekitar setengah section. CS2 memakai radar overview resmi 12 map dengan ikon loading screen dari file overview game (Anubis diukur ulang karena file resminya tidak lengkap), tombol lantai untuk Nuke/Train/Vertigo, kartu map dengan screenshot dan emblem resmi. VALORANT memakai kartu ala layar loading map dengan minimap dan penanda site/spawn dari callout valorant-api |
 | Mode terang R.E.P.O. | Varian "Lampu nyala" tetap gelap | Konsep Service Station dan kantor Taxman di bawah lampu: kertas formulir, tinta hitam, outline tebal dan bayangan keras seperti gaya kartun R.E.P.O. Kuning hazard hanya untuk blok karena teks kuning di atas kertas tidak lolos kontras; monitor CRT tetap gelap karena benda fisik |
 | MLBB | Font dan warna font tidak terasa MLBB, peta paling lemah | Serif Romawi diganti Oswald dan Rubik; teks utama putih, emas hanya untuk penekanan, panel kaca biru bertepi biru muda seperti lobby MLBB. Land of Dawn digambar ulang sebagai minimap: EXP Lane atas dan Gold Lane bawah untuk kedua tim, sehingga peta simetris cermin terhadap sungai; Turtle dekat EXP Lane, Lord dekat Gold Lane, tiga menara per lane per tim. Red side diputar 180 derajat seperti tampilan di game |
+
+## 11. Iterasi 4: palet, efek, dan tipografi CS2 dan MLBB
+
+Masukan host: palet CS2 dan MLBB terlalu datar, perlu gradasi dari beberapa warna yang sesuai tema game, komposisi lebih detail dan berlapis, efek dan tipografi lebih kuat (terutama MLBB).
+
+| Game | Keputusan dan alasan |
+|---|---|
+| CS2 | Palet diambil dari stylesheet UI CS2 sendiri, bukan ditebak: gradien biru baja menu, panel item bergradasi, sel bergantian ala scoreboard, warna panel menang T/CT untuk panel skor. Warna khas tiap map diukur dari screenshot pemilihan map dan dipakai sebagai cahaya hero, radar, dan kartu map. Warna pemain CS2 menyambungkan titik di radar, chip di scoreboard, dan killfeed. Buy menu memakai gradien rarity per kategori senjata dan harga asli; kolom kiri yang dulu kosong diisi kartu loadout yang mengikuti pilihan form. Tombol kirim = tombol ACCEPT hijau. Judul memakai Saira Condensed (setara Stratum2 Condensed), huruf bombsite yang disebut judul ikut warna tim |
+| MLBB | Tiga sumber warna: langit malam lobby (indigo, nebula ungu rank Epic/Mythic, biru mana), poster M-series di banner (peach dan sakura dibawa turun sebagai cahaya senja), dan emas logam bingkai rank serta tombol Start. Tepi panel bergradasi cyan ke ungu ke emas, pola heksagon tipis dari motif kristal dan turret. Tipografi satu keluarga Rubik: judul hero emas logam, judul section perak logam, keduanya bertepi gelap. Kartu lineup ala loading screen berbingkai emas dengan warna lane; warna lane yang sama dipakai titik pemain di peta dan pemilih lane. Peta Land of Dawn diberi gradien hutan, sungai, jalur batu, dan cahaya bulan |
 
 Sumber tambahan: kerrang.com dan loudersound.com (anthem VALORANT Champions 2026), MPL Indonesia "We Own This", MurkyYT/cs2-map-icons (aset overview CS2 dari depot game), dokumentasi valorant-api (rumus koordinat minimap), wiki komunitas MLBB (font UI Rubik, tata letak Land of Dawn).
 

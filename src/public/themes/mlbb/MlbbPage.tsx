@@ -1,10 +1,8 @@
-import '@fontsource/oswald/500.css'
-import '@fontsource/oswald/600.css'
-import '@fontsource/oswald/700.css'
 import '@fontsource/rubik/400.css'
-import '@fontsource/rubik/500.css'
 import '@fontsource/rubik/600.css'
 import '@fontsource/rubik/700.css'
+import '@fontsource/rubik/800.css'
+import '@fontsource/rubik/900.css'
 import '@fontsource/rubik/900-italic.css'
 import './mlbb.css'
 import { useRef, useState, type CSSProperties } from 'react'
@@ -24,7 +22,7 @@ import { MusicDock } from '../../common/Music'
 import { Split } from '../../common/Split'
 import { useToast } from '../../common/Toast'
 import { Embers } from './Embers'
-import { LandOfDawn } from './LandOfDawn'
+import { LandOfDawn, laneKey } from './LandOfDawn'
 
 const def = gameDef('mlbb')
 
@@ -288,7 +286,7 @@ export default function MlbbPage({ j }: ThemeProps) {
                     {options.map((lane) => (
                       <label className="ml-lane" key={lane}>
                         <input type="radio" name="ml-lane" value={lane} checked={value === lane} onChange={() => onChange(lane)} />
-                        <span className="ml-lane__card">
+                        <span className="ml-lane__card" data-lane={laneKey(lane)}>
                           <LaneIcon lane={lane} />
                           <span className="ml-lane__name">{lane}</span>
                           {taken.has(lane) && <span className="ml-lane__taken">sudah ada</span>}
@@ -412,7 +410,7 @@ function LineupCard({ player, index, host }: { player: Player | null; index: num
   }
   const isHost = host.trim() && host.trim().toLowerCase() === player.name.trim().toLowerCase()
   return (
-    <article className={`ml-card ${player.status === 'maybe' ? 'is-maybe' : ''}`}>
+    <article className={`ml-card ${player.status === 'maybe' ? 'is-maybe' : ''}`} data-lane={laneKey(player.role)}>
       <span className="ml-card__slot">Slot {index + 1}</span>
       <div className="ml-card__lane">
         {player.role ? <LaneIcon lane={player.role} /> : null}

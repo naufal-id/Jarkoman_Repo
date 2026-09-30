@@ -19,7 +19,7 @@
   --danger: #ff8f8f;
   --font-valorant: 'Anton', sans-serif;
   --font-cs2: 'Saira Condensed', sans-serif;
-  --font-mlbb: 'Oswald', sans-serif;
+  --font-mlbb: 'Rubik', sans-serif;
   --font-repo: 'Teko', sans-serif;
 }
 
@@ -418,7 +418,8 @@ select.adm-input option {
 }
 .adm-login__games [data-game='mlbb'] {
   font-family: var(--font-mlbb);
-  font-weight: 700;
+  font-weight: 900;
+  text-transform: uppercase;
   font-size: clamp(24px, 3.2vw, 44px);
 }
 .adm-login__games [data-game='repo'] {
@@ -638,7 +639,8 @@ select.adm-input option {
 }
 .adm-item[data-game='mlbb'] .adm-item__game {
   font-family: var(--font-mlbb);
-  font-weight: 700;
+  font-weight: 900;
+  text-transform: uppercase;
   font-size: 16px;
 }
 .adm-item[data-game='repo'] .adm-item__game {
@@ -881,7 +883,8 @@ select.adm-input option {
 }
 .adm-game[data-game='mlbb'] .adm-game__name {
   font-family: var(--font-mlbb);
-  font-weight: 700;
+  font-weight: 900;
+  text-transform: uppercase;
   font-size: 22px;
 }
 .adm-game[data-game='repo'] .adm-game__name {
