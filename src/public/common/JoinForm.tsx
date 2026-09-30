@@ -162,8 +162,8 @@ export function JoinForm({
       }
     };
     return (
-      <div className={`jf jf--done ${className}`} role="status">
-        <div className="jf__done">
+      <div className={`jf jf--done ${className}`}>
+        <div className="jf__done" role="status">
           <p className="jf__done-kicker">
             {slot ? `Slot ${slot} terkunci` : `Cadangan ke-${reserveNo}`}
           </p>

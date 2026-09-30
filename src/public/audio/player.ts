@@ -5,6 +5,15 @@ let shared: AudioContext | null = null
 /** Satu AudioContext untuk seluruh halaman. Harus dibuat/di-resume dari aksi pengguna (klik). */
 export async function getContext(): Promise<AudioContext> {
   if (!shared) {
+    // iOS membisukan Web Audio saat saklar silent nyala, kecuali sesi audio ditandai sebagai pemutaran media (Safari 16.4+).
+    const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession
+    if (session) {
+      try {
+        session.type = 'playback'
+      } catch {
+        // Browser lama: abaikan.
+      }
+    }
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
     shared = new Ctor()
   }
