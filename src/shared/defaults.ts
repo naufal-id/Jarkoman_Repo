@@ -6,7 +6,7 @@ import { DEFAULT_WA } from './wa'
 
 /** Pemain baru dengan nilai bawaan (ditambahkan admin). */
 export function blankPlayer(patch: Partial<Player> = {}): Player {
-  return { id: uid(), name: '', role: '', pick: '', status: 'in', via: 'admin', note: '', seq: 0, joinedAt: 0, ...patch }
+  return { id: uid(), name: '', role: '', pick: '', status: 'in', via: 'admin', note: '', seq: 0, editSeq: 0, joinedAt: 0, ...patch }
 }
 
 export function createJarkoman(game: GameId, now = Date.now()): Jarkoman {

@@ -25,6 +25,7 @@ interface Item {
   status: string
   autoJoin?: boolean
   players: { status: string }[]
+  updatedAt?: number
 }
 
 const escapeAttr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -93,7 +94,10 @@ export default async (req: Request, context: Context) => {
       try {
         const meta = await fetch(new URL(`/api/og?id=${encodeURIComponent(item.id)}&meta=1`, url.origin), { signal: AbortSignal.timeout(1500) })
         const sig = ((await meta.json()) as { sig?: string | null }).sig
-        if (meta.ok && sig) custom = `${url.origin}/api/og?id=${encodeURIComponent(item.id)}&v=${encodeURIComponent(sig)}`
+        // Versi gambar = "<tanda isi>-<updatedAt jarkoman, base 36>". Gambar yang dibuat sebelum perubahan terakhir
+        // (dashboard belum sempat membuat ulang) tidak dipakai; bot mendapat gambar per game.
+        const fresh = typeof item.updatedAt === 'number' && sig?.endsWith(`-${item.updatedAt.toString(36)}`)
+        if (meta.ok && sig && fresh) custom = `${url.origin}/api/og?id=${encodeURIComponent(item.id)}&v=${encodeURIComponent(sig)}`
       } catch {
         // Tanpa gambar khusus: pakai gambar per game.
       }

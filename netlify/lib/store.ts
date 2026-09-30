@@ -107,10 +107,20 @@ function fileStore(dir: string): KV {
   }
 }
 
+let shared: { key: string; kv: KV } | null = null
+
+/** Satu objek store per proses (per folder dev), supaya cache yang dikunci per store (rahasia pendaftar) bekerja. */
 export function stateStore(): KV {
   if (override) return override
   const dir = process.env.JARKOMAN_DEV_STORE
-  if (dir) return fileStore(dir)
+  const key = dir ? `file:${dir}` : 'blobs'
+  if (shared?.key === key) return shared.kv
+  const kv = dir ? fileStore(dir) : blobStateStore()
+  shared = { key, kv }
+  return kv
+}
+
+function blobStateStore(): KV {
   const store = getStore({ name: 'jarkoman', consistency: 'strong' })
   return {
     async getJSON<T>(key: string) {

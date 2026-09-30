@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
+import { Suspense, use, useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
 import { flushSync } from 'react-dom'
 import { api, ApiError } from '../shared/api'
 import { defaultState } from '../shared/defaults'
@@ -19,11 +19,43 @@ const THEME_LOADERS: Record<GameId, () => Promise<{ default: ComponentType<Theme
   repo: () => import('./themes/repo/RepoPage'),
 }
 
-const THEMES: Record<GameId, ComponentType<ThemeProps>> = {
-  valorant: lazy(THEME_LOADERS.valorant),
-  cs2: lazy(THEME_LOADERS.cs2),
-  mlbb: lazy(THEME_LOADERS.mlbb),
-  repo: lazy(THEME_LOADERS.repo),
+/**
+ * Komponen tema yang sudah dimuat. Berbeda dengan React.lazy, tema yang modulnya sudah ada langsung dirender tanpa
+ * menangguhkan render pertama, jadi perpindahan jarkoman di dalam View Transition tidak menangkap layar tunggu.
+ */
+const LOADED: Partial<Record<GameId, ComponentType<ThemeProps>>> = {}
+const LOADING: Partial<Record<GameId, Promise<void>>> = {}
+
+type Tracked = Promise<void> & { status?: 'fulfilled' | 'rejected'; value?: unknown; reason?: unknown }
+
+function loadTheme(game: GameId): Promise<void> {
+  let p = LOADING[game]
+  if (!p) {
+    const tracked: Tracked = THEME_LOADERS[game]().then((m) => {
+      LOADED[game] = m.default
+    })
+    // Tandai status promise seperti yang dibaca React di use(): promise yang sudah selesai langsung dipakai tanpa
+    // menangguhkan render (tidak ada layar tunggu di tengah View Transition).
+    tracked.then(
+      () => {
+        tracked.status = 'fulfilled'
+        tracked.value = undefined
+      },
+      (err) => {
+        tracked.status = 'rejected'
+        tracked.reason = err
+        delete LOADING[game]
+      },
+    )
+    LOADING[game] = p = tracked
+  }
+  return p
+}
+
+function ThemeHost({ game, j }: { game: GameId; j: Jarkoman }) {
+  use(loadTheme(game))
+  const Theme = LOADED[game]!
+  return <Theme j={j} />
 }
 
 type Load = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; state: SiteState; sample: boolean; offline: boolean }
@@ -243,7 +275,7 @@ export function App() {
         return
       }
       const mine = ++seq
-      await THEME_LOADERS[target.game]().catch(() => null)
+      await loadTheme(target.game).catch(() => null)
       if (mine !== seq) return
       // Intro game hanya untuk kunjungan pertama; perpindahan di dalam situs langsung ke halaman.
       writeJSON(KEYS.introSeen(target.game), 1, 'session')
@@ -333,7 +365,6 @@ interface StageProps {
 function Stage({ item, others, replay, replaceItem, banner }: StageProps) {
   const def = gameDef(item.game)
   const media = useMedia(item.game)
-  const Theme = THEMES[item.game]
 
   useEffect(() => {
     document.documentElement.dataset.game = item.game
@@ -350,7 +381,7 @@ function Stage({ item, others, replay, replaceItem, banner }: StageProps) {
       </a>
       {banner && <div className="data-banner">{banner}</div>}
       <Suspense fallback={<SystemScreen text={`Menyiapkan tema ${def.name}…`} busy />}>
-        <Theme key={item.id} j={item} />
+        <ThemeHost key={item.id} game={item.game} j={item} />
       </Suspense>
     </PageCtx.Provider>
   )

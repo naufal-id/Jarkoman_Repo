@@ -67,7 +67,15 @@ export function ogSignature(j: Jarkoman): string {
     h ^= raw.charCodeAt(i)
     h = Math.imul(h, 0x01000193) >>> 0
   }
-  return h.toString(36)
+  return h.toString(36).padStart(7, '0')
+}
+
+/**
+ * Versi gambar yang disimpan server: tanda isi + waktu ubah jarkoman. Edge function hanya memakai gambar yang
+ * akhirannya cocok dengan updatedAt jarkoman saat ini, jadi gambar yang belum sempat dibuat ulang tidak dipakai.
+ */
+export function ogVersion(j: Jarkoman): string {
+  return `${ogSignature(j)}-${j.updatedAt.toString(36)}`
 }
 
 const FONT_CSS: Record<GameId, (() => Promise<unknown>)[]> = {

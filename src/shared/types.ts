@@ -22,6 +22,8 @@ export interface Player {
   note: string
   /** Nomor urut pendaftaran web (SiteState.joinSeq saat mendaftar), 0 untuk pemain dari admin */
   seq: number
+  /** Nomor urut perubahan terakhir oleh pemain sendiri (ubah role/pick), 0 kalau belum pernah */
+  editSeq: number
   /** Waktu mendaftar lewat web (epoch ms), 0 untuk pemain dari admin */
   joinedAt: number
 }

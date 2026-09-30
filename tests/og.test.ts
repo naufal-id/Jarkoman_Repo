@@ -19,13 +19,13 @@ afterEach(() => setOgStoreForTests(null))
 describe('gambar preview per jarkoman (/api/og)', () => {
   it('hanya admin yang bisa mengunggah, siapa saja bisa membaca', async () => {
     const put = (headers: Record<string, string>) =>
-      ogHandler(req('/api/og?id=abcd1234&sig=v1abc', { method: 'PUT', headers: { 'content-type': 'image/jpeg', ...headers }, body: jpeg() }))
+      ogHandler(req('/api/og?id=abcd1234&sig=v1abcd-k9x2m1', { method: 'PUT', headers: { 'content-type': 'image/jpeg', ...headers }, body: jpeg() }))
     expect((await put({})).status).toBe(401)
     expect((await put(auth())).status).toBe(200)
 
     const meta = (await (await ogHandler(req('/api/og?id=abcd1234&meta=1'))).json()) as { sig: string }
-    expect(meta.sig).toBe('v1abc')
-    const img = await ogHandler(req('/api/og?id=abcd1234&v=v1abc'))
+    expect(meta.sig).toBe('v1abcd-k9x2m1')
+    const img = await ogHandler(req('/api/og?id=abcd1234&v=v1abcd-k9x2m1'))
     expect(img.status).toBe(200)
     expect(img.headers.get('content-type')).toBe('image/jpeg')
     expect(img.headers.get('cache-control')).toContain('immutable')
@@ -33,7 +33,7 @@ describe('gambar preview per jarkoman (/api/og)', () => {
   })
 
   it('menolak format selain gambar dan id yang tidak valid', async () => {
-    const bad = await ogHandler(req('/api/og?id=abcd1234&sig=v1abc', { method: 'PUT', headers: { 'content-type': 'text/html', ...auth() }, body: '<b>' }))
+    const bad = await ogHandler(req('/api/og?id=abcd1234&sig=v1abcd-k9x2m1', { method: 'PUT', headers: { 'content-type': 'text/html', ...auth() }, body: '<b>' }))
     expect(bad.status).toBe(415)
     expect((await ogHandler(req('/api/og?id=../x'))).status).toBe(400)
   })
@@ -41,7 +41,7 @@ describe('gambar preview per jarkoman (/api/og)', () => {
   it('gambar jarkoman yang sudah dihapus ikut dibersihkan', async () => {
     const keep = createJarkoman('valorant')
     for (const id of [keep.id, 'hapus123']) {
-      await ogHandler(req(`/api/og?id=${id}&sig=v1abc`, { method: 'PUT', headers: { 'content-type': 'image/jpeg', ...auth() }, body: jpeg() }))
+      await ogHandler(req(`/api/og?id=${id}&sig=v1abcd-k9x2m1`, { method: 'PUT', headers: { 'content-type': 'image/jpeg', ...auth() }, body: jpeg() }))
     }
     const removed = await cleanupOg({ version: 1, featuredId: keep.id, items: [keep], updatedAt: 1, joinSeq: 0, gone: [] })
     expect(removed).toBe(1)

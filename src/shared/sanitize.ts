@@ -89,6 +89,7 @@ export function cleanPlayer(v: unknown): Player | null {
     via: web ? 'web' : 'admin',
     note: cleanText(v.note, LIMITS.playerNote),
     seq: web ? count(v.seq) : 0,
+    editSeq: web ? count(v.editSeq) : 0,
     joinedAt: web ? count(v.joinedAt) : 0,
   }
 }

@@ -3,7 +3,7 @@ import { ogStore } from './store'
 
 export const OG_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 export const MAX_OG_BYTES = 700 * 1024
-export const OG_SIG = /^[a-z0-9]{4,40}$/
+export const OG_SIG = /^[a-z0-9]{4,20}-[a-z0-9]{4,20}$/
 
 /** Hapus gambar OG milik jarkoman yang sudah tidak ada. Dipanggil setelah admin menyimpan. */
 export async function cleanupOg(state: SiteState): Promise<number> {

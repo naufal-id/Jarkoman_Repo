@@ -4,7 +4,7 @@ import { cleanState, ID_PATTERN } from '../../src/shared/sanitize'
 import type { SiteState } from '../../src/shared/types'
 import { joinKey, verifyJoinKey } from '../lib/auth'
 import { joinSecrets } from '../lib/join-secret'
-import { clientIp, hitLimit, JOIN_RATE } from '../lib/ratelimit'
+import { checkLimit, clientIp, JOIN_RATE } from '../lib/ratelimit'
 import { error, json, readJson } from '../lib/http'
 import { stateStore, updateJSON, WriteConflictError } from '../lib/store'
 
@@ -52,13 +52,15 @@ export default async function handler(req: Request, context?: { ip?: string }): 
   try {
     const secrets = await joinSecrets(store)
     if (req.method === 'POST') {
-      if (await hitLimit(store, id, clientIp(req, context), JOIN_RATE)) {
+      const rate = await checkLimit(store, id, clientIp(req, context), JOIN_RATE)
+      if (rate.limited) {
         return error(429, 'Terlalu banyak pendaftaran dari jaringan ini. Coba lagi beberapa menit lagi atau kabari host.', { code: 'rate-limited' })
       }
       const out = await updateJSON<SiteState, ReturnType<typeof addWebPlayer>>(store, KEY, (current) => {
         const result = addWebPlayer(load(current), { id, name: text(body.name), role: text(body.role), pick: text(body.pick), note: text(body.note) })
         return { value: result.state, result }
       })
+      await rate.commit()
       return json({ item: publicItem(out.item), player: out.player, key: joinKey(id, out.player.id, secrets.current), slot: slotOf(out.item, out.player.id) })
     }
 

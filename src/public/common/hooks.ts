@@ -127,11 +127,14 @@ export function useSquadMarks(j: Jarkoman): { fresh: Set<string>; me: string | n
     prev.current = { id: j.id, players: now }
     if (!before || before.id !== j.id) return
     const added = [...now].filter((id) => !before.players.has(id))
-    if (!added.length) return
-    setFresh(new Set(added))
+    if (added.length) setFresh(new Set(added))
+  }, [ids, j.id])
+  // Timer terpisah dari perubahan daftar, supaya perubahan berikutnya (misalnya ada yang batal) tidak membatalkannya.
+  useEffect(() => {
+    if (!fresh.size) return
     const t = window.setTimeout(() => setFresh(new Set()), 2600)
     return () => window.clearTimeout(t)
-  }, [ids, j.id])
+  }, [fresh])
   const mine = readJSON<{ player?: string }>(KEYS.joined(j.id))?.player
   const me = mine && j.players.some((p) => p.id === mine) ? mine : null
   return { fresh, me }

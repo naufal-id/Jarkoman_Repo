@@ -27,7 +27,13 @@ export interface JoinSecrets {
 
 export async function joinSecrets(kv: KV): Promise<JoinSecrets> {
   const env = (process.env.JARKOMAN_SECRET ?? '').trim()
-  if (env) return { current: env, accepted: [env] }
+  if (env) {
+    // JARKOMAN_SECRET baru diisi belakangan: kunci yang sudah dibagikan dengan rahasia tersimpan atau turunan
+    // password tetap diterima. Rahasia tersimpan hanya dibaca, tidak dibuat.
+    const kept = await kv.getJSON<{ secret?: string }>(KEY).catch(() => null)
+    const accepted = [env, typeof kept?.secret === 'string' ? kept.secret : '', legacyJoinSecret()].filter(Boolean)
+    return { current: env, accepted }
+  }
   let pending = cache.get(kv)
   if (!pending) {
     pending = stored(kv)
@@ -36,5 +42,5 @@ export async function joinSecrets(kv: KV): Promise<JoinSecrets> {
   }
   const current = await pending
   // Kunci yang dibagikan sebelum rahasia tersimpan ini ada ditandatangani dengan rahasia turunan password.
-  return { current, accepted: [current, legacyJoinSecret()] }
+  return { current, accepted: [current, legacyJoinSecret()].filter(Boolean) }
 }

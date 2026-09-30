@@ -95,6 +95,7 @@ export function addWebPlayer(state: SiteState, input: JoinInput, now = Date.now(
     via: 'web',
     note: cleanText(input.note, LIMITS.playerNote),
     seq,
+    editSeq: 0,
     joinedAt: now,
   }
   const next: Jarkoman = { ...item, players: [...item.players, player] }
@@ -112,8 +113,9 @@ export interface JoinPatch {
 }
 
 /**
- * Pemain mengubah role, pick, atau catatannya sendiri tanpa kehilangan posisi di skuad. joinSeq naik dan seq pemain
- * diperbarui supaya perubahan ini ikut terbawa ke draft admin yang dibuka sebelumnya (lihat applyWebChanges).
+ * Pemain mengubah role, pick, atau catatannya sendiri tanpa kehilangan posisi di skuad. joinSeq naik dan editSeq
+ * pemain diperbarui supaya perubahan ini ikut terbawa ke draft admin yang dibuka sebelumnya (lihat applyWebChanges).
+ * seq (urutan daftar) tidak berubah, jadi pemain yang sudah dihapus admin di draft tidak ikut muncul lagi.
  */
 export function updateWebPlayer(state: SiteState, itemId: string, playerId: string, patch: JoinPatch, now = Date.now()): { state: SiteState; item: Jarkoman; player: Player } {
   const item = state.items.find((i) => i.id === itemId)
@@ -130,7 +132,7 @@ export function updateWebPlayer(state: SiteState, itemId: string, playerId: stri
     role: role === '' || def.roles.includes(role) ? role : current.role,
     pick: patch.pick === undefined ? current.pick : cleanText(patch.pick, LIMITS.short),
     note: patch.note === undefined ? current.note : cleanText(patch.note, LIMITS.playerNote),
-    seq,
+    editSeq: seq,
   }
   const next: Jarkoman = { ...item, players: item.players.map((p) => (p.id === playerId ? player : p)) }
   return {
@@ -165,28 +167,28 @@ export function removeWebPlayer(state: SiteState, itemId: string, playerId: stri
 export function applyWebChanges(target: SiteState, source: SiteState, sinceSeq: number): SiteState {
   const removed = new Set(source.gone.filter((g) => g.seq > sinceSeq).map((g) => g.id))
   const joined = new Map<string, Player[]>()
+  const edited = new Map<string, Player>()
   for (const item of source.items) {
     const fresh = item.players.filter((p) => p.via === 'web' && p.seq > sinceSeq)
     if (fresh.length) joined.set(item.id, fresh)
+    for (const p of item.players) if (p.via === 'web' && p.editSeq > sinceSeq) edited.set(`${item.id}:${p.id}`, p)
   }
   const items = target.items.map((item) => {
-    const fresh = joined.get(item.id) ?? []
-    const edits = new Map(fresh.map((p) => [p.id, p]))
-    let edited = false
-    // Pemain yang sudah ada di draft tapi mengubah role, pick, atau catatannya sendiri lewat web: pakai versi terbaru
-    // untuk field yang memang bisa diubah pemain, sisanya (status, urutan) tetap milik admin.
+    let changed = false
+    // Pemain yang mengubah role atau pick sendiri: perbarui field milik pemain saja (status dan urutan tetap milik
+    // admin). Hanya untuk pemain yang masih ada di target; yang sudah dihapus admin tidak dimunculkan lagi.
     const kept = item.players
       .filter((p) => !removed.has(p.id))
       .map((p) => {
-        const e = edits.get(p.id)
-        if (!e || (e.role === p.role && e.pick === p.pick && e.note === p.note && e.seq === p.seq)) return p
-        edited = true
-        return { ...p, role: e.role, pick: e.pick, note: e.note, seq: e.seq }
+        const e = edited.get(`${item.id}:${p.id}`)
+        if (!e || (e.role === p.role && e.pick === p.pick && e.note === p.note && e.editSeq === p.editSeq)) return p
+        changed = true
+        return { ...p, role: e.role, pick: e.pick, note: e.note, editSeq: e.editSeq }
       })
     const have = new Set(kept.map((p) => p.id))
-    const add = fresh.filter((p) => !have.has(p.id) && !kept.some((k) => sameName(k.name, p.name)))
+    const add = (joined.get(item.id) ?? []).filter((p) => !have.has(p.id) && !kept.some((k) => sameName(k.name, p.name)))
     const players = [...kept, ...add].slice(0, LIMITS.players)
-    return players.length === item.players.length && add.length === 0 && !edited ? item : { ...item, players }
+    return players.length === item.players.length && add.length === 0 && !changed ? item : { ...item, players }
   })
   const gone = new Map<string, number>()
   for (const g of [...target.gone, ...source.gone]) gone.set(g.id, Math.max(g.seq, gone.get(g.id) ?? 0))

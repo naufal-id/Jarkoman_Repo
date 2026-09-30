@@ -309,4 +309,47 @@ describe('logika join bersama', () => {
     const bad = updateWebPlayer(saved.body.state, j.id, first.body.player.id, { role: 'Tank' })
     expect(bad.player.role).toBe('Sentinel')
   })
+
+  it('edit oleh pemain tidak memunculkan lagi pemain yang sudah dihapus admin di draft', async () => {
+    const j = upcoming('valorant')
+    await publish(stateOf(j))
+    const spam = await join({ id: j.id, name: 'Spam' })
+    const draft = await adminServer()
+    draft.items[0].players = draft.items[0].players.filter((p) => p.id !== spam.body.player.id)
+
+    const patched = await joinHandler(req('/api/join', { method: 'PATCH', body: JSON.stringify({ id: j.id, player: spam.body.player.id, key: spam.body.key, role: 'Duelist' }) }))
+    expect(patched.status).toBe(200)
+    const server = await adminServer()
+    expect(applyWebChanges(draft, server, draft.joinSeq).items[0].players).toHaveLength(0)
+    const saved = await publish(draft, draft.updatedAt)
+    expect(saved.body.state.items[0].players).toHaveLength(0)
+  })
+
+  it('percobaan yang ditolak tidak menghabiskan kuota IP, id acak tidak menulis apa pun', async () => {
+    const j = upcoming('cs2')
+    j.slots = 10
+    await publish(stateOf(j))
+    const post = (id: string, name: string) => joinHandler(req('/api/join', { method: 'POST', body: JSON.stringify({ id, name }) }), { ip: '10.9.9.9' })
+    expect((await post(j.id, 'Asli')).status).toBe(200)
+    for (let i = 0; i < 8; i++) expect((await post(j.id, 'asli')).status).toBe(409)
+    for (let i = 0; i < 5; i++) expect((await post(j.id, `Teman ${i}`)).status).toBe(200)
+    expect((await post(j.id, 'Ketujuh')).status).toBe(429)
+
+    const before = JSON.stringify(await kv.getJSON('ratelimit'))
+    expect((await post('acak0001', 'X')).status).toBe(404)
+    expect(JSON.stringify(await kv.getJSON('ratelimit'))).toBe(before)
+  })
+
+  it('kunci yang sudah dibagikan tetap berlaku setelah JARKOMAN_SECRET diisi belakangan', async () => {
+    const j = upcoming('repo')
+    await publish(stateOf(j))
+    const { body } = await join({ id: j.id, name: 'Lama' })
+    process.env.JARKOMAN_SECRET = 'rahasia-baru-yang-panjang'
+    try {
+      const res = await joinHandler(req('/api/join', { method: 'DELETE', body: JSON.stringify({ id: j.id, player: body.player.id, key: body.key }) }))
+      expect(res.status).toBe(200)
+    } finally {
+      delete process.env.JARKOMAN_SECRET
+    }
+  })
 })

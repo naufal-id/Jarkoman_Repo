@@ -77,6 +77,7 @@ export function verifyJoinKey(itemId: string, playerId: string, key: unknown, jo
 
 /** Rahasia lama yang dulu dipakai untuk kunci pendaftar, supaya kunci yang sudah dibagikan tetap berlaku. */
 export function legacyJoinSecret(): string {
-  // Tanpa password dan JARKOMAN_SECRET, rahasia lama bisa ditebak semua orang, jadi tidak diterima.
-  return isConfigured() ? secret() : ''
+  // Kunci lama tanpa JARKOMAN_SECRET ditandatangani turunan password. Tanpa password, rahasia itu bisa ditebak
+  // semua orang, jadi tidak diterima. (Kunci lama yang dibuat saat JARKOMAN_SECRET sudah ada tetap cocok lewat env.)
+  return isConfigured() ? `jarkoman:${adminPassword()}` : ''
 }

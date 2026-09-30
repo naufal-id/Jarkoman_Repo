@@ -52,19 +52,25 @@ describe('edge function og', () => {
     expect(await res.text()).toContain('/og/valorant.jpg')
   })
 
-  it('memakai gambar khusus jarkoman kalau dashboard sudah membuatnya', async () => {
+  it('memakai gambar khusus jarkoman kalau versinya cocok, gambar basi diabaikan', async () => {
     const item = createJarkoman('cs2')
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async (input: URL | string) => {
-        const url = String(input)
-        if (url.includes('/api/og')) return Response.json({ sig: 'abc123' })
-        return Response.json({ state: { version: 1, featuredId: item.id, items: [item], updatedAt: 1 } })
-      }),
-    )
-    const res = (await og(new Request(`https://mabar.test/?id=${item.id}`, { headers: { 'user-agent': 'WhatsApp/2.24.1 A' } }), context()))!
-    const html = await res.text()
-    expect(html).toContain(`content="https://mabar.test/api/og?id=${item.id}&amp;v=abc123"`)
-    expect(html).not.toContain('/og/cs2.jpg')
+    const version = (sig: string) => `${sig}-${item.updatedAt.toString(36)}`
+    const run = async (sig: string) => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (input: URL | string) => {
+          if (String(input).includes('/api/og')) return Response.json({ sig })
+          return Response.json({ state: { version: 1, featuredId: item.id, items: [item], updatedAt: 1 } })
+        }),
+      )
+      const res = (await og(new Request(`https://mabar.test/?id=${item.id}`, { headers: { 'user-agent': 'WhatsApp/2.24.1 A' } }), context()))!
+      return res.text()
+    }
+    const fresh = await run(version('abc1234'))
+    expect(fresh).toContain(`content="https://mabar.test/api/og?id=${item.id}&amp;v=${version('abc1234')}"`)
+    expect(fresh).not.toContain('/og/cs2.jpg')
+    // Dibuat sebelum perubahan terakhir jarkoman: jangan dipakai.
+    const stale = await run(`abc1234-${(item.updatedAt - 5000).toString(36)}`)
+    expect(stale).toContain('/og/cs2.jpg')
   })
 })
