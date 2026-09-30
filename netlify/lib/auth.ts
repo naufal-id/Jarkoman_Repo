@@ -58,11 +58,25 @@ export function bearer(req: Request): string | null {
   return match ? match[1].trim() : null
 }
 
-/** Kunci milik perangkat pendaftar untuk membatalkan pendaftarannya sendiri. Tidak disimpan di server. */
-export function joinKey(itemId: string, playerId: string): string {
-  return sign(`join:${itemId}:${playerId}`)
+/**
+ * Kunci milik perangkat pendaftar untuk membatalkan atau mengubah pendaftarannya sendiri. Tidak disimpan di
+ * server. Ditandatangani dengan rahasia pendaftar (lihat join-secret.ts), bukan rahasia sesi admin, supaya
+ * mengganti password admin tidak mematikan tombol "Batal ikut" semua pemain.
+ */
+export function joinKey(itemId: string, playerId: string, joinSecret: string): string {
+  return b64url(createHmac('sha256', joinSecret).update(`join:${itemId}:${playerId}`).digest())
 }
 
-export function verifyJoinKey(itemId: string, playerId: string, key: unknown): boolean {
-  return typeof key === 'string' && key.length > 0 && safeEqual(key, joinKey(itemId, playerId))
+export function verifyJoinKey(itemId: string, playerId: string, key: unknown, joinSecrets: string[]): boolean {
+  if (typeof key !== 'string' || key.length === 0) return false
+  let ok = false
+  // Semua kandidat dicek (tanpa berhenti di yang pertama cocok) supaya waktu eksekusi tidak membocorkan apa pun.
+  for (const s of joinSecrets) if (s && safeEqual(key, joinKey(itemId, playerId, s))) ok = true
+  return ok
+}
+
+/** Rahasia lama yang dulu dipakai untuk kunci pendaftar, supaya kunci yang sudah dibagikan tetap berlaku. */
+export function legacyJoinSecret(): string {
+  // Tanpa password dan JARKOMAN_SECRET, rahasia lama bisa ditebak semua orang, jadi tidak diterima.
+  return isConfigured() ? secret() : ''
 }

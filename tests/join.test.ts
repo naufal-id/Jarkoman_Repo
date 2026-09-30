@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import joinHandler from '../netlify/functions/join.mts'
 import stateHandler from '../netlify/functions/state.mts'
-import { issueToken } from '../netlify/lib/auth'
+import { issueToken, joinKey, legacyJoinSecret, verifyJoinKey } from '../netlify/lib/auth'
+import { joinSecrets } from '../netlify/lib/join-secret'
 import { memoryAudioStore, memoryStore, setAudioStoreForTests, setStoreForTests, updateJSON, type KV } from '../netlify/lib/store'
 import { blankPlayer, createJarkoman } from '../src/shared/defaults'
 import { addWebPlayer, applyWebChanges, JoinError, removeWebPlayer } from '../src/shared/joins'
@@ -109,6 +110,25 @@ describe('pendaftaran langsung (LOCK IN)', () => {
     const s = await server()
     expect(s.items[0].players).toEqual([])
     expect(s.gone.map((g) => g.id)).toEqual([body.player.id])
+  })
+
+  it('mengganti password admin tidak mematikan tombol batal ikut, kunci lama tetap berlaku', async () => {
+    const j = upcoming('valorant')
+    await publish(stateOf(j))
+    const { body } = await join({ id: j.id, name: 'Rara' })
+    // Kunci yang dibagikan sebelum rahasia pendaftar terpisah ada: ditandatangani dengan rahasia turunan password.
+    const legacy = joinKey(j.id, 'lama-01', legacyJoinSecret())
+    expect(verifyJoinKey(j.id, 'lama-01', legacy, (await joinSecrets(kv)).accepted)).toBe(true)
+
+    process.env.ADMIN_PASSWORD = 'password-baru'
+    const res = await joinHandler(req('/api/join', { method: 'DELETE', body: JSON.stringify({ id: j.id, player: body.player.id, key: body.key }) }))
+    expect(res.status).toBe(200)
+  })
+
+  it('tanpa password dan JARKOMAN_SECRET, kunci yang bisa ditebak ditolak', async () => {
+    process.env.ADMIN_PASSWORD = ''
+    const guessable = joinKey('x', 'p', 'jarkoman:')
+    expect(verifyJoinKey('x', 'p', guessable, (await joinSecrets(memoryStore())).accepted)).toBe(false)
   })
 
   it('simpanan admin dari draft lama tidak menghapus pendaftar baru dan tidak memunculkan lagi yang batal', async () => {

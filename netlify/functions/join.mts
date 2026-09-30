@@ -3,6 +3,7 @@ import { addWebPlayer, JoinError, removeWebPlayer, slotOf, type JoinErrorCode } 
 import { cleanState, ID_PATTERN } from '../../src/shared/sanitize'
 import type { SiteState } from '../../src/shared/types'
 import { joinKey, verifyJoinKey } from '../lib/auth'
+import { joinSecrets } from '../lib/join-secret'
 import { error, json, readJson } from '../lib/http'
 import { stateStore, updateJSON, WriteConflictError } from '../lib/store'
 
@@ -48,16 +49,17 @@ export default async function handler(req: Request): Promise<Response> {
 
   const store = stateStore()
   try {
+    const secrets = await joinSecrets(store)
     if (req.method === 'POST') {
       const out = await updateJSON<SiteState, ReturnType<typeof addWebPlayer>>(store, KEY, (current) => {
         const result = addWebPlayer(load(current), { id, name: text(body.name), role: text(body.role), pick: text(body.pick), note: text(body.note) })
         return { value: result.state, result }
       })
-      return json({ item: out.item, player: out.player, key: joinKey(id, out.player.id), slot: slotOf(out.item, out.player.id) })
+      return json({ item: out.item, player: out.player, key: joinKey(id, out.player.id, secrets.current), slot: slotOf(out.item, out.player.id) })
     }
 
     const playerId = text(body.player)
-    if (!ID_PATTERN.test(playerId) || !verifyJoinKey(id, playerId, body.key)) {
+    if (!ID_PATTERN.test(playerId) || !verifyJoinKey(id, playerId, body.key, secrets.accepted)) {
       return error(403, 'Pendaftaran ini tidak bisa dibatalkan dari perangkat ini. Hubungi host.', { code: 'forbidden' })
     }
     const out = await updateJSON<SiteState, ReturnType<typeof removeWebPlayer>>(store, KEY, (current) => {

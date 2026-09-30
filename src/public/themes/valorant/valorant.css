@@ -16,7 +16,7 @@
   --alt-fg: var(--ink);
   --alt-muted: #4e5a66;
   --alt-line: rgba(15, 25, 35, 0.2);
-  --alt-red-text: #c42336;
+  --alt-red-text: #b51f31;
   --focus: var(--fg);
   --pad-x: clamp(16px, 4vw, 48px);
   min-height: 100vh;
@@ -32,7 +32,7 @@
   --muted: #4e5a66;
   --line: rgba(15, 25, 35, 0.2);
   --panel: #e2ddd4;
-  --red-text: #c42336;
+  --red-text: #b51f31;
   --alt-bg: var(--ink);
   --alt-fg: var(--bone);
   --alt-muted: #a9b2ba;
@@ -1485,4 +1485,27 @@ body:has(.val[data-variant='bone']) {
   background: var(--ink);
   color: var(--bone);
   font-weight: 600;
+}
+
+/* Layar 320–380 px: logo, status, dan tombol Bagikan harus muat satu baris tanpa scroll ke samping. */
+@media (max-width: 380px) {
+  .val-top {
+    gap: 8px;
+  }
+  .val-top__mark {
+    font-size: 19px;
+  }
+  .val-status {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 7px 8px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+  .val-top__share {
+    flex: none;
+    padding: 0 10px;
+    letter-spacing: 0.06em;
+  }
 }

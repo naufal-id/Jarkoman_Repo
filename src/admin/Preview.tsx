@@ -24,6 +24,24 @@ export function Preview({ item, others, replay, published }: PreviewProps) {
   const [device, setDevice] = useState<Device>(() => (readJSON<Device>(KEYS.previewDevice) === 'mobile' ? 'mobile' : 'desktop'))
   // Naik setiap iframe mengirim jk:ready (termasuk setelah reload), supaya data dikirim ulang.
   const [readyTick, setReadyTick] = useState(0)
+  // Fokus di dalam iframe tidak memicu :focus-within di halaman induk, jadi cincin fokus dipasang lewat state.
+  const [framed, setFramed] = useState(false)
+  useEffect(() => {
+    let t = 0
+    const check = () => {
+      window.clearTimeout(t)
+      t = window.setTimeout(() => setFramed(document.activeElement === frame.current), 0)
+    }
+    window.addEventListener('blur', check)
+    window.addEventListener('focus', check)
+    document.addEventListener('focusin', check)
+    return () => {
+      window.clearTimeout(t)
+      window.removeEventListener('blur', check)
+      window.removeEventListener('focus', check)
+      document.removeEventListener('focusin', check)
+    }
+  }, [])
   const ready = readyTick > 0
   const [box, setBox] = useState({ w: 0, h: 0 })
   const frame = useRef<HTMLIFrameElement>(null)
@@ -105,7 +123,7 @@ export function Preview({ item, others, replay, published }: PreviewProps) {
             Memuat preview…
           </p>
         )}
-        <div className="adm-preview__frame" style={{ width: size.w * scale, height: frameH * scale }}>
+        <div className="adm-preview__frame" data-focused={framed || undefined} style={{ width: size.w * scale, height: frameH * scale }}>
           <iframe
             ref={frame}
             title="Preview halaman jarkoman"

@@ -17,9 +17,11 @@
   font-size: 14px;
 }
 
+/* Warna ikut label (tidak diredupkan dengan opacity supaya tetap lolos kontras AA); beda lewat ketebalan saja. */
 .jf__opt {
   font-weight: 400;
-  opacity: 0.8;
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 
 .jf__input {

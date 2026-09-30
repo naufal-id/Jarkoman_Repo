@@ -64,8 +64,14 @@ export function App() {
     }
   }, [])
 
+  // Refresh diam hanya boleh berjalan setelah muat pertama selesai. Kalau tidak, ia membatalkan hasil muat
+  // pertama lewat reqId, dan saat refresh gagal halaman tertahan di layar loading.
+  const ready = useRef(false)
+  ready.current = load.kind === 'ready'
+
   // Ambil ulang tanpa layar loading. Hanya menimpa data kalau isinya memang berubah.
   const refreshQuietly = useCallback(async () => {
+    if (!ready.current) return
     const id = ++reqId.current
     try {
       const remote = await api.getState()

@@ -159,7 +159,10 @@ code {
   color: #7f7d86;
 }
 
-.adm-input:focus-visible {
+.adm-input:focus-visible,
+/* Input tanggal/jam: fokus keyboard ada di segmen dalam (shadow DOM), jadi :focus-visible di host tidak
+   selalu cocok. Input ini hanya diisi lewat keyboard atau picker, jadi :focus aman dipakai. */
+.adm-input:is([type='date'], [type='time']):focus {
   outline: 2px solid var(--acc);
   outline-offset: 1px;
   border-color: transparent;
@@ -1242,6 +1245,13 @@ select.adm-input option {
 
 .adm-preview__stage[data-device='mobile'] .adm-preview__frame {
   border-radius: 22px;
+}
+
+/* Frame memotong overflow, jadi outline iframe tidak terlihat; cincin fokus dipasang di frame. */
+.adm-preview__frame[data-focused] {
+  box-shadow:
+    0 0 0 2px var(--acc),
+    0 18px 40px rgba(0, 0, 0, 0.5);
 }
 
 .adm-preview__frame iframe {

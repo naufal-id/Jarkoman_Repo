@@ -28,7 +28,7 @@ Tema per game:
 3. Pengaturan build otomatis terbaca dari `netlify.toml` (build `npm run build`, publish `dist`, Node 22). Tidak perlu diubah.
 4. Sebelum atau sesudah deploy pertama, buka **Site configuration → Environment variables** dan tambahkan:
    - `ADMIN_PASSWORD` = password untuk masuk dashboard (wajib).
-   - `JARKOMAN_SECRET` = string acak panjang (opsional, untuk menandatangani token login).
+   - `JARKOMAN_SECRET` = string acak panjang (opsional). Menandatangani token login dan kunci "Batal ikut" pemain. Kalau kosong, token login memakai turunan `ADMIN_PASSWORD` dan kunci pemain memakai rahasia acak yang dibuat sekali lalu disimpan di Netlify Blobs, jadi mengganti password tidak memutus tombol "Batal ikut".
 5. Deploy (atau **Trigger deploy** kalau variabel ditambahkan setelah deploy pertama).
 6. Buka `https://<nama-situs>.netlify.app/admin/`, login, atur jarkoman, lalu tekan **Publikasikan**.
 
@@ -121,7 +121,7 @@ docs/PLAN.md                   riset, desain, dan rencana
 
 ## Keamanan
 
-- Password hanya dicek di server (Netlify Function). Token login ditandatangani HMAC-SHA256 dan berlaku 7 hari; mengganti `ADMIN_PASSWORD` membatalkan semua token lama.
+- Password hanya dicek di server (Netlify Function). Token login ditandatangani HMAC-SHA256 dan berlaku 7 hari; mengganti `ADMIN_PASSWORD` membatalkan semua token lama (kecuali `JARKOMAN_SECRET` diisi; ganti juga nilai itu untuk membatalkan token). Kunci "Batal ikut" pemain ditandatangani terpisah dan tidak ikut batal saat password diganti.
 - Semua data dari dashboard divalidasi ulang di server (panjang teks, URL hanya http/https, jumlah slot, dll).
 - Upload lagu butuh login admin, hanya menerima tipe audio, dan dibatasi 4,5 MB.
 - Simpan dari dua perangkat sekaligus tidak saling menimpa diam-diam: dashboard menampilkan pilihan saat ada versi lebih baru.

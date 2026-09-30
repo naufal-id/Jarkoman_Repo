@@ -92,8 +92,12 @@ function DashboardInner({ token, onLogout }: Props) {
       const local = readJSON<DraftStore>(KEYS.draft)
       let working = base
       if (local && local.base === base.updatedAt && Array.isArray(local.state?.items) && local.state.items.length && !same(local.state, base)) {
-        working = local.state
-        setRestored(true)
+        // Draft disimpan sebelum pendaftaran web terbaru. Gabungkan dulu supaya skuad di editor tidak basi.
+        const draftState = cleanState(local.state)?.state
+        if (draftState) {
+          working = base.joinSeq > draftState.joinSeq ? applyWebChanges(draftState, base, draftState.joinSeq) : draftState
+          setRestored(true)
+        }
       }
       setSaved(base)
       setDraft(working)
