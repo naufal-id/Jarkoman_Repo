@@ -44,7 +44,7 @@ Situs "jarkoman" (jaringan komando, pengumuman ajakan main) untuk ngajak teman m
 | Aspek | Temuan |
 |---|---|
 | Logo | Sans dengan detail serif dekoratif, emas metalik di atas hitam, kristal di huruf O |
-| Pengganti gratis | **Cinzel** (kapital Romawi bergaya mitos, cocok dengan nuansa "Legends" dan detail serif logo). **Kanit** Black Italic untuk callout pertempuran (DOUBLE KILL, SAVAGE). **Kanit** biasa untuk body, typeface asal Asia Tenggara yang pas untuk pemain ID/PH |
+| Pengganti gratis | **Oswald** (sans condensed tebal seperti tipografi poster dan event resmi MLBB), **Rubik** untuk UI (font yang dipakai wiki komunitas MLBB supaya sama dengan game), Rubik Black Italic untuk callout pertempuran. Iterasi awal memakai Cinzel dan Kanit, diganti di iterasi 3 (lihat bagian 10) |
 | Warna | Night `#070B1C`, royal `#16245C`, emas `#F0C45C` (gradasi metalik hanya untuk teks display), aksen arcane `#5CE1FF` hanya di kristal |
 | Role | Tank, Fighter, Assassin, Mage, Marksman, Support |
 | Lane | EXP Lane, Gold Lane, Mid Lane, Jungle, Roam |
@@ -194,6 +194,21 @@ Host memberikan 4 key art resmi. Keputusan penempatan (alasan satu kalimat per k
 Semibot roster ikut disesuaikan dengan key art: badan kapsul, dua mata besar putih.
 
 Musik: lagu resmi game dilindungi hak cipta dan tidak bisa diunduh dari container, jadi musik bawaan adalah komposisi orisinal yang disintesis dengan Web Audio (tanpa file). Tempo dan instrumen mengikuti suasana game: synth tegang 104 BPM (VALORANT), drum militer dan bunyi bom 92 BPM (CS2), harpa dan taiko 84 BPM (MLBB), drone dan kotak musik sumbang 70 BPM (R.E.P.O.). Host tetap bisa upload lagu sendiri. Musik tidak pernah autoplay; bar equalizer bergerak hanya saat musik benar-benar berbunyi.
+
+## 10. Iterasi 3: perbaikan dari host
+
+Dikerjakan per sprint, masing-masing diverifikasi di browser (Playwright, desktop dan 360 px, animasi nyala dan mati) sebelum di-commit.
+
+| Sprint | Masalah | Keputusan dan alasan |
+|---|---|---|
+| Bug form | Nama yang diketik di form satu jarkoman ikut muncul di jarkoman game lain | Kunci penyimpanan form dan status pendaftaran memakai id jarkoman. Kunci global lama dihapus saat halaman dibuka |
+| LOCK IN langsung | Host harus menginput setiap pemain yang konfirmasi lewat WA | `/api/join` menambahkan pemain ke skuad jarkoman itu. Nyala secara bawaan, bisa diganti per jarkoman ke mode WhatsApp. Tulis bersyarat (ETag Blobs) supaya pendaftaran bersamaan aman; pendaftaran web tidak mengubah versi admin (`joinSeq` dan jejak `gone`), jadi simpanan admin dari draft lama tidak menghapus pendaftar baru dan tidak memunculkan lagi yang batal. Pembatalan hanya dengan kunci HMAC milik perangkat pendaftar |
+| Musik | Musik bawaan sintetis diganti lagu dari host | File diimpor lewat Vite (nama hash, cache permanen), tag ID3 dan cover art dibuang. Klip dipotong di tengah lagu, jadi diputar lewat Web Audio dengan crossfade equal-power; volume disamakan ke sekitar -17 dB RMS karena klip MLBB jauh lebih keras. CS2 tetap sintetis sampai ada lagunya |
+| Map VALORANT dan CS2 | Map terlalu kecil | Map sekitar setengah section. CS2 memakai radar overview resmi 12 map dengan ikon loading screen dari file overview game (Anubis diukur ulang karena file resminya tidak lengkap), tombol lantai untuk Nuke/Train/Vertigo, kartu map dengan screenshot dan emblem resmi. VALORANT memakai kartu ala layar loading map dengan minimap dan penanda site/spawn dari callout valorant-api |
+| Mode terang R.E.P.O. | Varian "Lampu nyala" tetap gelap | Konsep Service Station dan kantor Taxman di bawah lampu: kertas formulir, tinta hitam, outline tebal dan bayangan keras seperti gaya kartun R.E.P.O. Kuning hazard hanya untuk blok karena teks kuning di atas kertas tidak lolos kontras; monitor CRT tetap gelap karena benda fisik |
+| MLBB | Font dan warna font tidak terasa MLBB, peta paling lemah | Serif Romawi diganti Oswald dan Rubik; teks utama putih, emas hanya untuk penekanan, panel kaca biru bertepi biru muda seperti lobby MLBB. Land of Dawn digambar ulang sebagai minimap: EXP Lane atas dan Gold Lane bawah untuk kedua tim, sehingga peta simetris cermin terhadap sungai; Turtle dekat EXP Lane, Lord dekat Gold Lane, tiga menara per lane per tim. Red side diputar 180 derajat seperti tampilan di game |
+
+Sumber tambahan: kerrang.com dan loudersound.com (anthem VALORANT Champions 2026), MPL Indonesia "We Own This", MurkyYT/cs2-map-icons (aset overview CS2 dari depot game), dokumentasi valorant-api (rumus koordinat minimap), wiki komunitas MLBB (font UI Rubik, tata letak Land of Dawn).
 
 ## Sumber riset
 

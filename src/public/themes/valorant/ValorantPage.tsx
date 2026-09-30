@@ -79,8 +79,11 @@ export default function ValorantPage({ j }: ThemeProps) {
             .set('.val-map__wipe', { transformOrigin: '100% 50%' })
             .to('.val-map__wipe', { scaleX: 0, duration: 0.55, ease: 'power3.out' })
             .from('.val-map__name', { yPercent: 40, opacity: 0, duration: 0.6, ease: 'power4.out' }, 0.5)
-            .from('.val-map__mini', { x: 30, opacity: 0, duration: 0.6, ease: 'power3.out' }, 0.6)
-            .from('.val-map__mark', { scale: 0, duration: 0.35, stagger: 0.07, ease: 'back.out(2.4)' }, 0.9)
+          // Minimap hanya ada kalau gambar dari valorant-api tersedia.
+          if (document.querySelector('.val-map__mini')) {
+            reveal.from('.val-map__mini', { x: 30, opacity: 0, duration: 0.6, ease: 'power3.out' }, 0.6)
+            if (document.querySelector('.val-map__mark')) reveal.from('.val-map__mark', { scale: 0, duration: 0.35, stagger: 0.07, ease: 'back.out(2.4)' }, 0.9)
+          }
         }
 
         gsap.from('.val-intel__item', {

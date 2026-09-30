@@ -1016,6 +1016,23 @@ body:has(.rp) {
   }
 }
 
+/* Logo bertitik, status, dan tombol Bagikan harus muat di layar 360 px. */
+@media (max-width: 400px) {
+  .rp-top {
+    gap: 8px;
+  }
+  .rp-top__mark {
+    font-size: 20px;
+  }
+  .rp-status {
+    font-size: 16px;
+  }
+  .rp-top .rp-btn--sm {
+    padding: 2px 10px 0;
+    font-size: 18px;
+  }
+}
+
 /* ---------- Tombol musik: layar CRT kecil ---------- */
 .rp .music__btn {
   border-radius: 8px;

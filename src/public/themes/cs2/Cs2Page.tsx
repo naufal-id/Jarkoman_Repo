@@ -94,43 +94,49 @@ export default function Cs2Page({ j }: ThemeProps) {
           if (i % 3 === 0) spray.to('.cs-hero__title', { y: -3, duration: 0.03, yoyo: true, repeat: 1 }, i * 0.075)
         })
 
-        gsap.from('.cs-map__img', {
-          scrollTrigger: { trigger: '.cs-map', start: 'top 80%', once: true },
-          opacity: 0,
-          scale: 1.06,
-          duration: 0.9,
-          ease: 'power3.out',
-        })
-        gsap.from('.cs-map__spawn, .cs-map__site', {
-          scrollTrigger: { trigger: '.cs-map', start: 'top 70%', once: true },
-          scale: 0,
-          opacity: 0,
-          duration: 0.4,
-          stagger: 0.08,
-          delay: 0.35,
-          ease: 'back.out(2.2)',
-        })
-        gsap.from('.cs-map__player', {
-          scrollTrigger: { trigger: '.cs-map', start: 'top 70%', once: true },
-          scale: 0,
-          duration: 0.3,
-          stagger: 0.05,
-          delay: 0.8,
-          ease: 'back.out(3)',
-        })
-        gsap.from('.cs-mapcard', {
-          scrollTrigger: { trigger: '.cs-mapcard', start: 'top 85%', once: true },
-          clipPath: 'inset(0 100% 0 0)',
-          duration: 0.8,
-          ease: 'power3.inOut',
-        })
-        gsap.from('.cs-radar__sweep', {
-          rotate: -720,
-          transformOrigin: '50% 50%',
-          duration: 3.2,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: '.cs-radar', start: 'top 85%', once: true },
-        })
+        // Overview resmi untuk map dalam daftar, radar ilustrasi untuk map lain: animasikan yang ada saja.
+        if (root.current?.querySelector('.cs-map')) {
+          gsap.from('.cs-map__img', {
+            scrollTrigger: { trigger: '.cs-map', start: 'top 80%', once: true },
+            opacity: 0,
+            scale: 1.06,
+            duration: 0.9,
+            ease: 'power3.out',
+          })
+          gsap.from('.cs-map__spawn, .cs-map__site', {
+            scrollTrigger: { trigger: '.cs-map', start: 'top 70%', once: true },
+            scale: 0,
+            opacity: 0,
+            duration: 0.4,
+            stagger: 0.08,
+            delay: 0.35,
+            ease: 'back.out(2.2)',
+          })
+          if (root.current.querySelector('.cs-map__player')) {
+            gsap.from('.cs-map__player', {
+              scrollTrigger: { trigger: '.cs-map', start: 'top 70%', once: true },
+              scale: 0,
+              duration: 0.3,
+              stagger: 0.05,
+              delay: 0.8,
+              ease: 'back.out(3)',
+            })
+          }
+          gsap.from('.cs-mapcard', {
+            scrollTrigger: { trigger: '.cs-mapcard', start: 'top 85%', once: true },
+            clipPath: 'inset(0 100% 0 0)',
+            duration: 0.8,
+            ease: 'power3.inOut',
+          })
+        } else {
+          gsap.from('.cs-radar__sweep', {
+            rotate: -720,
+            transformOrigin: '50% 50%',
+            duration: 3.2,
+            ease: 'power2.out',
+            scrollTrigger: { trigger: '.cs-radar', start: 'top 85%', once: true },
+          })
+        }
         gsap.from('.cs-info__row', {
           scrollTrigger: { trigger: '.cs-info__list', start: 'top 85%', once: true },
           x: -40,
