@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { api, ApiError } from '../../shared/api'
 import { gameDef, picksFor, roleOfPick } from '../../shared/games'
-import { slotOf } from '../../shared/joins'
+import { joinCloseLabel, joinClosed, neededRoles, slotOf } from '../../shared/joins'
 import { KEYS, readJSON, removeKey, writeJSON } from '../../shared/storage'
 import type { Jarkoman } from '../../shared/types'
 import { buildJoinMessage, waLink } from '../../shared/wa'
@@ -14,6 +14,8 @@ export interface PickerProps {
   options: string[]
   labelId: string
   role?: string
+  /** Role yang masih kosong di skuad (petunjuk komposisi tim), untuk ditandai picker tema */
+  needed?: string[]
 }
 
 /** 'joined' = langsung masuk skuad, 'wa' = pesan WhatsApp dibuka (pendaftaran langsung mati) */
@@ -37,6 +39,8 @@ interface JoinedRecord {
   player: string
   key: string
   name: string
+  /** Slot terakhir yang dilihat perangkat ini (null = cadangan), untuk memberi tahu saat naik dari cadangan */
+  slot?: number | null
 }
 
 export function JoinForm({ j, session, cta, renderRole, renderPick, onSent, className = '' }: JoinFormProps) {
@@ -56,6 +60,10 @@ export function JoinForm({ j, session, cta, renderRole, renderPick, onSent, clas
   const [previewNote, setPreviewNote] = useState(false)
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [joined, setJoined] = useState<JoinedRecord | null>(() => readJSON<JoinedRecord>(KEYS.joined(j.id)))
+  const [editing, setEditing] = useState(false)
+  const [editRole, setEditRole] = useState('')
+  const [editPick, setEditPick] = useState('')
+  const [promoted, setPromoted] = useState<number | null>(null)
 
   // Isi form selalu milik jarkoman yang sedang dibuka. Di preview admin, pindah jarkoman atau game
   // tidak boleh membawa nama, pilihan, atau status dari jarkoman sebelumnya.
@@ -70,7 +78,20 @@ export function JoinForm({ j, session, cta, renderRole, renderPick, onSent, clas
     setSentHref('')
     setPreviewNote(false)
     setConfirmLeave(false)
+    setEditing(false)
+    setPromoted(null)
   }, [j.id, j.game])
+
+  // Naik dari cadangan: perangkat ini ingat slot terakhir yang dilihat. Kalau dulu cadangan dan sekarang punya
+  // slot (ada yang batal), beri tahu sekali lalu simpan slot barunya.
+  const mySlot = joined && j.players.some((p) => p.id === joined.player) ? slotOf(j, joined.player) : undefined
+  useEffect(() => {
+    if (!joined || mySlot === undefined || joined.slot === mySlot) return
+    if (joined.slot === null && typeof mySlot === 'number') setPromoted(mySlot)
+    const record = { ...joined, slot: mySlot }
+    writeJSON(KEYS.joined(j.id), record)
+    setJoined(record)
+  }, [joined, mySlot, j.id])
 
   const closed = session.state === 'ended' || session.state === 'cancelled'
   const auto = j.autoJoin
@@ -86,6 +107,19 @@ export function JoinForm({ j, session, cta, renderRole, renderPick, onSent, clas
         </p>
         <a className="jf__submit" href={ask} target="_blank" rel="noopener noreferrer">
           Tanya jadwal berikutnya
+        </a>
+      </div>
+    )
+  }
+
+  // Batas pendaftaran dari host sudah lewat (yang sudah terdaftar tetap melihat status dan bisa batal ikut).
+  if (joinClosed(j) && !(joined && j.players.some((p) => p.id === joined.player))) {
+    const ask = waLink(j.wa, `Halo, pendaftaran jarkoman ${def.name} "${j.headline}" sudah ditutup. Masih bisa ikut atau jadi cadangan?`)
+    return (
+      <div className={`jf jf--closed ${className}`}>
+        <p className="jf__closed-text">Pendaftaran sudah ditutup host {joinCloseLabel(j)}. Masih mau ikut? Tanya langsung ke host.</p>
+        <a className="jf__submit" href={ask} target="_blank" rel="noopener noreferrer">
+          Tanya host di WhatsApp
         </a>
       </div>
     )
@@ -108,6 +142,30 @@ export function JoinForm({ j, session, cta, renderRole, renderPick, onSent, clas
       j.wa,
       `Halo, aku sudah lock in di jarkoman ${def.name} "${j.headline}" atas nama ${me.name}${slot ? ` (slot ${slot})` : ' (cadangan)'}.\n${pageLink(j)}`,
     )
+    const startEdit = () => {
+      setEditRole(me.role)
+      setEditPick(me.pick)
+      setFailure('')
+      setEditing(true)
+    }
+    const saveEdit = async () => {
+      setBusy(true)
+      setFailure('')
+      try {
+        const res = await api.updateJoin({ id: j.id, player: joined.player, key: joined.key, role: editRole, pick: editPick })
+        replaceItem(res.item)
+        setEditing(false)
+      } catch (err) {
+        setFailure(err instanceof ApiError ? err.message : 'Gagal menyimpan perubahan. Coba lagi.')
+      } finally {
+        setBusy(false)
+      }
+    }
+    const onEditPick = (value: string) => {
+      setEditPick(value)
+      const inferred = roleOfPick(def, value)
+      if (inferred && !editRole) setEditRole(inferred)
+    }
     const leave = async () => {
       setBusy(true)
       setFailure('')
@@ -126,21 +184,73 @@ export function JoinForm({ j, session, cta, renderRole, renderPick, onSent, clas
     return (
       <div className={`jf jf--done ${className}`}>
         <div className="jf__done" role="status">
-          <p className="jf__done-kicker">{slot ? `Slot ${slot} terkunci` : `Cadangan ke-${reserveNo}`}</p>
+          <p className="jf__done-kicker">{promoted && slot ? `Naik dari cadangan · Slot ${slot} terkunci` : slot ? `Slot ${slot} terkunci` : `Cadangan ke-${reserveNo}`}</p>
           <p className="jf__done-name">{me.name}</p>
           <p className="jf__done-text">
             {detail ? `${detail}. ` : ''}
-            {slot
-              ? 'Nama kamu sudah tampil di skuad. Host tidak perlu memasukkanmu lagi.'
-              : 'Skuad sudah penuh, jadi kamu masuk cadangan. Kalau ada yang batal, kamu naik otomatis.'}
+            {promoted && slot
+              ? 'Ada yang batal, jadi kamu naik ke skuad. Kabari host kalau jadwalmu berubah.'
+              : slot
+                ? 'Nama kamu sudah tampil di skuad. Host tidak perlu memasukkanmu lagi.'
+                : 'Skuad sudah penuh, jadi kamu masuk cadangan. Kalau ada yang batal, kamu naik otomatis.'}
           </p>
         </div>
+        {editing && (
+          <div className="jf__edit">
+            <div className="jf__field jf__field--role" role="group" aria-labelledby={`${base}-erole`}>
+              <span className="jf__label" id={`${base}-erole`}>
+                {def.roleLabel}
+              </span>
+              {renderRole ? (
+                renderRole({ value: editRole, onChange: setEditRole, options: def.roles, labelId: `${base}-erole`, needed: neededRoles(j) })
+              ) : (
+                <select className="jf__input" aria-labelledby={`${base}-erole`} value={editRole} onChange={(e) => setEditRole(e.target.value)}>
+                  <option value="">Bebas / belum tahu</option>
+                  {def.roles.map((r) => (
+                    <option key={r}>{r}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+            <div className="jf__field jf__field--pick" role="group" aria-labelledby={`${base}-epick`}>
+              <span className="jf__label" id={`${base}-epick`}>
+                {def.pickLabel}
+              </span>
+              {renderPick ? (
+                renderPick({ value: editPick, onChange: onEditPick, options: picksFor(def, editRole), labelId: `${base}-epick`, role: editRole })
+              ) : (
+                <select className="jf__input" aria-labelledby={`${base}-epick`} value={editPick} onChange={(e) => onEditPick(e.target.value)}>
+                  <option value="">Bebas / belum tahu</option>
+                  {picksFor(def, editRole).map((p) => (
+                    <option key={p}>{p}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </div>
+        )}
         <div className="jf__foot">
-          <a className="jf__submit" href={tellHost} target="_blank" rel="noopener noreferrer">
-            Kabari host di WhatsApp
-          </a>
-          <p className="jf__hint">Opsional. Slot kamu sudah tersimpan.</p>
-          {confirmLeave ? (
+          {editing ? (
+            <>
+              <button type="button" className="jf__submit" onClick={saveEdit} disabled={busy}>
+                {busy ? 'Menyimpan…' : 'Simpan perubahan'}
+              </button>
+              <button type="button" className="jf__alt" onClick={() => setEditing(false)} disabled={busy}>
+                Tidak jadi
+              </button>
+            </>
+          ) : (
+            <>
+              <a className="jf__submit" href={tellHost} target="_blank" rel="noopener noreferrer">
+                Kabari host di WhatsApp
+              </a>
+              <p className="jf__hint">Opsional. Slot kamu sudah tersimpan.</p>
+              <button type="button" className="jf__alt" onClick={startEdit}>
+                Ubah {def.roleLabel.toLowerCase()} atau {def.pickLabel.toLowerCase()}
+              </button>
+            </>
+          )}
+          {editing ? null : confirmLeave ? (
             <div className="jf__confirm">
               <span>Yakin batal ikut? Slotmu akan dibuka untuk orang lain.</span>
               <button type="button" className="jf__alt" onClick={leave} disabled={busy}>
@@ -166,6 +276,8 @@ export function JoinForm({ j, session, cta, renderRole, renderPick, onSent, clas
   }
 
   const pickOptions = picksFor(def, role)
+  const needed = neededRoles(j)
+  const deadline = joinCloseLabel(j)
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -259,12 +371,18 @@ export function JoinForm({ j, session, cta, renderRole, renderPick, onSent, clas
         <span className="jf__label" id={roleId}>
           {def.roleLabel}
         </span>
+        {needed.length > 0 && (
+          <p className="jf__need">
+            Tim masih butuh <b>{needed.join(', ')}</b>
+          </p>
+        )}
         {renderRole ? (
           renderRole({
             value: role,
             onChange: setRole,
             options: def.roles,
             labelId: roleId,
+            needed,
           })
         ) : (
           <select className="jf__input" aria-labelledby={roleId} value={role} onChange={(e) => setRole(e.target.value)}>
@@ -331,6 +449,7 @@ export function JoinForm({ j, session, cta, renderRole, renderPick, onSent, clas
               ? 'Slot sudah penuh. Kamu langsung masuk daftar cadangan dan naik otomatis kalau ada yang batal.'
               : 'Nama kamu langsung masuk skuad di halaman ini. Host tidak perlu memasukkanmu lagi.'
             : `${session.full ? 'Slot sudah penuh, kamu akan masuk daftar cadangan. ' : ''}Tombol ini membuka WhatsApp dengan pesan yang sudah terisi. Tinggal tekan kirim.`}
+          {deadline && ` Pendaftaran ditutup ${deadline}.`}
         </p>
         {previewNote && (
           <p className="jf__sent" role="status">

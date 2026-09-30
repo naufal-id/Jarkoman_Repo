@@ -5,7 +5,8 @@ import { issueToken, joinKey, legacyJoinSecret, verifyJoinKey } from '../netlify
 import { joinSecrets } from '../netlify/lib/join-secret'
 import { memoryAudioStore, memoryStore, setAudioStoreForTests, setStoreForTests, updateJSON, type KV } from '../netlify/lib/store'
 import { blankPlayer, createJarkoman } from '../src/shared/defaults'
-import { addWebPlayer, applyWebChanges, JoinError, removeWebPlayer } from '../src/shared/joins'
+import { addWebPlayer, applyWebChanges, joinCloseLabel, joinClosed, JoinError, neededRoles, removeWebPlayer, updateWebPlayer } from '../src/shared/joins'
+import { buildBroadcast } from '../src/shared/wa'
 import { cleanState } from '../src/shared/sanitize'
 import { KEYS } from '../src/shared/storage'
 import type { Jarkoman, SiteState } from '../src/shared/types'
@@ -246,5 +247,66 @@ describe('logika join bersama', () => {
     expect(cleaned.joinSeq).toBe(0)
     expect(KEYS.joinName('aaaa1111')).not.toBe(KEYS.joinName('bbbb2222'))
     expect(KEYS.joined('aaaa1111')).toContain('aaaa1111')
+  })
+
+  it('batas pendaftaran: ditolak setelah lewat, label jam benar, dan ikut di pesan broadcast', () => {
+    const j = upcoming('cs2')
+    j.time = '20:00'
+    j.joinClose = 30
+    const start = new Date(`${j.date}T20:00:00+07:00`).getTime()
+    expect(joinClosed(j, start - 31 * 60_000)).toBe(false)
+    expect(joinClosed(j, start - 29 * 60_000)).toBe(true)
+    expect(joinCloseLabel(j)).toBe('30 menit sebelum mulai (pukul 19.30 WIB)')
+    expect(joinCloseLabel({ ...j, time: '00:10', joinClose: 15 })).toContain('pukul 23.55')
+    expect(joinCloseLabel({ ...j, joinClose: -1 })).toBe('')
+
+    const state = stateOf(j)
+    expect(() => addWebPlayer(state, { id: j.id, name: 'Telat' }, start - 10 * 60_000)).toThrow(/ditutup/)
+    expect(addWebPlayer(state, { id: j.id, name: 'Tepat' }, start - 60 * 60_000).player.name).toBe('Tepat')
+    expect(buildBroadcast(j, 'https://x.test/?id=a')).toContain('Pendaftaran ditutup 30 menit sebelum mulai')
+    // Data lama tanpa field ini: tanpa batas.
+    const legacy = { ...j } as Partial<Jarkoman>
+    delete legacy.joinClose
+    expect(cleanState({ items: [legacy] })!.state.items[0].joinClose).toBe(-1)
+  })
+
+  it('petunjuk komposisi: role yang belum ada di skuad, hanya untuk tim penuh', () => {
+    const v = upcoming('valorant')
+    v.players = [blankPlayer({ name: 'A', role: 'Duelist' }), blankPlayer({ name: 'B', role: 'Controller' })]
+    expect(neededRoles(v)).toEqual(['Initiator', 'Sentinel'])
+    expect(neededRoles({ ...v, slots: 2 })).toEqual([])
+    const m = upcoming('mlbb')
+    m.players = [blankPlayer({ name: 'C', role: 'Jungle' })]
+    expect(neededRoles(m)).toEqual(['EXP Lane', 'Gold Lane', 'Mid Lane', 'Roam'])
+    expect(neededRoles(upcoming('repo'))).toEqual([])
+  })
+
+  it('pemain bisa ubah role dan pick tanpa kehilangan slot, dan perubahan ikut ke draft admin lama', async () => {
+    const j = upcoming('valorant')
+    await publish(stateOf(j))
+    const first = await join({ id: j.id, name: 'Satu', role: 'Duelist', pick: 'Jett' })
+    const second = await join({ id: j.id, name: 'Dua' })
+    const draft = await adminServer()
+
+    const patch = (key: string, body: Record<string, unknown>) =>
+      joinHandler(req('/api/join', { method: 'PATCH', body: JSON.stringify({ id: j.id, player: first.body.player.id, key, ...body }) }))
+    expect((await patch('palsu', { role: 'Sentinel' })).status).toBe(403)
+    const ok = await patch(first.body.key, { role: 'Sentinel', pick: 'Killjoy' })
+    expect(ok.status).toBe(200)
+
+    const s = await adminServer()
+    expect(s.items[0].players.map((p) => p.name)).toEqual(['Satu', 'Dua'])
+    expect(s.items[0].players[0]).toMatchObject({ role: 'Sentinel', pick: 'Killjoy' })
+    expect(second.body.player.id).toBe(s.items[0].players[1].id)
+
+    // Draft admin dibuka sebelum perubahan: menyimpan draft tidak mengembalikan role lama.
+    draft.items[0].headline = 'Judul admin'
+    const saved = await publish(draft, draft.updatedAt)
+    expect(saved.body.state.items[0].players[0]).toMatchObject({ role: 'Sentinel', pick: 'Killjoy' })
+    expect(saved.body.state.items[0].headline).toBe('Judul admin')
+
+    // Role di luar daftar game diabaikan.
+    const bad = updateWebPlayer(saved.body.state, j.id, first.body.player.id, { role: 'Tank' })
+    expect(bad.player.role).toBe('Sentinel')
   })
 })

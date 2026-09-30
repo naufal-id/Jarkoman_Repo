@@ -279,7 +279,7 @@ export default function MlbbPage({ j }: ThemeProps) {
               session={s}
               className="ml-form"
               cta={def.cta}
-              renderRole={({ value, onChange, options, labelId }) => {
+              renderRole={({ value, onChange, options, labelId, needed }) => {
                 const taken = new Set(j.players.filter((p) => p.status === 'in').map((p) => p.role))
                 return (
                   <div className="ml-lanes" role="radiogroup" aria-labelledby={labelId}>
@@ -289,7 +289,7 @@ export default function MlbbPage({ j }: ThemeProps) {
                         <span className="ml-lane__card" data-lane={laneKey(lane)}>
                           <LaneIcon lane={lane} />
                           <span className="ml-lane__name">{lane}</span>
-                          {taken.has(lane) && <span className="ml-lane__taken">sudah ada</span>}
+                          {taken.has(lane) ? <span className="ml-lane__taken">sudah ada</span> : needed?.includes(lane) && <span className="ml-lane__need">dibutuhkan</span>}
                         </span>
                       </label>
                     ))}

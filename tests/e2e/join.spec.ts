@@ -47,3 +47,32 @@ test('nama kembar ditolak dengan pesan yang jelas', async ({ page, browser }) =>
   await expect(p2.locator('#join .jf__error')).toBeVisible()
   await other.close()
 })
+
+test('ubah role setelah ikut, lalu naik dari cadangan saat ada yang batal', async ({ page, request }) => {
+  const j = items.cs2
+  // Isi skuad sampai penuh lewat API supaya perangkat ini masuk cadangan.
+  const keys: { player: string; key: string }[] = []
+  for (let i = 0; i < j.slots; i++) {
+    const res = await request.post('/api/join', { data: { id: j.id, name: `Isi ${i + 1}` } })
+    const body = (await res.json()) as { player: { id: string }; key: string }
+    keys.push({ player: body.player.id, key: body.key })
+  }
+
+  await skipIntros(page)
+  await page.goto(`/?id=${j.id}`)
+  await page.locator('#join input.jf__input').first().fill('Cadangan E2E')
+  await page.locator('#join button[type=submit]').click()
+  await expect(page.locator('#join .jf__done-kicker')).toHaveText('Cadangan ke-1')
+
+  // Ubah role tanpa kehilangan posisi.
+  await page.getByRole('button', { name: /^Ubah role/ }).click()
+  await page.locator('#join .cs-chip', { hasText: 'IGL' }).click()
+  await page.getByRole('button', { name: 'Simpan perubahan' }).click()
+  await expect(page.locator('#join .jf__done-text')).toContainText('IGL')
+  await expect(page.locator('#join .jf__done-kicker')).toHaveText('Cadangan ke-1')
+
+  // Salah satu pemain di skuad batal: cadangan pertama naik. Muat ulang halaman untuk melihat pemberitahuannya.
+  await request.delete('/api/join', { data: { id: j.id, ...keys[0] } })
+  await page.reload()
+  await expect(page.locator('#join .jf__done-kicker')).toHaveText(`Naik dari cadangan · Slot ${j.slots} terkunci`)
+})

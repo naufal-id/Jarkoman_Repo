@@ -61,6 +61,8 @@ export interface Jarkoman {
   musicLabel: string
   /** Tombol LOCK IN di halaman langsung memasukkan pemain ke skuad. Mati = konfirmasi lewat WhatsApp saja. */
   autoJoin: boolean
+  /** Pendaftaran ditutup sekian menit sebelum mulai. -1 = tanpa batas (sampai sesi selesai). */
+  joinClose: number
   updatedAt: number
 }
 

@@ -56,6 +56,10 @@ Di dashboard bagian **Skuad**, setiap jarkoman punya pilihan **Cara pemain masuk
 - Pendaftaran selalu terikat ke satu jarkoman (lewat id-nya). Form di jarkoman lain tetap kosong.
 - Nama yang sama tidak bisa didaftarkan dua kali di satu jarkoman.
 - Pemain bisa **Batal ikut** dari perangkat yang dipakai mendaftar. Perangkat lain tidak bisa membatalkan pendaftaran orang lain.
+- Dari perangkat yang sama, pemain bisa **mengubah role dan pick** tanpa kehilangan slot. Perubahan ini ikut masuk ke draft dashboard yang sedang terbuka.
+- Pemain cadangan yang naik ke skuad (karena ada yang batal) melihat pemberitahuan "Naik dari cadangan" saat membuka halaman lagi.
+- Form menampilkan **role yang masih dibutuhkan tim** (VALORANT: Duelist/Initiator/Controller/Sentinel, CS2: Entry/AWPer/Support/Lurker/IGL, MLBB: kelima lane), hanya untuk skuad satu tim penuh.
+- **Pendaftaran ditutup** bisa diatur per jarkoman: tanpa batas, saat mulai, atau 15 menit sampai 2 jam sebelum mulai. Setelah lewat, form berganti jadi tombol tanya host; batasnya juga disebut di pesan broadcast WhatsApp.
 - Pendaftar baru muncul di dashboard dalam hitungan detik dengan label "Daftar lewat website", tanpa membuang perubahan yang sedang kamu edit. Menyimpan draft lama juga tidak menghapus pendaftar yang masuk setelahnya.
 - Kalau link dipakai untuk spam, tombol **Hapus semua pendaftar website** di bagian Skuad menghapus semua pendaftar web sekaligus (pemain yang kamu input sendiri tetap). Satu jaringan juga dibatasi 6 pendaftaran per 10 menit per jarkoman.
 - **Catatan untuk host** yang diisi pemain hanya terlihat di dashboard admin, tidak di halaman publik atau API publik.

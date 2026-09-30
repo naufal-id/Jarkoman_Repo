@@ -1512,3 +1512,16 @@ body:has(.val[data-variant='bone']) {
     letter-spacing: 0.06em;
   }
 }
+
+/* Petunjuk komposisi tim: role kosong ditandai titik merah VALORANT. */
+.val-form {
+  --need: var(--red);
+}
+
+.val-form .jf__need {
+  color: var(--muted);
+}
+
+.val-form .jf__need b {
+  color: var(--red-text);
+}

@@ -8,7 +8,17 @@ interface Props {
   onChange: (players: Player[]) => void
   onSlots: (slots: number) => void
   onAutoJoin: (autoJoin: boolean) => void
+  onJoinClose: (joinClose: number) => void
 }
+
+const CLOSE_LABELS: [number, string][] = [
+  [-1, 'Tanpa batas (sampai sesi selesai)'],
+  [0, 'Saat sesi mulai'],
+  [15, '15 menit sebelum mulai'],
+  [30, '30 menit sebelum mulai'],
+  [60, '1 jam sebelum mulai'],
+  [120, '2 jam sebelum mulai'],
+]
 
 function since(ms: number): string {
   const m = Math.round((Date.now() - ms) / 60_000)
@@ -18,7 +28,7 @@ function since(ms: number): string {
   return h < 24 ? `${h} jam lalu` : `${Math.round(h / 24)} hari lalu`
 }
 
-export function PlayersEditor({ item, onChange, onSlots, onAutoJoin }: Props) {
+export function PlayersEditor({ item, onChange, onSlots, onAutoJoin, onJoinClose }: Props) {
   const def = gameDef(item.game)
   const players = item.players
   const inCount = players.filter((p) => p.status === 'in').length
@@ -92,6 +102,20 @@ export function PlayersEditor({ item, onChange, onSlots, onAutoJoin }: Props) {
               Hapus semua pendaftar website ({webCount})
             </button>
           ))}
+      </div>
+
+      <div className="adm-field">
+        <label className="adm-label" htmlFor="join-close">
+          Pendaftaran ditutup
+        </label>
+        <select id="join-close" className="adm-input" value={item.joinClose} onChange={(e) => onJoinClose(Number(e.target.value))}>
+          {CLOSE_LABELS.map(([v, label]) => (
+            <option key={v} value={v}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <p className="adm-hint">Setelah lewat batas ini, form di halaman berganti jadi tombol tanya host. Pemain yang sudah terdaftar tetap bisa batal ikut.</p>
       </div>
 
       <div className="adm-slots">

@@ -1,7 +1,7 @@
 import { GAMES } from './games'
 import { uid } from './ids'
 import { cleanText, LIMITS } from './sanitize'
-import { liveState } from './time'
+import { liveState, startEpoch } from './time'
 import type { Jarkoman, Player, SiteState } from './types'
 
 export type JoinErrorCode = 'not-found' | 'manual' | 'closed' | 'list-full' | 'name-taken' | 'invalid'
@@ -30,6 +30,41 @@ export function slotOf(j: Pick<Jarkoman, 'players' | 'slots'>, playerId: string)
   return index >= 0 && index < j.slots ? index + 1 : null
 }
 
+/** Waktu pendaftaran ditutup (epoch ms), atau null kalau host tidak memasang batas. */
+export function joinDeadline(j: Pick<Jarkoman, 'date' | 'time' | 'tz' | 'joinClose'>): number | null {
+  if (!(j.joinClose >= 0)) return null
+  const start = startEpoch(j)
+  return start === null ? null : start - j.joinClose * 60_000
+}
+
+/** Kalimat batas pendaftaran untuk form dan pesan WA, misalnya "30 menit sebelum mulai (pukul 19.30 WIB)". */
+export function joinCloseLabel(j: Pick<Jarkoman, 'time' | 'tz' | 'joinClose'>): string {
+  if (!(j.joinClose >= 0)) return ''
+  const m = /^(\d{2}):(\d{2})$/.exec(j.time)
+  if (!m) return j.joinClose === 0 ? 'saat sesi dimulai' : `${j.joinClose} menit sebelum mulai`
+  const total = (((Number(m[1]) * 60 + Number(m[2]) - j.joinClose) % 1440) + 1440) % 1440
+  const clock = `${String(Math.floor(total / 60)).padStart(2, '0')}.${String(total % 60).padStart(2, '0')} ${j.tz}`
+  return j.joinClose === 0 ? `saat sesi dimulai (pukul ${clock})` : `${j.joinClose} menit sebelum mulai (pukul ${clock})`
+}
+
+export function joinClosed(j: Jarkoman, now = Date.now()): boolean {
+  const deadline = joinDeadline(j)
+  return deadline !== null && now >= deadline
+}
+
+/**
+ * Role yang masih kosong di skuad (bukan cadangan), mengikuti komposisi tim ideal game itu. Hanya dihitung kalau
+ * jumlah slot cukup untuk satu tim penuh; untuk 2v2 atau skuad kecil petunjuk ini tidak bermakna.
+ */
+export function neededRoles(j: Jarkoman): string[] {
+  const comp = GAMES[j.game].composition
+  if (!comp || j.slots < comp.length) return []
+  const inSquad = j.players.slice(0, j.slots)
+  if (inSquad.length >= j.slots) return []
+  const have = new Set(inSquad.map((p) => p.role))
+  return comp.filter((r) => !have.has(r))
+}
+
 /**
  * Pemain mendaftar sendiri lewat halaman. Mengembalikan state baru dan pemain yang ditambahkan,
  * atau melempar JoinError. State asli tidak diubah.
@@ -40,6 +75,7 @@ export function addWebPlayer(state: SiteState, input: JoinInput, now = Date.now(
   if (!item.autoJoin) throw new JoinError('manual', 'Host mematikan pendaftaran langsung. Konfirmasi lewat WhatsApp.')
   const live = liveState(item, now)
   if (live === 'cancelled' || live === 'ended') throw new JoinError('closed', live === 'cancelled' ? 'Sesi ini dibatalkan.' : 'Sesi ini sudah selesai.')
+  if (joinClosed(item, now)) throw new JoinError('closed', 'Pendaftaran sudah ditutup host. Tanya host lewat WhatsApp kalau masih mau ikut.')
   const name = cleanText(input.name, LIMITS.playerName)
   if (!name) throw new JoinError('invalid', 'Isi nama dulu.')
   if (item.players.some((p) => sameName(p.name, name))) {
@@ -62,6 +98,41 @@ export function addWebPlayer(state: SiteState, input: JoinInput, now = Date.now(
     joinedAt: now,
   }
   const next: Jarkoman = { ...item, players: [...item.players, player] }
+  return {
+    state: { ...state, joinSeq: seq, items: state.items.map((i) => (i.id === item.id ? next : i)) },
+    item: next,
+    player,
+  }
+}
+
+export interface JoinPatch {
+  role?: string
+  pick?: string
+  note?: string
+}
+
+/**
+ * Pemain mengubah role, pick, atau catatannya sendiri tanpa kehilangan posisi di skuad. joinSeq naik dan seq pemain
+ * diperbarui supaya perubahan ini ikut terbawa ke draft admin yang dibuka sebelumnya (lihat applyWebChanges).
+ */
+export function updateWebPlayer(state: SiteState, itemId: string, playerId: string, patch: JoinPatch, now = Date.now()): { state: SiteState; item: Jarkoman; player: Player } {
+  const item = state.items.find((i) => i.id === itemId)
+  if (!item) throw new JoinError('not-found', 'Jarkoman ini sudah tidak ada.')
+  const live = liveState(item, now)
+  if (live === 'cancelled' || live === 'ended') throw new JoinError('closed', live === 'cancelled' ? 'Sesi ini dibatalkan.' : 'Sesi ini sudah selesai.')
+  const current = item.players.find((p) => p.id === playerId)
+  if (!current) throw new JoinError('not-found', 'Namamu sudah tidak ada di skuad. Mungkin dihapus host.')
+  const def = GAMES[item.game]
+  const role = patch.role === undefined ? current.role : cleanText(patch.role, LIMITS.short)
+  const seq = state.joinSeq + 1
+  const player: Player = {
+    ...current,
+    role: role === '' || def.roles.includes(role) ? role : current.role,
+    pick: patch.pick === undefined ? current.pick : cleanText(patch.pick, LIMITS.short),
+    note: patch.note === undefined ? current.note : cleanText(patch.note, LIMITS.playerNote),
+    seq,
+  }
+  const next: Jarkoman = { ...item, players: item.players.map((p) => (p.id === playerId ? player : p)) }
   return {
     state: { ...state, joinSeq: seq, items: state.items.map((i) => (i.id === item.id ? next : i)) },
     item: next,
@@ -99,11 +170,23 @@ export function applyWebChanges(target: SiteState, source: SiteState, sinceSeq: 
     if (fresh.length) joined.set(item.id, fresh)
   }
   const items = target.items.map((item) => {
-    const kept = item.players.filter((p) => !removed.has(p.id))
+    const fresh = joined.get(item.id) ?? []
+    const edits = new Map(fresh.map((p) => [p.id, p]))
+    let edited = false
+    // Pemain yang sudah ada di draft tapi mengubah role, pick, atau catatannya sendiri lewat web: pakai versi terbaru
+    // untuk field yang memang bisa diubah pemain, sisanya (status, urutan) tetap milik admin.
+    const kept = item.players
+      .filter((p) => !removed.has(p.id))
+      .map((p) => {
+        const e = edits.get(p.id)
+        if (!e || (e.role === p.role && e.pick === p.pick && e.note === p.note && e.seq === p.seq)) return p
+        edited = true
+        return { ...p, role: e.role, pick: e.pick, note: e.note, seq: e.seq }
+      })
     const have = new Set(kept.map((p) => p.id))
-    const add = (joined.get(item.id) ?? []).filter((p) => !have.has(p.id) && !kept.some((k) => sameName(k.name, p.name)))
+    const add = fresh.filter((p) => !have.has(p.id) && !kept.some((k) => sameName(k.name, p.name)))
     const players = [...kept, ...add].slice(0, LIMITS.players)
-    return players.length === item.players.length && add.length === 0 ? item : { ...item, players }
+    return players.length === item.players.length && add.length === 0 && !edited ? item : { ...item, players }
   })
   const gone = new Map<string, number>()
   for (const g of [...target.gone, ...source.gone]) gone.set(g.id, Math.max(g.seq, gone.get(g.id) ?? 0))

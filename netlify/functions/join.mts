@@ -1,5 +1,5 @@
 import type { Config } from '@netlify/functions'
-import { addWebPlayer, JoinError, publicItem, removeWebPlayer, slotOf, type JoinErrorCode } from '../../src/shared/joins'
+import { addWebPlayer, JoinError, publicItem, removeWebPlayer, slotOf, updateWebPlayer, type JoinErrorCode } from '../../src/shared/joins'
 import { cleanState, ID_PATTERN } from '../../src/shared/sanitize'
 import type { SiteState } from '../../src/shared/types'
 import { joinKey, verifyJoinKey } from '../lib/auth'
@@ -34,7 +34,7 @@ function load(current: SiteState | null): SiteState {
  * POST: tambah pemain ke skuad. DELETE: batalkan pendaftaran sendiri memakai kunci dari POST.
  */
 export default async function handler(req: Request, context?: { ip?: string }): Promise<Response> {
-  if (req.method !== 'POST' && req.method !== 'DELETE') return error(405, 'Metode tidak didukung.')
+  if (req.method !== 'POST' && req.method !== 'DELETE' && req.method !== 'PATCH') return error(405, 'Metode tidak didukung.')
 
   let body: Body
   try {
@@ -64,7 +64,20 @@ export default async function handler(req: Request, context?: { ip?: string }): 
 
     const playerId = text(body.player)
     if (!ID_PATTERN.test(playerId) || !verifyJoinKey(id, playerId, body.key, secrets.accepted)) {
-      return error(403, 'Pendaftaran ini tidak bisa dibatalkan dari perangkat ini. Hubungi host.', { code: 'forbidden' })
+      return error(403, 'Pendaftaran ini tidak bisa diubah dari perangkat ini. Hubungi host.', { code: 'forbidden' })
+    }
+    if (req.method === 'PATCH') {
+      // Ubah role, pick, atau catatan sendiri. Field yang tidak dikirim tidak berubah.
+      const patch = {
+        role: typeof body.role === 'string' ? body.role : undefined,
+        pick: typeof body.pick === 'string' ? body.pick : undefined,
+        note: typeof body.note === 'string' ? body.note : undefined,
+      }
+      const out = await updateJSON<SiteState, ReturnType<typeof updateWebPlayer>>(store, KEY, (current) => {
+        const result = updateWebPlayer(load(current), id, playerId, patch)
+        return { value: result.state, result }
+      })
+      return json({ item: publicItem(out.item), player: { ...out.player, note: '' } })
     }
     const out = await updateJSON<SiteState, ReturnType<typeof removeWebPlayer>>(store, KEY, (current) => {
       const result = removeWebPlayer(load(current), id, playerId)
@@ -81,5 +94,5 @@ export default async function handler(req: Request, context?: { ip?: string }): 
 
 export const config: Config = {
   path: '/api/join',
-  method: ['POST', 'DELETE'],
+  method: ['POST', 'PATCH', 'DELETE'],
 }

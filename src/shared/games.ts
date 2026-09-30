@@ -25,6 +25,8 @@ export interface GameDef {
   picks: string[]
   /** Pilihan pick per role, dipakai Valorant (agent per role) */
   picksByRole?: Record<string, string[]>
+  /** Role yang idealnya ada di satu tim penuh, untuk petunjuk "tim masih butuh" di form */
+  composition?: string[]
   cta: string
   defaultHeadline: string
   defaultSubline: string
@@ -89,6 +91,7 @@ export const GAMES: Record<GameId, GameDef> = {
     ranks: ['Semua rank', 'Iron', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Ascendant', 'Immortal', 'Radiant'],
     roleLabel: 'Role',
     roles: ['Duelist', 'Initiator', 'Controller', 'Sentinel', 'Flex'],
+    composition: ['Duelist', 'Initiator', 'Controller', 'Sentinel'],
     pickLabel: 'Agent',
     picks: Object.values(VALORANT_AGENTS).flat(),
     picksByRole: VALORANT_AGENTS,
@@ -133,6 +136,7 @@ export const GAMES: Record<GameId, GameDef> = {
     ],
     roleLabel: 'Role',
     roles: ['Entry', 'AWPer', 'Support', 'Lurker', 'IGL', 'Rifler'],
+    composition: ['Entry', 'AWPer', 'Support', 'Lurker', 'IGL'],
     pickLabel: 'Senjata andalan',
     picks: ['AK-47', 'M4A4', 'M4A1-S', 'AWP', 'Desert Eagle', 'Galil AR', 'FAMAS', 'SSG 08', 'MP9', 'MAC-10', 'P90', 'Nova', 'USP-S', 'Glock-18'],
     cta: 'SIAP TEMPUR',
@@ -161,6 +165,7 @@ export const GAMES: Record<GameId, GameDef> = {
     ranks: ['Semua rank', 'Warrior', 'Elite', 'Master', 'Grandmaster', 'Epic', 'Legend', 'Mythic', 'Mythical Honor', 'Mythical Glory', 'Mythical Immortal'],
     roleLabel: 'Lane',
     roles: ['EXP Lane', 'Gold Lane', 'Mid Lane', 'Jungle', 'Roam'],
+    composition: ['EXP Lane', 'Gold Lane', 'Mid Lane', 'Jungle', 'Roam'],
     pickLabel: 'Hero andalan',
     picks: MLBB_HEROES,
     cta: 'GAS MABAR',

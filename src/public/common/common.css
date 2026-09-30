@@ -127,6 +127,39 @@ select.jf__input option {
   flex-basis: 100%;
 }
 
+/* Petunjuk komposisi tim di atas pemilih role. */
+.jf__need {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.jf__need b {
+  font-weight: 800;
+}
+
+/* Role yang masih dibutuhkan tim: titik kecil di pojok chip (warna diatur tema lewat --need). */
+.chip.is-needed > span {
+  position: relative;
+}
+
+.chip.is-needed > span::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--need, #3fd68a);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+}
+
+/* Ubah pilihan setelah masuk skuad. */
+.jf__edit {
+  display: grid;
+  gap: 18px;
+}
+
 /* Status setelah LOCK IN berhasil. */
 .jf.jf--done {
   grid-template-columns: 1fr;

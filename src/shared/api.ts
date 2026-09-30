@@ -92,6 +92,14 @@ export const api = {
       body: JSON.stringify(input),
     })
   },
+  /** Ubah role, pick, atau catatan pendaftaran sendiri (kunci dari perangkat pendaftar). */
+  updateJoin(input: { id: string; player: string; key: string; role?: string; pick?: string; note?: string }) {
+    return request<{ item: Jarkoman; player: Player }>('/api/join', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(input),
+    })
+  },
   leave(id: string, player: string, key: string) {
     return request<{ item: Jarkoman }>('/api/join', {
       method: 'DELETE',

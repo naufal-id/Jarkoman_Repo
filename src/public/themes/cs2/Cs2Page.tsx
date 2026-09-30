@@ -378,11 +378,11 @@ export default function Cs2Page({ j }: ThemeProps) {
             session={s}
             className="cs-form"
             cta={def.cta}
-            renderRole={({ value, onChange, options, labelId }) => (
+            renderRole={({ value, onChange, options, labelId, needed }) => (
               <div className="chips cs-chips" role="radiogroup" aria-labelledby={labelId}>
                 <Mirror value={value} onValue={mirrorRole} />
                 {options.map((r) => (
-                  <label className="chip cs-chip" key={r}>
+                  <label className={`chip cs-chip ${needed?.includes(r) ? 'is-needed' : ''}`} key={r}>
                     <input type="radio" name="cs-role" value={r} checked={value === r} onChange={() => onChange(r)} />
                     <span>{r}</span>
                   </label>

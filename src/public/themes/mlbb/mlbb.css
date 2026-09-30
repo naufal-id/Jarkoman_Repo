@@ -1598,6 +1598,20 @@ body:has(.ml[data-variant='red']) {
   color: #c8d6f5;
 }
 
+.ml-lane__need {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--lc, var(--gold-text));
+}
+
+.ml-form .jf__need {
+  color: #c8d6f5;
+}
+
+.ml-form .jf__need b {
+  color: var(--gold-text);
+}
+
 .ml-form .jf__submit {
   min-height: 62px;
   padding: 0 46px;

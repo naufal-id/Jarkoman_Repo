@@ -2225,3 +2225,20 @@ body:has(.cs) {
     min-width: 16px;
   }
 }
+
+/* Petunjuk komposisi tim: role kosong ditandai titik hijau ala ikon "ready" CS2. */
+.cs-form {
+  --need: #9fe29f;
+}
+
+.cs-form .jf__need {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.cs-form .jf__need b {
+  color: #9fe29f;
+}

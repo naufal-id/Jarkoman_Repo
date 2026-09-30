@@ -264,10 +264,10 @@ export default function ValorantPage({ j }: ThemeProps) {
                 <span className="val-form__cta-sub">{j.autoJoin ? 'langsung masuk skuad' : 'kirim ke WhatsApp'}</span>
               </>
             }
-            renderRole={({ value, onChange, options, labelId }) => (
+            renderRole={({ value, onChange, options, labelId, needed }) => (
               <div className="chips val-chips" role="radiogroup" aria-labelledby={labelId}>
                 {options.map((r) => (
-                  <label className="chip val-chip" key={r}>
+                  <label className={`chip val-chip ${needed?.includes(r) ? 'is-needed' : ''}`} key={r}>
                     <input type="radio" name="val-role" value={r} checked={value === r} onChange={() => onChange(r)} />
                     <span>{r}</span>
                   </label>

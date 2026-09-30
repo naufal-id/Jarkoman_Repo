@@ -59,6 +59,9 @@ export function cleanMusic(v: unknown): string {
   return cleanUrl(s)
 }
 
+/** Pilihan batas pendaftaran (menit sebelum mulai). -1 = tanpa batas. */
+export const JOIN_CLOSE_OPTIONS = [-1, 0, 15, 30, 60, 120]
+
 export const ID_PATTERN = /^[a-z0-9-]{4,40}$/
 
 const cleanId = (v: unknown) => {
@@ -143,6 +146,7 @@ export function cleanJarkoman(v: unknown, now = Date.now()): Jarkoman | null {
     musicLabel: cleanText(v.musicLabel, 60),
     // Data lama belum punya field ini: pendaftaran langsung nyala secara default.
     autoJoin: v.autoJoin !== false,
+    joinClose: JOIN_CLOSE_OPTIONS.includes(Number(v.joinClose)) ? Number(v.joinClose) : -1,
     updatedAt: Number.isFinite(updatedAt) && updatedAt > 0 ? updatedAt : now,
   }
 }

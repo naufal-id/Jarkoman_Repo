@@ -36,6 +36,7 @@ export function createJarkoman(game: GameId, now = Date.now()): Jarkoman {
     music: '',
     musicLabel: '',
     autoJoin: true,
+    joinClose: -1,
     updatedAt: now,
   }
 }

@@ -171,7 +171,13 @@ export function Editor({ item, token, onPatch, onGame }: EditorProps) {
         <h2 className="adm-sec__title" id="sec-squad">
           Skuad
         </h2>
-        <PlayersEditor item={item} onChange={(players) => onPatch({ players })} onSlots={(slots) => onPatch({ slots })} onAutoJoin={(autoJoin) => onPatch({ autoJoin })} />
+        <PlayersEditor
+          item={item}
+          onChange={(players) => onPatch({ players })}
+          onSlots={(slots) => onPatch({ slots })}
+          onAutoJoin={(autoJoin) => onPatch({ autoJoin })}
+          onJoinClose={(joinClose) => onPatch({ joinClose })}
+        />
       </section>
 
       <section className="adm-sec" aria-labelledby="sec-notes">

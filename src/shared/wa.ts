@@ -1,4 +1,5 @@
 import { gameDef } from './games'
+import { joinCloseLabel } from './joins'
 import { formatDateLong, formatTimeRange } from './time'
 import type { Jarkoman } from './types'
 
@@ -106,5 +107,7 @@ export function buildBroadcast(j: Jarkoman, link: string): string {
     lines.push(`Konfirmasi ke WA ${formatPhoneDisplay(j.wa || DEFAULT_WA)}${link ? ' atau isi di sini:' : ''}`)
   }
   if (link) lines.push(link)
+  const close = joinCloseLabel(j)
+  if (close) lines.push(`Pendaftaran ditutup ${close}.`)
   return lines.join('\n')
 }
