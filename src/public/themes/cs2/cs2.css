@@ -1834,10 +1834,23 @@ body:has(.cs) {
   border: 1px solid var(--line-hi);
 }
 
+/* Status slot hijau dengan kotak menyala seperti pemain yang sudah menekan ACCEPT. */
 .cs-form .jf__done-kicker {
-  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #9fe29f;
   font-family: 'Rajdhani', sans-serif;
   font-size: 15px;
+}
+
+.cs-form .jf__done-kicker::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--accept-top), var(--accept-bottom));
+  box-shadow: 0 0 8px rgba(144, 212, 144, 0.5);
 }
 
 .cs-form .jf__done-name {
@@ -1952,24 +1965,85 @@ body:has(.cs) {
   color: var(--fg);
 }
 
-/* ---------- Banner siap ---------- */
-.cs-ready {
+/* ---------- Layar ACCEPT (setelah daftar) ---------- */
+/* Seperti popup "match ready" CS2 (popup_accept_match.css): panel gelap di tengah, kotak pemain yang menyala
+   hijau, tombol ACCEPT hijau bergradasi dengan cahaya hijau. */
+.cs-accept {
   position: fixed;
-  left: 50%;
-  top: 92px;
+  inset: 0;
   z-index: 280;
-  translate: -50% 0;
-  width: max-content;
-  max-width: 92vw;
-  padding: 14px 22px;
-  background: linear-gradient(180deg, rgba(10, 17, 24, 0.95), rgba(20, 32, 43, 0.92));
-  border-top: 3px solid var(--accent);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 700;
-  font-size: 22px;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: radial-gradient(ellipse at 50% 45%, rgba(10, 17, 24, 0.55), rgba(10, 17, 24, 0.85));
   visibility: hidden;
   pointer-events: none;
+}
+
+.cs-accept__panel {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: min(92vw, 460px);
+  padding: 26px 28px 22px;
+  background: linear-gradient(180deg, rgba(30, 45, 61, 0.97), rgba(14, 22, 30, 0.97));
+  border: 1px solid var(--line-hi);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+  text-align: center;
+}
+
+.cs-accept__title {
+  font-family: 'Saira Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.cs-accept__slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.cs-accept__slot {
+  width: 30px;
+  height: 30px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px var(--line-hi);
+}
+
+.cs-accept__slot.is-in {
+  background: linear-gradient(180deg, var(--accept-top), var(--accept-bottom));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 10px rgba(144, 212, 144, 0.5);
+}
+
+.cs-accept__btn {
+  min-width: 220px;
+  padding: 14px 24px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--accept-top) 0%, var(--accept) 52%, var(--accept-bottom) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 0 18px rgba(144, 212, 144, 0.5);
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.cs-accept__sub {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--muted);
 }
 
 /* ---------- Intro ---------- */
@@ -2241,4 +2315,49 @@ body:has(.cs) {
 
 .cs-form .jf__need b {
   color: #9fe29f;
+}
+
+/* Pemain baru di scoreboard menyala sebentar dengan warna pemainnya; baris milik perangkat ini diberi tag "kamu". */
+.cs-board__row[data-fresh] {
+  animation: cs-fresh 2.2s ease-out;
+}
+
+@keyframes cs-fresh {
+  0% {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--pc, var(--accent)) 45%, transparent), transparent 80%);
+  }
+}
+
+.cs-board__row[data-me] {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pc, var(--accent)) 60%, transparent);
+}
+
+.cs-board__tag--me {
+  background: linear-gradient(180deg, var(--accept-top), var(--accept-bottom));
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cs-board__row[data-fresh] {
+    animation: none;
+  }
+}
+
+/* Sorot bersama scoreboard dan radar. */
+.cs-map__player {
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.cs-map__player.is-hot {
+  z-index: 3;
+  transform: scale(1.6);
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 16px var(--pc);
+}
+
+.cs-board__row[data-hot] {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--pc, var(--accent)) 22%, transparent), var(--cell-alt) 70%);
 }

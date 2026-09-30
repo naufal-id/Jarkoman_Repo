@@ -11,6 +11,7 @@ const API_ROUTES: Record<string, string> = {
   '/api/media': '/netlify/functions/media.mts',
   '/api/audio': '/netlify/functions/audio.mts',
   '/api/join': '/netlify/functions/join.mts',
+  '/api/og': '/netlify/functions/og.mts',
 }
 
 function readBody(req: IncomingMessage): Promise<Buffer> {

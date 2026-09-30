@@ -247,3 +247,15 @@ p {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Pindah jarkoman di dalam situs (View Transitions): halaman memudar singkat, gambar yang bernama sama (thumbnail
+   jadwal lain dan gambar hero) bergerak dan berubah ukuran di antaranya. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.32s;
+}
+
+::view-transition-group(*) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}

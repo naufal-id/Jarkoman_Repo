@@ -16,7 +16,7 @@ import { usePage, type ThemeProps } from '../../common/context'
 import { Digits } from '../../common/Digits'
 import { Schedule, SiteFooter, useActions } from '../../common/Extras'
 import { gsap, MOTION_OK, useGSAP } from '../../common/gsap'
-import { isClosed, joinTitle, statusLabel, useSession, type SessionInfo } from '../../common/hooks'
+import { isClosed, joinTitle, statusLabel, useSession, useSquadMarks, type SessionInfo } from '../../common/hooks'
 import { useIntroGate } from '../../common/intro'
 import { JoinForm, type SentKind } from '../../common/JoinForm'
 import { MusicDock } from '../../common/Music'
@@ -33,6 +33,9 @@ const STREAK = ['', 'First Blood', 'Double Kill', 'Triple Kill', 'Maniac', 'Sava
 export default function MlbbPage({ j }: ThemeProps) {
   const { preview, others, replay, media } = usePage()
   const s = useSession(j)
+  const marks = useSquadMarks(j)
+  // Pemain yang sedang disorot (kursor di kartu lineup atau di titiknya di peta): keduanya menyala bersamaan.
+  const [hot, setHot] = useState<string | null>(null)
   const intro = useIntroGate('mlbb', preview, replay)
   const actions = useActions(j)
   const toast = useToast()
@@ -127,15 +130,21 @@ export default function MlbbPage({ j }: ThemeProps) {
     { scope: root, dependencies: [intro.ready, replay], revertOnUpdate: true },
   )
 
-  // Setelah konfirmasi: sapuan cahaya emas pada tombol dan pesan singkat.
+  // Setelah konfirmasi: momen pick terkunci ala draft MLBB. Lambang kristal membesar, sinar emas berputar di
+  // belakangnya, tulisan emas menghantam masuk, lalu semuanya memudar. Tidak jalan saat reduced motion.
   useGSAP(
     () => {
       if (!sentKey) return
       gsap.matchMedia().add(MOTION_OK, () => {
         gsap
           .timeline()
-          .fromTo('.ml-victory', { autoAlpha: 0, scale: 1.4 }, { autoAlpha: 1, scale: 1, duration: 0.45, ease: 'power4.out' })
-          .to('.ml-victory', { autoAlpha: 0, duration: 0.5, delay: 1.2 })
+          .fromTo('.ml-victory', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 })
+          .fromTo('.ml-victory__rays', { scale: 0.3, rotate: -40, opacity: 0 }, { scale: 1, rotate: 0, opacity: 1, duration: 0.9, ease: 'power3.out' }, 0)
+          .fromTo('.ml-victory .ml-crest', { scale: 0.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.55, ease: 'back.out(2.2)' }, 0.05)
+          .fromTo('.ml-victory__word', { scale: 1.8, opacity: 0, filter: 'blur(6px)' }, { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.4, ease: 'power4.in' }, 0.3)
+          .fromTo('.ml-victory__flash', { opacity: 0.9 }, { opacity: 0, duration: 0.5, ease: 'power2.out' }, 0.7)
+          .fromTo('.ml-victory small', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.3 }, 0.75)
+          .to('.ml-victory', { autoAlpha: 0, duration: 0.5, delay: 1.1 })
       })
     },
     { scope: root, dependencies: [sentKey] },
@@ -161,7 +170,7 @@ export default function MlbbPage({ j }: ThemeProps) {
         <section className="ml-hero" aria-labelledby="ml-title">
           <div className="ml-hero__bg" aria-hidden="true">
             <div className="ml-banner">
-              <ArtImage game="mlbb" custom={j.bg} className="ml-banner__img" sizes={HERO_SIZES.mlbb} priority />
+              <ArtImage game="mlbb" custom={j.bg} className="ml-banner__img" sizes={HERO_SIZES.mlbb} priority transitionName={`jk-art-${j.id}`} />
             </div>
             <div className="ml-rays" />
             <Embers className="ml-embers" />
@@ -218,8 +227,15 @@ export default function MlbbPage({ j }: ThemeProps) {
               {teams.length > 1 && <p className="ml-team__label">{ti === 0 ? 'Tim 1' : 'Tim 2'}</p>}
               <ol className="ml-team" style={{ '--cols': team.length } as CSSProperties}>
                 {team.map((p, i) => (
-                  <li key={p?.id ?? `empty-${ti}-${i}`}>
+                  <li
+                    key={p?.id ?? `empty-${ti}-${i}`}
+                    className={`squad-mark ${p && p.id === hot ? 'is-hot' : ''}`}
+                    data-fresh={(p && marks.fresh.has(p.id)) || undefined}
+                    onMouseEnter={p ? () => setHot(p.id) : undefined}
+                    onMouseLeave={p ? () => setHot(null) : undefined}
+                  >
                     <LineupCard player={p} index={ti * 5 + i} host={j.host} />
+                    {p && p.id === marks.me && <span className="me-tag">Kamu</span>}
                   </li>
                 ))}
               </ol>
@@ -240,7 +256,7 @@ export default function MlbbPage({ j }: ThemeProps) {
         <section className="ml-dawn" aria-labelledby="ml-dawn-title">
           <SectionTitle id="ml-dawn-title" text="Land of Dawn" />
           <div className="ml-dawn__grid">
-            <LandOfDawn players={j.players.slice(0, j.slots)} side={j.variant === 'red' ? 'red' : 'blue'} />
+            <LandOfDawn players={j.players.slice(0, j.slots)} side={j.variant === 'red' ? 'red' : 'blue'} hot={hot} onHot={setHot} />
             <dl className="ml-intel">
               {j.mode && <Intel k="Mode" v={j.mode} />}
               {j.map && <Intel k={def.mapLabel} v={j.map} />}
@@ -344,7 +360,10 @@ export default function MlbbPage({ j }: ThemeProps) {
       <MusicDock j={j} />
 
       <div className="ml-victory" aria-hidden="true">
-        <span>{sentKind === 'joined' ? 'Slot terkunci' : 'Pesan siap'}</span>
+        <span className="ml-victory__rays" />
+        <span className="ml-victory__flash" />
+        <Crest id="ml-v" />
+        <span className="ml-victory__word">{sentKind === 'joined' ? 'Slot terkunci' : 'Pesan siap'}</span>
         <small>{sentKind === 'joined' ? 'Namamu sudah masuk lineup' : 'Kirim di WhatsApp untuk mengunci slot'}</small>
       </div>
     </div>
@@ -453,24 +472,25 @@ export function LaneIcon({ lane }: { lane: string }) {
   )
 }
 
-function Crest() {
+/** Lambang kristal. `id` membedakan id gradien SVG kalau lambang tampil lebih dari sekali di halaman. */
+function Crest({ id = 'ml' }: { id?: string }) {
   return (
     <svg className="ml-crest" viewBox="0 0 120 120" aria-hidden="true">
       <defs>
-        <linearGradient id="ml-gold" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`${id}-gold`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#fff1c1" />
           <stop offset="0.5" stopColor="#f0c45c" />
           <stop offset="1" stopColor="#a8741f" />
         </linearGradient>
-        <linearGradient id="ml-crystal" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={`${id}-crystal`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#d9f8ff" />
           <stop offset="0.5" stopColor="#5ce1ff" />
           <stop offset="1" stopColor="#1b5c9c" />
         </linearGradient>
       </defs>
-      <path d="M60 6l46 26v56L60 114 14 88V32z" fill="none" stroke="url(#ml-gold)" strokeWidth="4" />
-      <path d="M60 18l35 20v44L60 102 25 82V38z" fill="none" stroke="url(#ml-gold)" strokeWidth="1.5" opacity="0.6" />
-      <path d="M60 30l18 30-18 30-18-30z" fill="url(#ml-crystal)" className="ml-crest__crystal" />
+      <path d="M60 6l46 26v56L60 114 14 88V32z" fill="none" stroke={`url(#${id}-gold)`} strokeWidth="4" />
+      <path d="M60 18l35 20v44L60 102 25 82V38z" fill="none" stroke={`url(#${id}-gold)`} strokeWidth="1.5" opacity="0.6" />
+      <path d="M60 30l18 30-18 30-18-30z" fill={`url(#${id}-crystal)`} className="ml-crest__crystal" />
       <path d="M60 30v60M42 60h36" stroke="#fff" strokeOpacity="0.45" strokeWidth="1" />
     </svg>
   )
@@ -492,7 +512,7 @@ function MlIntro({ onDone }: { onDone: () => void }) {
   return (
     <div className="intro ml-intro" ref={ref}>
       <div className="ml-intro__inner" aria-hidden="true">
-        <Crest />
+        <Crest id="ml-i" />
         <p className="ml-intro__label">Memuat Land of Dawn</p>
         <span className="ml-intro__bar">
           <span className="ml-intro__fill" />

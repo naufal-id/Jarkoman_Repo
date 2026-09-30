@@ -138,7 +138,7 @@ export function laneKey(role: string): string | undefined {
 
 const pct = ([x, y]: Pt): CSSProperties => ({ left: `${(x / S) * 100}%`, top: `${(y / S) * 100}%` })
 
-export function LandOfDawn({ players, side }: { players: Player[]; side: Side }) {
+export function LandOfDawn({ players, side, hot, onHot }: { players: Player[]; side: Side; hot?: string | null; onHot?: (id: string | null) => void }) {
   const view = (p: Pt) => (side === 'blue' ? p : turn(p))
   // Menara dan buff fisik milik blue; milik red adalah cerminnya. Tim sendiri = sisi yang dipilih host.
   const own = (team: Side) => (team === side ? 'ally' : 'enemy')
@@ -318,7 +318,14 @@ export function LandOfDawn({ players, side }: { players: Player[]; side: Side })
         </span>
 
         {chips.map(({ p, at, label }) => (
-          <span key={p.id} className={`ml-map__hero ml-map__hero--${label} ${p.status === 'maybe' ? 'is-maybe' : ''}`} data-lane={laneKey(p.role)} style={pct(at)}>
+          <span
+            key={p.id}
+            className={`ml-map__hero ml-map__hero--${label} ${p.status === 'maybe' ? 'is-maybe' : ''} ${p.id === hot ? 'is-hot' : ''}`}
+            data-lane={laneKey(p.role)}
+            style={pct(at)}
+            onMouseEnter={() => onHot?.(p.id)}
+            onMouseLeave={() => onHot?.(null)}
+          >
             <span className="ml-map__avatar" aria-hidden="true">
               {p.name.slice(0, 1)}
             </span>

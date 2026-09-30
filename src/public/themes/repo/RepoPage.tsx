@@ -17,7 +17,7 @@ import { ArtImage } from '../../common/ArtImage'
 import { usePage, type ThemeProps } from '../../common/context'
 import { Schedule, SiteFooter, useActions } from '../../common/Extras'
 import { gsap, MOTION_OK, useGSAP } from '../../common/gsap'
-import { isClosed, joinTitle, statusLabel, useSession, type SessionInfo } from '../../common/hooks'
+import { isClosed, joinTitle, statusLabel, useSession, useSquadMarks, type SessionInfo } from '../../common/hooks'
 import { useIntroGate } from '../../common/intro'
 import { JoinForm, type SentKind } from '../../common/JoinForm'
 import { MusicDock } from '../../common/Music'
@@ -32,6 +32,7 @@ const dotted = (word: string) => `${word.split('').join('.')}.`
 export default function RepoPage({ j }: ThemeProps) {
   const { preview, others, replay, media } = usePage()
   const s = useSession(j)
+  const marks = useSquadMarks(j)
   const intro = useIntroGate('repo', preview, replay)
   const actions = useActions(j)
   const toast = useToast()
@@ -194,7 +195,7 @@ export default function RepoPage({ j }: ThemeProps) {
               <div className="rp-crt">
                 <div className="rp-crt__screen">
                   <div className="rp-crt__feed">
-                    <ArtImage game="repo" custom={j.bg} className="rp-crt__img" sizes={HERO_SIZES.repo} priority />
+                    <ArtImage game="repo" custom={j.bg} className="rp-crt__img" sizes={HERO_SIZES.repo} priority transitionName={`jk-art-${j.id}`} />
                   </div>
                   <p className="rp-crt__line">
                     &gt; {def.mapLabel.toUpperCase()}: {(j.map || 'Acak').toUpperCase()}
@@ -226,8 +227,9 @@ export default function RepoPage({ j }: ThemeProps) {
           </div>
           <ul className="rp-crew__grid" style={{ '--cols': Math.max(3, j.slots) } as CSSProperties}>
             {slots.map((p, i) => (
-              <li key={p?.id ?? `empty-${i}`}>
+              <li key={p?.id ?? `empty-${i}`} className="squad-mark" data-fresh={(p && marks.fresh.has(p.id)) || undefined}>
                 <BotCard player={p} host={j.host} />
+                {p && p.id === marks.me && <span className="me-tag">Kamu</span>}
               </li>
             ))}
           </ul>

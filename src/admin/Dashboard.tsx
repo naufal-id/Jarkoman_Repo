@@ -101,6 +101,8 @@ function DashboardInner({ token, onLogout }: Props) {
       }
       setSaved(base)
       setDraft(working)
+      // Pastikan gambar preview link semua jarkoman ada dan sesuai isi terbaru (hanya yang berubah yang dibuat ulang).
+      if (base.items.length) void import('./og-sync').then((m) => m.syncOgImages(base, token)).catch(() => null)
       setSelectedId(working.featuredId || working.items[0]?.id || '')
       setLoad({ kind: 'ready' })
     } catch (err) {
@@ -203,6 +205,8 @@ function DashboardInner({ token, onLogout }: Props) {
         removeKey(KEYS.draft)
         if (!next.items.some((i) => i.id === selectedId)) setSelectedId(next.featuredId)
         toast('Tersimpan. Halaman publik sudah memakai versi ini.')
+        // Gambar preview link WhatsApp per jarkoman dibuat di latar (modul canvas dimuat hanya saat dibutuhkan).
+        void import('./og-sync').then((m) => m.syncOgImages(next, token)).catch(() => null)
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
           onLogout('Sesi login habis. Masuk lagi, perubahanmu tersimpan sebagai draft di perangkat ini.')

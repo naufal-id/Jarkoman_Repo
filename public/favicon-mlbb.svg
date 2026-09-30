@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b2a78"/>
+      <stop offset="1" stop-color="#080d2e"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff4cf"/>
+      <stop offset="0.5" stop-color="#ffc94a"/>
+      <stop offset="1" stop-color="#b8630f"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="10" fill="url(#bg)"/>
+  <text x="32" y="46" text-anchor="middle" font-family="Impact, 'Arial Narrow', sans-serif" font-size="40" font-weight="700" fill="url(#gold)">JK</text>
+  <rect x="12" y="52" width="40" height="4" fill="#72dcff"/>
+</svg>

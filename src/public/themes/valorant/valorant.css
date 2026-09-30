@@ -1211,12 +1211,16 @@ body:has(.val[data-variant='bone']) {
   position: relative;
   background: var(--bg);
   color: var(--fg);
-  border-left: 6px solid var(--red);
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
 }
 
+/* Status slot sebagai label merah bertulisan ink, seperti tanda agent yang sudah dikunci di agent select. */
 .val-form .jf__done-kicker {
-  color: var(--red-text);
+  justify-self: start;
+  margin-bottom: 6px;
+  padding: 5px 10px;
+  background: var(--red);
+  color: var(--ink);
   font-family: 'Barlow', sans-serif;
 }
 
@@ -1524,4 +1528,11 @@ body:has(.val[data-variant='bone']) {
 
 .val-form .jf__need b {
   color: var(--red-text);
+}
+
+/* Tanda di skuad: kartu baru menyala merah, tag "Kamu" merah bertulisan ink seperti label agent terkunci. */
+.val {
+  --fresh: var(--red);
+  --me-bg: var(--red);
+  --me-fg: var(--ink);
 }

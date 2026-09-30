@@ -88,7 +88,11 @@ Musik tidak pernah berbunyi sendiri (browser juga memblokir itu). Pengunjung men
 
 ## Preview link di WhatsApp
 
-`netlify/edge-functions/og.ts` mengganti judul, deskripsi, dan gambar preview khusus untuk bot (WhatsApp, Telegram, Discord, dll), sesuai jarkoman yang dibuka. Gambar preview ada di `public/og/`. WhatsApp menyimpan cache preview; kalau preview lama masih muncul, bagikan link dengan tambahan parameter, misalnya `...?id=abc&v=2`.
+`netlify/edge-functions/og.ts` mengganti judul, deskripsi, dan gambar preview khusus untuk bot (WhatsApp, Telegram, Discord, dll), sesuai jarkoman yang dibuka.
+
+- **Gambar per jarkoman**: setiap dashboard dibuka atau disimpan, browser admin menggambar kartu 1200 x 630 bergaya tema game (judul, tanggal, jam, mode, map, tombol) lalu mengunggahnya ke `/api/og`. Hanya jarkoman yang isinya berubah yang dibuat ulang. Edge function memakai gambar ini kalau ada.
+- **Gambar bawaan per game** di `public/og/` dipakai kalau gambar khusus belum ada. Dibuat dari modul canvas yang sama: jalankan `npm run dev`, lalu `node tools/render-og.mjs`.
+- WhatsApp menyimpan cache preview per link; kalau preview lama masih muncul, bagikan link dengan tambahan parameter, misalnya `...?id=abc&v=2`.
 
 ## Menjalankan di komputer
 

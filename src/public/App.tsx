@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
+import { flushSync } from 'react-dom'
 import { api, ApiError } from '../shared/api'
 import { defaultState } from '../shared/defaults'
 import { artSrcSet, HERO_SIZES, KEY_ART } from '../shared/art'
@@ -11,11 +12,18 @@ import { useMedia } from './common/hooks'
 import { ScrollTrigger } from './common/gsap'
 import { ToastProvider } from './common/Toast'
 
+const THEME_LOADERS: Record<GameId, () => Promise<{ default: ComponentType<ThemeProps> }>> = {
+  valorant: () => import('./themes/valorant/ValorantPage'),
+  cs2: () => import('./themes/cs2/Cs2Page'),
+  mlbb: () => import('./themes/mlbb/MlbbPage'),
+  repo: () => import('./themes/repo/RepoPage'),
+}
+
 const THEMES: Record<GameId, ComponentType<ThemeProps>> = {
-  valorant: lazy(() => import('./themes/valorant/ValorantPage')),
-  cs2: lazy(() => import('./themes/cs2/Cs2Page')),
-  mlbb: lazy(() => import('./themes/mlbb/MlbbPage')),
-  repo: lazy(() => import('./themes/repo/RepoPage')),
+  valorant: lazy(THEME_LOADERS.valorant),
+  cs2: lazy(THEME_LOADERS.cs2),
+  mlbb: lazy(THEME_LOADERS.mlbb),
+  repo: lazy(THEME_LOADERS.repo),
 }
 
 type Load = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; state: SiteState; sample: boolean; offline: boolean }
@@ -68,6 +76,8 @@ export function App() {
   const [load, setLoad] = useState<Load>({ kind: 'loading' })
   const [previewData, setPreviewData] = useState<{ item: Jarkoman; others: Jarkoman[] } | null>(null)
   const [replay, setReplay] = useState(0)
+  // Jarkoman yang sedang dibuka (?id=). Bisa berganti tanpa memuat ulang halaman lewat link "Jadwal lain".
+  const [wanted, setWanted] = useState<string | null>(WANTED)
 
   // Hanya respons dari permintaan terakhir yang dipakai (permintaan lama yang telat selesai diabaikan).
   const reqId = useRef(0)
@@ -205,7 +215,7 @@ export function App() {
     if (PREVIEW) return previewData ? { item: previewData.item, others: previewData.others, sample: false, offline: false, missing: false } : null
     if (load.kind !== 'ready') return null
     const { state } = load
-    const byId = WANTED ? state.items.find((i) => i.id === WANTED) : undefined
+    const byId = wanted ? state.items.find((i) => i.id === wanted) : undefined
     const item = byId ?? state.items.find((i) => i.id === state.featuredId) ?? state.items[0]
     if (!item) return null
     return {
@@ -213,9 +223,57 @@ export function App() {
       others: state.items.filter((i) => i.id !== item.id),
       sample: load.sample,
       offline: load.offline,
-      missing: Boolean(WANTED && !byId),
+      missing: Boolean(wanted && !byId),
     }
-  }, [load, previewData])
+  }, [load, previewData, wanted])
+
+  // Pindah ke jarkoman lain dari "Jadwal lain" tanpa memuat ulang: chunk tema dimuat dulu, lalu tampilan diganti
+  // di dalam View Transition (thumbnail jadwal berubah jadi gambar hero). Tombol Back/Forward browser ikut bekerja.
+  const items = load.kind === 'ready' ? load.state.items : null
+  const itemsRef = useRef(items)
+  itemsRef.current = items
+  useEffect(() => {
+    if (PREVIEW) return
+    let seq = 0
+    const go = async (id: string, push: boolean, href: string) => {
+      const target = itemsRef.current?.find((i) => i.id === id)
+      if (!target) {
+        if (push) location.href = href
+        else setWanted(id || null)
+        return
+      }
+      const mine = ++seq
+      await THEME_LOADERS[target.game]().catch(() => null)
+      if (mine !== seq) return
+      // Intro game hanya untuk kunjungan pertama; perpindahan di dalam situs langsung ke halaman.
+      writeJSON(KEYS.introSeen(target.game), 1, 'session')
+      if (push) history.pushState({ id }, '', href)
+      const apply = () => {
+        flushSync(() => setWanted(id))
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+      }
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+      if (typeof document.startViewTransition === 'function' && !reduce) document.startViewTransition(apply)
+      else apply()
+    }
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+      const a = (e.target as Element | null)?.closest?.('a')
+      if (!a || (a.target && a.target !== '_self') || a.hasAttribute('download')) return
+      const url = new URL(a.href, location.href)
+      const id = url.searchParams.get('id')
+      if (url.origin !== location.origin || url.pathname !== '/' || !id || url.hash) return
+      e.preventDefault()
+      void go(id, true, url.pathname + url.search)
+    }
+    const onPop = () => void go(new URLSearchParams(location.search).get('id') ?? '', false, location.pathname + location.search)
+    document.addEventListener('click', onClick)
+    window.addEventListener('popstate', onPop)
+    return () => {
+      document.removeEventListener('click', onClick)
+      window.removeEventListener('popstate', onPop)
+    }
+  }, [])
 
   const heroItem = view?.item
   useEffect(() => {
@@ -281,6 +339,8 @@ function Stage({ item, others, replay, replaceItem, banner }: StageProps) {
     document.documentElement.dataset.game = item.game
     document.title = `${item.headline} · ${def.name} | Jarkoman`
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', def.themeColor)
+    // Ikon tab ikut game: huruf JK dengan warna identitas game itu.
+    document.querySelector('link[rel="icon"]')?.setAttribute('href', `/favicon-${item.game}.svg`)
   }, [item.game, item.headline, def])
 
   return (
@@ -290,7 +350,7 @@ function Stage({ item, others, replay, replaceItem, banner }: StageProps) {
       </a>
       {banner && <div className="data-banner">{banner}</div>}
       <Suspense fallback={<SystemScreen text={`Menyiapkan tema ${def.name}…`} busy />}>
-        <Theme j={item} />
+        <Theme key={item.id} j={item} />
       </Suspense>
     </PageCtx.Provider>
   )

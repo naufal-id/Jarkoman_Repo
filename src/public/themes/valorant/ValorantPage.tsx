@@ -16,7 +16,7 @@ import { usePage, type ThemeProps } from '../../common/context'
 import { Digits } from '../../common/Digits'
 import { Schedule, SiteFooter, useActions } from '../../common/Extras'
 import { gsap, MOTION_OK, useGSAP } from '../../common/gsap'
-import { isClosed, joinTitle, statusLabel, useSession, type SessionInfo } from '../../common/hooks'
+import { isClosed, joinTitle, statusLabel, useSession, useSquadMarks, type SessionInfo } from '../../common/hooks'
 import { useIntroGate } from '../../common/intro'
 import { JoinForm } from '../../common/JoinForm'
 import { MusicDock } from '../../common/Music'
@@ -28,6 +28,7 @@ const def = gameDef('valorant')
 export default function ValorantPage({ j }: ThemeProps) {
   const { preview, others, replay, media } = usePage()
   const s = useSession(j)
+  const marks = useSquadMarks(j)
   const intro = useIntroGate('valorant', preview, replay)
   const actions = useActions(j)
   const toast = useToast()
@@ -150,7 +151,7 @@ export default function ValorantPage({ j }: ThemeProps) {
           <div className="val-hero__bg" aria-hidden="true">
             <span className="val-hero__ghost">{j.map || def.name}</span>
             <div className="val-hero__art">
-              <ArtImage game="valorant" custom={j.bg} className="val-hero__img" sizes={HERO_SIZES.valorant} priority />
+              <ArtImage game="valorant" custom={j.bg} className="val-hero__img" sizes={HERO_SIZES.valorant} priority transitionName={`jk-art-${j.id}`} />
             </div>
             <span className="val-hero__edge" />
           </div>
@@ -233,8 +234,9 @@ export default function ValorantPage({ j }: ThemeProps) {
           </div>
           <ol className="val-squad__grid" style={{ '--cols': Math.min(5, j.slots) } as CSSProperties}>
             {slots.map((p, i) => (
-              <li key={p?.id ?? `empty-${i}`}>
+              <li key={p?.id ?? `empty-${i}`} className="squad-mark" data-fresh={(p && marks.fresh.has(p.id)) || undefined}>
                 <SlotCard index={i} player={p} host={j.host} />
+                {p && p.id === marks.me && <span className="me-tag">Kamu</span>}
               </li>
             ))}
           </ol>

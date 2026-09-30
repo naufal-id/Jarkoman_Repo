@@ -3,6 +3,7 @@ import { applyWebChanges, keepNotes, publicState } from '../../src/shared/joins'
 import { cleanState } from '../../src/shared/sanitize'
 import type { SiteState } from '../../src/shared/types'
 import { cleanupAudio } from '../lib/audio'
+import { cleanupOg } from '../lib/og'
 import { bearer, isConfigured, verifyToken } from '../lib/auth'
 import { error, json, readJson } from '../lib/http'
 import { stateStore, updateJSON, WriteConflictError } from '../lib/store'
@@ -56,6 +57,7 @@ export default async function handler(req: Request): Promise<Response> {
       }
       // Bersihkan lagu upload yang sudah tidak dipakai. Gagal di sini tidak membatalkan simpan.
       await cleanupAudio(outcome.saved).catch((err) => console.warn('[state] cleanup audio gagal', err))
+      await cleanupOg(outcome.saved).catch((err) => console.warn('[state] cleanup og gagal', err))
       return json({ state: outcome.saved, dropped: cleaned.dropped })
     } catch (err) {
       if (err instanceof WriteConflictError) return error(503, 'Data sedang ramai diubah. Coba simpan lagi.')

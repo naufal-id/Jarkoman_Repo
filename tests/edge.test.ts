@@ -51,4 +51,20 @@ describe('edge function og', () => {
     const res = (await og(new Request('https://mabar.test/', { headers: { 'user-agent': 'facebookexternalhit/1.1' } }), context()))!
     expect(await res.text()).toContain('/og/valorant.jpg')
   })
+
+  it('memakai gambar khusus jarkoman kalau dashboard sudah membuatnya', async () => {
+    const item = createJarkoman('cs2')
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: URL | string) => {
+        const url = String(input)
+        if (url.includes('/api/og')) return Response.json({ sig: 'abc123' })
+        return Response.json({ state: { version: 1, featuredId: item.id, items: [item], updatedAt: 1 } })
+      }),
+    )
+    const res = (await og(new Request(`https://mabar.test/?id=${item.id}`, { headers: { 'user-agent': 'WhatsApp/2.24.1 A' } }), context()))!
+    const html = await res.text()
+    expect(html).toContain(`content="https://mabar.test/api/og?id=${item.id}&amp;v=abc123"`)
+    expect(html).not.toContain('/og/cs2.jpg')
+  })
 })

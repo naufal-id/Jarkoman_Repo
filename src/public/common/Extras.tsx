@@ -48,7 +48,7 @@ export function Schedule({ items, className = '', title }: ScheduleProps) {
           return (
             <li key={i.id}>
               <a className="sched__row" href={`/?id=${encodeURIComponent(i.id)}`} data-game={i.game}>
-                <img className="sched__thumb" src={artThumb(i.game)} alt="" loading="lazy" width={96} height={54} />
+                <img className="sched__thumb" src={artThumb(i.game)} alt="" loading="lazy" width={96} height={54} style={{ viewTransitionName: `jk-art-${i.id}` }} />
                 <span className="sched__game">{def.name}</span>
                 <span className="sched__headline">{i.headline}</span>
                 <span className="sched__when">{live ? 'Lagi main' : `${formatDateShort(i.date)} · ${formatClock(i.time)} ${i.tz}`}</span>

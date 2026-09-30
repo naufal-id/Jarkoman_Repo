@@ -47,11 +47,12 @@ function describe(item: Item): string {
   return `${parts.join(' · ')}. ${item.subline || fallback}`.slice(0, 280)
 }
 
-function metaBlock(item: Item, origin: string, pageUrl: string): string {
+function metaBlock(item: Item, origin: string, pageUrl: string, custom: string | null): string {
   const game = GAME_NAMES[item.game] ?? 'Mabar'
   const title = `${game}: ${item.headline}`
   const desc = describe(item)
-  const image = `${origin}/og/${GAME_NAMES[item.game] ? item.game : 'valorant'}.jpg`
+  // Gambar khusus jarkoman ini (judul dan jadwalnya tertulis di gambar) kalau dashboard sudah membuatnya.
+  const image = custom ?? `${origin}/og/${GAME_NAMES[item.game] ? item.game : 'valorant'}.jpg`
   return [
     `<title>${escapeAttr(title)} | Jarkoman</title>`,
     `<meta name="description" content="${escapeAttr(desc)}">`,
@@ -88,7 +89,15 @@ export default async (req: Request, context: Context) => {
     const wanted = url.searchParams.get('id')
     const item = state?.items.find((i) => i.id === wanted) ?? state?.items.find((i) => i.id === state.featuredId) ?? state?.items[0]
     if (item) {
-      const replaced = html.replace(/<!--og-->[\s\S]*?<!--\/og-->/, `<!--og-->\n    ${metaBlock(item, url.origin, url.toString())}\n    <!--/og-->`)
+      let custom: string | null = null
+      try {
+        const meta = await fetch(new URL(`/api/og?id=${encodeURIComponent(item.id)}&meta=1`, url.origin), { signal: AbortSignal.timeout(1500) })
+        const sig = ((await meta.json()) as { sig?: string | null }).sig
+        if (meta.ok && sig) custom = `${url.origin}/api/og?id=${encodeURIComponent(item.id)}&v=${encodeURIComponent(sig)}`
+      } catch {
+        // Tanpa gambar khusus: pakai gambar per game.
+      }
+      const replaced = html.replace(/<!--og-->[\s\S]*?<!--\/og-->/, `<!--og-->\n    ${metaBlock(item, url.origin, url.toString(), custom)}\n    <!--/og-->`)
       return new Response(replaced, { status: res.status, headers })
     }
   } catch (err) {

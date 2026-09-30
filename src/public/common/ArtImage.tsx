@@ -9,10 +9,12 @@ interface ArtImageProps {
   className?: string
   sizes?: string
   priority?: boolean
+  /** Nama View Transition, supaya thumbnail di "Jadwal lain" berubah jadi gambar ini saat pindah jarkoman */
+  transitionName?: string
 }
 
 /** Gambar utama tema: key art bawaan atau gambar pilihan admin, dengan fade-in dan fallback. */
-export function ArtImage({ game, custom, className = '', sizes = '100vw', priority }: ArtImageProps) {
+export function ArtImage({ game, custom, className = '', sizes = '100vw', priority, transitionName }: ArtImageProps) {
   const [failed, setFailed] = useState(false)
   // Menyimpan src yang sudah selesai dimuat, supaya ganti gambar tidak perlu reset state terpisah.
   const [loadedSrc, setLoadedSrc] = useState('')
@@ -41,6 +43,7 @@ export function ArtImage({ game, custom, className = '', sizes = '100vw', priori
       loading={priority ? 'eager' : 'lazy'}
       fetchPriority={priority ? 'high' : undefined}
       referrerPolicy={useCustom ? 'no-referrer' : undefined}
+      style={transitionName ? { viewTransitionName: transitionName } : undefined}
       onLoad={() => setLoadedSrc(src)}
       onError={() => {
         if (useCustom) setFailed(true)

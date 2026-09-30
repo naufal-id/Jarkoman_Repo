@@ -1297,3 +1297,10 @@ body:has(.rp[data-variant='lampu']) {
 .rp[data-variant='lampu'] .music__btn:focus-visible {
   outline-color: var(--hazard-text);
 }
+
+/* Tanda di daftar semibot: kartu baru menyala kuning hazard, tag "Kamu" hitam di atas kuning seperti stiker kargo. */
+.rp {
+  --fresh: var(--hazard);
+  --me-bg: var(--hazard);
+  --me-fg: var(--hazard-ink);
+}

@@ -243,6 +243,51 @@ select.jf__input option {
   padding: 0 14px;
 }
 
+/* ---------- Tanda di skuad: pemain baru dan "Kamu" ---------- */
+.squad-mark {
+  position: relative;
+}
+
+/* Kartu pemain yang baru masuk menyala sebentar dengan warna tema (--fresh). Dimatikan saat reduced motion. */
+.squad-mark[data-fresh] > :first-child {
+  animation: jk-fresh 2.2s ease-out;
+}
+
+@keyframes jk-fresh {
+  0% {
+    box-shadow:
+      0 0 0 3px var(--fresh, #ffd66b),
+      0 0 34px var(--fresh, #ffd66b);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 transparent,
+      0 0 0 transparent;
+  }
+}
+
+.me-tag {
+  position: absolute;
+  z-index: 3;
+  top: -10px;
+  right: 10px;
+  padding: 3px 8px;
+  background: var(--me-bg, #ffd66b);
+  color: var(--me-fg, #1a1206);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .squad-mark[data-fresh] > :first-child {
+    animation: none;
+  }
+}
+
 /* ---------- Jadwal lain ---------- */
 .sched__list {
   list-style: none;

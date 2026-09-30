@@ -18,7 +18,7 @@ import { usePage, type ThemeProps } from '../../common/context'
 import { Digits } from '../../common/Digits'
 import { Schedule, SiteFooter, useActions } from '../../common/Extras'
 import { gsap, MOTION_OK, ScrollTrigger, useGSAP } from '../../common/gsap'
-import { isClosed, joinTitle, statusLabel, useSession, type SessionInfo } from '../../common/hooks'
+import { isClosed, joinTitle, statusLabel, useSession, useSquadMarks, type SessionInfo } from '../../common/hooks'
 import { useIntroGate } from '../../common/intro'
 import { JoinForm, type SentKind } from '../../common/JoinForm'
 import { MusicDock } from '../../common/Music'
@@ -60,6 +60,9 @@ const SPRAY: [number, number][] = [
 export default function Cs2Page({ j }: ThemeProps) {
   const { preview, others, replay, media } = usePage()
   const s = useSession(j)
+  const marks = useSquadMarks(j)
+  // Pemain yang disorot kursor di scoreboard atau di radar: baris dan titiknya menyala bersamaan.
+  const [hot, setHot] = useState<string | null>(null)
   const intro = useIntroGate('cs2', preview, replay)
   const actions = useActions(j)
   const toast = useToast()
@@ -184,15 +187,19 @@ export default function Cs2Page({ j }: ThemeProps) {
     { scope: root, dependencies: [intro.ready, replay], revertOnUpdate: true },
   )
 
-  // Setelah konfirmasi: banner "READY" ala pesan tengah layar CS.
+  // Setelah konfirmasi: layar ACCEPT seperti saat match ditemukan. Kotak pemain menyala hijau satu per satu,
+  // lalu tombol ACCEPT berdenyut sekali. Tidak dijalankan saat reduced motion (status tetap ada di form).
   useGSAP(
     () => {
       if (!readyKey) return
       gsap.matchMedia().add(MOTION_OK, () => {
         gsap
           .timeline()
-          .fromTo('.cs-ready', { autoAlpha: 0, y: -30 }, { autoAlpha: 1, y: 0, duration: 0.3, ease: 'power3.out' })
-          .to('.cs-ready', { autoAlpha: 0, y: -20, duration: 0.4, delay: 1.4 })
+          .fromTo('.cs-accept', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 })
+          .fromTo('.cs-accept__panel', { scale: 0.92, y: 16 }, { scale: 1, y: 0, duration: 0.35, ease: 'back.out(1.8)' }, 0)
+          .from('.cs-accept__slot.is-in', { scale: 0.5, opacity: 0.15, duration: 0.18, stagger: 0.12, ease: 'back.out(3)' }, 0.3)
+          .fromTo('.cs-accept__btn', { scale: 1 }, { scale: 1.06, duration: 0.16, yoyo: true, repeat: 1, ease: 'power2.out' }, '>-0.05')
+          .to('.cs-accept', { autoAlpha: 0, duration: 0.35, delay: 0.9 })
       })
     },
     { scope: root, dependencies: [readyKey] },
@@ -258,7 +265,7 @@ export default function Cs2Page({ j }: ThemeProps) {
           <figure className="cs-screen" aria-hidden="true">
             <span className="cs-corner" />
             <div className="cs-screen__frame">
-              <ArtImage game="cs2" custom={j.bg} className="cs-screen__img" sizes={HERO_SIZES.cs2} priority />
+              <ArtImage game="cs2" custom={j.bg} className="cs-screen__img" sizes={HERO_SIZES.cs2} priority transitionName={`jk-art-${j.id}`} />
             </div>
             <figcaption className="cs-screen__tag">{mapCode || 'counter-strike 2'}</figcaption>
             <Spray />
@@ -293,7 +300,15 @@ export default function Cs2Page({ j }: ThemeProps) {
           <SectionTitle id="cs-info-title" no="01" text="Info match" />
           <div className="cs-info__grid">
             {known ? (
-              <MapOverview map={known} name={j.map} slots={joined.map((p) => j.players.indexOf(p))} side={j.variant === 'ct' ? 'CT' : 'T'} site={named} />
+              <MapOverview
+                map={known}
+                name={j.map}
+                dots={joined.map((p) => ({ id: p.id, slot: j.players.indexOf(p) }))}
+                side={j.variant === 'ct' ? 'CT' : 'T'}
+                site={named}
+                hot={hot}
+                onHot={setHot}
+              />
             ) : (
               <Radar players={joined.length} site={named} />
             )}
@@ -343,10 +358,19 @@ export default function Cs2Page({ j }: ThemeProps) {
                 <span role="columnheader">Status</span>
               </div>
               {slots.map((p, i) => (
-                <BoardRow key={p?.id ?? `empty-${i}`} index={i} player={p} host={j.host} />
+                <BoardRow
+                  key={p?.id ?? `empty-${i}`}
+                  index={i}
+                  player={p}
+                  host={j.host}
+                  fresh={Boolean(p && marks.fresh.has(p.id))}
+                  me={Boolean(p && p.id === marks.me)}
+                  hot={Boolean(p && p.id === hot)}
+                  onHot={setHot}
+                />
               ))}
               {reserves.map((p, i) => (
-                <BoardRow key={p.id} index={j.slots + i} player={p} host={j.host} reserve />
+                <BoardRow key={p.id} index={j.slots + i} player={p} host={j.host} reserve fresh={marks.fresh.has(p.id)} me={p.id === marks.me} />
               ))}
             </div>
             {joined.length > 0 && (
@@ -445,8 +469,19 @@ export default function Cs2Page({ j }: ThemeProps) {
 
       <MusicDock j={j} />
 
-      <div className="cs-ready" aria-hidden="true">
-        {sentKind === 'joined' ? 'Ready. Kamu sudah masuk scoreboard.' : 'Siap. Tinggal kirim pesannya di WhatsApp.'}
+      <div className="cs-accept" aria-hidden="true">
+        <div className="cs-accept__panel">
+          <p className="cs-accept__title">{sentKind === 'joined' ? 'Slot kamu siap' : 'Pesan siap dikirim'}</p>
+          {sentKind === 'joined' && (
+            <div className="cs-accept__slots">
+              {Array.from({ length: j.slots }, (_, i) => (
+                <span key={i} className={`cs-accept__slot ${i < s.filled ? 'is-in' : ''}`} />
+              ))}
+            </div>
+          )}
+          <p className="cs-accept__btn">{sentKind === 'joined' ? 'Accepted' : 'Buka WhatsApp'}</p>
+          <p className="cs-accept__sub">{sentKind === 'joined' ? 'Namamu sudah masuk scoreboard.' : 'Tinggal tekan kirim di WhatsApp.'}</p>
+        </div>
       </div>
     </div>
   )
@@ -530,7 +565,25 @@ function InfoRow({ k, v, note, mono, children }: { k: string; v: string; note?: 
   )
 }
 
-function BoardRow({ index, player, host, reserve }: { index: number; player: Player | null; host: string; reserve?: boolean }) {
+function BoardRow({
+  index,
+  player,
+  host,
+  reserve,
+  fresh,
+  me,
+  hot,
+  onHot,
+}: {
+  index: number
+  player: Player | null
+  host: string
+  reserve?: boolean
+  fresh?: boolean
+  me?: boolean
+  hot?: boolean
+  onHot?: (id: string | null) => void
+}) {
   if (!player) {
     return (
       <div className="cs-board__row is-empty" role="row">
@@ -548,13 +601,23 @@ function BoardRow({ index, player, host, reserve }: { index: number; player: Pla
   }
   const isHost = host.trim() && host.trim().toLowerCase() === player.name.trim().toLowerCase()
   return (
-    <div className={`cs-board__row ${player.status === 'maybe' ? 'is-maybe' : ''} ${reserve ? 'is-reserve' : ''}`} role="row" data-pc={pc(index)}>
+    <div
+      className={`cs-board__row ${player.status === 'maybe' ? 'is-maybe' : ''} ${reserve ? 'is-reserve' : ''}`}
+      role="row"
+      data-pc={pc(index)}
+      data-fresh={fresh || undefined}
+      data-me={me || undefined}
+      data-hot={hot || undefined}
+      onMouseEnter={() => onHot?.(player.id)}
+      onMouseLeave={() => onHot?.(null)}
+    >
       <span role="cell" className="cs-board__no">
         {index + 1}
       </span>
       <span role="cell" className="cs-board__name">
         {player.name}
         {isHost && <em className="cs-board__tag">host</em>}
+        {me && <em className="cs-board__tag cs-board__tag--me">kamu</em>}
         {reserve && <em className="cs-board__tag">cadangan</em>}
         {(player.role || player.pick) && <small className="cs-board__sub">{[player.role, player.pick].filter(Boolean).join(' · ')}</small>}
       </span>
@@ -604,8 +667,24 @@ function around(p: MapPoint, count: number): MapPoint[] {
  * Overview map resmi (radar dari file game) dengan ikon seperti loading screen CS2: spawn T dan CT,
  * bombsite A/B atau sandera. Titik pemain yang sudah masuk berkumpul di spawn sisi yang dipilih host.
  */
-function MapOverview({ map, name, slots, side, site }: { map: Cs2Map; name: string; slots: number[]; side: 'T' | 'CT'; site: 'A' | 'B' | null }) {
-  const players = slots.length
+function MapOverview({
+  map,
+  name,
+  dots,
+  side,
+  site,
+  hot,
+  onHot,
+}: {
+  map: Cs2Map
+  name: string
+  dots: { id: string; slot: number }[]
+  side: 'T' | 'CT'
+  site: 'A' | 'B' | null
+  hot: string | null
+  onHot: (id: string | null) => void
+}) {
+  const players = dots.length
   const [level, setLevel] = useState<'upper' | 'lower'>('upper')
   useEffect(() => setLevel('upper'), [map.code])
   const spawn = side === 'T' ? map.t : map.ct
@@ -655,7 +734,15 @@ function MapOverview({ map, name, slots, side, site }: { map: Cs2Map; name: stri
             </span>
           ))}
           {around(spawn, players).map((p, i) => (
-            <span key={i} className={`cs-map__player ${off(false)}`} data-pc={pc(slots[i] ?? i)} style={at(p)} aria-hidden="true" />
+            <span
+              key={dots[i]?.id ?? i}
+              className={`cs-map__player ${off(false)} ${dots[i]?.id === hot ? 'is-hot' : ''}`}
+              data-pc={pc(dots[i]?.slot ?? i)}
+              style={at(p)}
+              aria-hidden="true"
+              onMouseEnter={() => dots[i] && onHot(dots[i].id)}
+              onMouseLeave={() => onHot(null)}
+            />
           ))}
         </div>
       </div>

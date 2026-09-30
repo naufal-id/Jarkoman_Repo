@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../../shared/api'
 import { countdownParts, endEpoch, liveState, relativeDay, startEpoch } from '../../shared/time'
 import type { GameId, Jarkoman, MediaPayload } from '../../shared/types'
+import { KEYS, readJSON } from '../../shared/storage'
 import { isFull, playersIn } from '../../shared/wa'
 
 export function useNow(interval = 1000): number {
@@ -110,4 +111,28 @@ export function joinTitle(s: SessionInfo, openTitle: string): string {
   if (s.state === 'cancelled') return 'Sesi dibatalkan'
   if (s.state === 'ended') return 'Sesi selesai'
   return s.full ? 'Daftar cadangan' : openTitle
+}
+
+/**
+ * Tanda di skuad: pemain yang baru muncul sejak data sebelumnya (misalnya dari refresh diam, untuk animasi masuk
+ * sebentar) dan pemain yang didaftarkan dari perangkat ini (label "Kamu"). Pindah jarkoman tidak dianggap pemain baru.
+ */
+export function useSquadMarks(j: Jarkoman): { fresh: Set<string>; me: string | null } {
+  const prev = useRef<{ id: string; players: Set<string> } | null>(null)
+  const [fresh, setFresh] = useState<Set<string>>(() => new Set())
+  const ids = j.players.map((p) => p.id).join(',')
+  useEffect(() => {
+    const now = new Set(ids ? ids.split(',') : [])
+    const before = prev.current
+    prev.current = { id: j.id, players: now }
+    if (!before || before.id !== j.id) return
+    const added = [...now].filter((id) => !before.players.has(id))
+    if (!added.length) return
+    setFresh(new Set(added))
+    const t = window.setTimeout(() => setFresh(new Set()), 2600)
+    return () => window.clearTimeout(t)
+  }, [ids, j.id])
+  const mine = readJSON<{ player?: string }>(KEYS.joined(j.id))?.player
+  const me = mine && j.players.some((p) => p.id === mine) ? mine : null
+  return { fresh, me }
 }

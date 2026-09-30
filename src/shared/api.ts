@@ -77,6 +77,17 @@ export const api = {
     })
     return data.state
   },
+  /** Tanda versi gambar preview link jarkoman (null = belum dibuat). */
+  ogMeta(id: string) {
+    return request<{ sig: string | null }>(`/api/og?id=${encodeURIComponent(id)}&meta=1`, { cache: 'no-store' })
+  },
+  uploadOg(id: string, sig: string, image: Blob, token: string) {
+    return request<{ ok: true }>(
+      `/api/og?id=${encodeURIComponent(id)}&sig=${encodeURIComponent(sig)}`,
+      { method: 'PUT', headers: { 'content-type': image.type || 'image/jpeg', authorization: `Bearer ${token}` }, body: image },
+      30000,
+    )
+  },
   uploadAudio(file: File, token: string) {
     return request<{ url: string; size: number }>(
       '/api/audio',

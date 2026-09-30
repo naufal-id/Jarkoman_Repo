@@ -136,19 +136,29 @@ export interface AudioFile {
   data: ArrayBuffer
   contentType: string
   uploadedAt: number
+  /** Tanda versi isi (dipakai gambar OG: berubah kalau judul, jadwal, atau gambar jarkoman berubah) */
+  sig?: string
 }
 
+/** Penyimpanan file biner (lagu upload, gambar OG). */
 export interface AudioStore {
   get(key: string): Promise<AudioFile | null>
-  set(key: string, data: ArrayBuffer, contentType: string, uploadedAt: number): Promise<void>
+  set(key: string, data: ArrayBuffer, contentType: string, uploadedAt: number, sig?: string): Promise<void>
   delete(key: string): Promise<void>
   list(): Promise<{ key: string; uploadedAt: number }[]>
 }
 
+export type BinaryStore = AudioStore
+
 let audioOverride: AudioStore | null = null
+let ogOverride: BinaryStore | null = null
 
 export function setAudioStoreForTests(s: AudioStore | null) {
   audioOverride = s
+}
+
+export function setOgStoreForTests(s: BinaryStore | null) {
+  ogOverride = s
 }
 
 export function memoryAudioStore(): AudioStore {
@@ -157,8 +167,8 @@ export function memoryAudioStore(): AudioStore {
     async get(key) {
       return map.get(key) ?? null
     },
-    async set(key, data, contentType, uploadedAt) {
-      map.set(key, { data, contentType, uploadedAt })
+    async set(key, data, contentType, uploadedAt, sig) {
+      map.set(key, { data, contentType, uploadedAt, sig })
     },
     async delete(key) {
       map.delete(key)
@@ -169,23 +179,23 @@ export function memoryAudioStore(): AudioStore {
   }
 }
 
-function fileAudioStore(dir: string): AudioStore {
-  const base = join(dir, 'audio')
+function fileBinaryStore(dir: string, folder: string): BinaryStore {
+  const base = join(dir, folder)
   const safe = (key: string) => key.replace(/[^a-z0-9]/gi, '_')
   return {
     async get(key) {
       try {
-        const meta = JSON.parse(await readFile(join(base, `${safe(key)}.json`), 'utf8')) as { contentType: string; uploadedAt: number }
+        const meta = JSON.parse(await readFile(join(base, `${safe(key)}.json`), 'utf8')) as { contentType: string; uploadedAt: number; sig?: string }
         const buf = await readFile(join(base, `${safe(key)}.bin`))
         return { data: buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer, ...meta }
       } catch {
         return null
       }
     },
-    async set(key, data, contentType, uploadedAt) {
+    async set(key, data, contentType, uploadedAt, sig) {
       await mkdir(base, { recursive: true })
       await writeFile(join(base, `${safe(key)}.bin`), Buffer.from(data))
-      await writeFile(join(base, `${safe(key)}.json`), JSON.stringify({ contentType, uploadedAt }))
+      await writeFile(join(base, `${safe(key)}.json`), JSON.stringify({ contentType, uploadedAt, sig }))
     },
     async delete(key) {
       const { rm } = await import('node:fs/promises')
@@ -209,20 +219,17 @@ function fileAudioStore(dir: string): AudioStore {
   }
 }
 
-export function audioStore(): AudioStore {
-  if (audioOverride) return audioOverride
-  const dir = process.env.JARKOMAN_DEV_STORE
-  if (dir) return fileAudioStore(dir)
-  const store = getStore({ name: 'jarkoman-audio', consistency: 'strong' })
+function blobBinaryStore(name: string, defaultType: string): BinaryStore {
+  const store = getStore({ name, consistency: 'strong' })
   return {
     async get(key) {
       const res = await store.getWithMetadata(key, { type: 'arrayBuffer' })
       if (!res) return null
-      const meta = res.metadata as { contentType?: string; uploadedAt?: number }
-      return { data: res.data, contentType: meta.contentType ?? 'audio/mpeg', uploadedAt: Number(meta.uploadedAt ?? 0) }
+      const meta = res.metadata as { contentType?: string; uploadedAt?: number; sig?: string }
+      return { data: res.data, contentType: meta.contentType ?? defaultType, uploadedAt: Number(meta.uploadedAt ?? 0), sig: meta.sig }
     },
-    async set(key, data, contentType, uploadedAt) {
-      await store.set(key, data, { metadata: { contentType, uploadedAt } })
+    async set(key, data, contentType, uploadedAt, sig) {
+      await store.set(key, data, { metadata: { contentType, uploadedAt, ...(sig ? { sig } : {}) } })
     },
     async delete(key) {
       await store.delete(key)
@@ -237,4 +244,19 @@ export function audioStore(): AudioStore {
       )
     },
   }
+}
+
+export function audioStore(): AudioStore {
+  if (audioOverride) return audioOverride
+  const dir = process.env.JARKOMAN_DEV_STORE
+  if (dir) return fileBinaryStore(dir, 'audio')
+  return blobBinaryStore('jarkoman-audio', 'audio/mpeg')
+}
+
+/** Gambar preview link (OG) per jarkoman, dibuat dashboard admin saat menyimpan. */
+export function ogStore(): BinaryStore {
+  if (ogOverride) return ogOverride
+  const dir = process.env.JARKOMAN_DEV_STORE
+  if (dir) return fileBinaryStore(dir, 'og')
+  return blobBinaryStore('jarkoman-og', 'image/jpeg')
 }
