@@ -1,23 +1,28 @@
 /* MLBB: "Land of Dawn"
-   Malam dan royal blue sebagai dasar, emas metalik hanya untuk teks display dan ornamen, cyan hanya di kristal.
-   Komposisi simetris dan terpusat (beda dari Valorant yang berat di kiri dan CS2 yang berupa HUD).
-   Cinzel = kapital mitos ala "Legends", Kanit = callout pertempuran dan UI. */
+   Bahasa visual lobby dan loading screen MLBB: panel kaca biru navy bertepi biru muda, tombol emas bertulisan
+   gelap, teks utama putih, emas hanya untuk penekanan (angka, tombol, callout), biru = tim kita, merah = lawan.
+   Oswald = judul kapital condensed seperti tipografi poster dan event resmi MLBB.
+   Rubik = font UI MLBB (dipakai wiki komunitas MLBB supaya sama dengan game), Rubik Black Italic = callout
+   pertempuran (FIRST BLOOD sampai SAVAGE). */
 
 .ml {
-  --bg: #070b1c;
-  --royal: #16245c;
-  --panel: #0d1433;
-  --ground: #0b1535;
-  --gold: #f0c45c;
-  --gold-hi: #fff1c1;
-  --gold-lo: #a8741f;
-  --gold-ink: #1a1203;
-  --gold-grad: linear-gradient(180deg, #fff1c1 0%, #f0c45c 48%, #b8822a 100%);
-  --fg: #f4f1e8;
-  --muted: #b8bcd6;
-  --line: rgba(240, 196, 92, 0.3);
-  --arcane: #5ce1ff;
-  --enemy: #e0475b;
+  --bg: #060b1f;
+  --navy: #0a1533;
+  --panel: #0e1d48;
+  --panel-hi: #183272;
+  --edge: rgba(126, 190, 255, 0.55);
+  --edge-soft: rgba(126, 190, 255, 0.22);
+  --gold: #ffd35a;
+  --gold-text: #ffd66b;
+  --gold-hi: #fff3c4;
+  --gold-ink: #2b1700;
+  --gold-grad: linear-gradient(180deg, #fff7d6 0%, #ffd35a 40%, #f5a623 76%, #c9730f 100%);
+  --white-grad: linear-gradient(180deg, #ffffff 0%, #eef4ff 55%, #b9cbee 100%);
+  --fg: #f2f6ff;
+  --muted: #a8bbdf;
+  --ally: #4fb3ff;
+  --enemy: #ff5b6e;
+  --line: var(--edge-soft);
   --focus: var(--gold-hi);
   --pad-x: clamp(16px, 4vw, 48px);
   /* Tinggi banner poster di atas hero */
@@ -25,30 +30,36 @@
   min-height: 100vh;
   background: var(--bg);
   color: var(--fg);
-  font-family: 'Kanit', system-ui, sans-serif;
+  font-family: 'Rubik', system-ui, sans-serif;
   overflow-x: clip;
 }
 
+/* Red side: panel dan latar bernuansa merah. Warna sekutu tetap biru seperti minimap di game. */
 .ml[data-variant='red'] {
-  --bg: #12050a;
-  --royal: #5a1426;
-  --panel: #230a14;
-  --ground: #1c0a12;
-  --muted: #dcc2c8;
+  --bg: #140610;
+  --navy: #230a18;
+  --panel: #33101f;
+  --panel-hi: #561a32;
+  --edge: rgba(255, 158, 172, 0.55);
+  --edge-soft: rgba(255, 158, 172, 0.22);
+  --muted: #e4bec7;
 }
 
 body:has(.ml) {
-  background: #070b1c;
-}
-body:has(.ml[data-variant='red']) {
-  background: #12050a;
+  background: #060b1f;
 }
 
-.ml-gold {
-  background: var(--gold-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+body:has(.ml[data-variant='red']) {
+  background: #140610;
+}
+
+/* Panel kaca ala UI MLBB: gradien navy, tepi biru muda, kilau tipis di tepi atas. */
+.ml-glass {
+  border: 1px solid var(--edge-soft);
+  background:
+    linear-gradient(180deg, rgba(126, 190, 255, 0.1), transparent 30%),
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-hi) 70%, transparent), color-mix(in srgb, var(--panel) 92%, transparent));
+  box-shadow: inset 0 1px 0 rgba(200, 228, 255, 0.28);
 }
 
 /* ---------- Top ---------- */
@@ -64,26 +75,26 @@ body:has(.ml[data-variant='red']) {
 
 .ml-top__mark {
   margin-right: auto;
-  font-family: 'Cinzel', serif;
-  font-weight: 900;
-  font-size: 24px;
-  letter-spacing: 0.04em;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   text-decoration: none;
-  background: var(--gold-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 .ml-status {
-  padding: 6px 12px;
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  padding: 7px 12px;
+  border: 1px solid var(--edge-soft);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
   font-weight: 600;
   font-size: 13px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--gold-hi);
+  color: var(--gold-text);
   white-space: nowrap;
 }
 
@@ -97,26 +108,32 @@ body:has(.ml[data-variant='red']) {
 .ml-form .jf__submit {
   position: relative;
   isolation: isolate;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 56px;
   padding: 0 34px;
   border: 0;
-  font-family: 'Kanit', sans-serif;
-  font-weight: 600;
+  border-radius: 6px;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
   font-size: 17px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-decoration: none;
-  clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 16px 100%, 0 50%);
-  transition: filter 0.2s, transform 0.2s;
+  transition: filter 0.2s, transform 0.15s;
 }
 
+/* Tombol emas: gradien logam dengan bevel terang di atas dan bayangan gelap di bawah, seperti tombol Start. */
 .ml-btn--gold,
 .ml-form .jf__submit {
-  background: linear-gradient(180deg, #ffe7a3, #f0c45c 52%, #c48a2c);
+  background: var(--gold-grad);
   color: var(--gold-ink);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -3px 0 rgba(120, 58, 0, 0.45),
+    0 6px 18px rgba(245, 166, 35, 0.28);
 }
 
 .ml-btn--gold::after,
@@ -124,7 +141,8 @@ body:has(.ml[data-variant='red']) {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.7) 50%, transparent 70%);
+  z-index: -1;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.65) 50%, transparent 70%);
   transform: translateX(-120%);
   transition: transform 0.7s ease;
 }
@@ -134,40 +152,33 @@ body:has(.ml[data-variant='red']) {
   transform: translateX(120%);
 }
 
+.ml-btn--gold:active,
+.ml-form .jf__submit:active {
+  transform: translateY(1px);
+}
+
 .ml-btn--ghost {
-  background: var(--gold-grad);
-  color: var(--gold-hi);
+  border: 1px solid var(--edge);
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
+  color: var(--fg);
+  box-shadow: inset 0 1px 0 rgba(200, 228, 255, 0.25);
 }
 
-.ml-btn--ghost::before {
-  content: '';
-  position: absolute;
-  inset: 1.5px;
-  z-index: -1;
-  background: var(--bg);
-  clip-path: inherit;
-  transition: background 0.2s;
-}
-
-.ml-btn--ghost:hover::before {
-  background: var(--royal);
+.ml-btn--ghost:hover {
+  background: var(--panel-hi);
+  border-color: #cfe6ff;
 }
 
 .ml-btn--sm {
   min-height: 44px;
-  padding: 0 22px;
+  padding: 0 20px;
   font-size: 14px;
 }
 
 .ml-btn:focus-visible,
 .ml-form .jf__submit:focus-visible {
-  outline: 2px solid var(--fg);
-  outline-offset: -7px;
-}
-
-.ml-btn--gold:focus-visible,
-.ml-form .jf__submit:focus-visible {
-  outline-color: var(--gold-ink);
+  outline: 3px solid var(--gold-hi);
+  outline-offset: 3px;
 }
 
 /* ---------- Hero ---------- */
@@ -186,7 +197,7 @@ body:has(.ml[data-variant='red']) {
   inset: 0;
   z-index: -1;
   overflow: hidden;
-  background: radial-gradient(ellipse at 50% 30%, var(--royal) 0%, var(--bg) 70%);
+  background: radial-gradient(ellipse at 50% 30%, var(--panel-hi) 0%, var(--bg) 70%);
 }
 
 /* Poster resmi sebagai banner lobby: tampil penuh warna di atas, memudar ke warna malam di bawah.
@@ -230,7 +241,7 @@ body:has(.ml[data-variant='red']) {
   width: 170vmax;
   height: 170vmax;
   translate: -50% -50%;
-  background: repeating-conic-gradient(from 0deg, rgba(240, 196, 92, 0.08) 0deg 5deg, transparent 5deg 15deg);
+  background: repeating-conic-gradient(from 0deg, rgba(126, 190, 255, 0.07) 0deg 5deg, transparent 5deg 15deg);
   -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 42%);
   mask-image: radial-gradient(circle, #000 0%, transparent 42%);
 }
@@ -260,33 +271,38 @@ body:has(.ml[data-variant='red']) {
 
 .ml-hero__game {
   margin-top: 14px;
-  font-weight: 600;
-  font-size: 14px;
-  letter-spacing: 0.3em;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.34em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
+/* Judul putih dengan gradien tipis ke biru muda dan bayangan gelap, seperti judul mode di lobby. */
 .ml-hero__title {
   --scale: 1;
   --shine: -40%;
   position: relative;
-  margin: 18px 0 16px;
-  font-family: 'Cinzel', serif;
-  font-weight: 900;
-  font-size: clamp(46px, calc(8.6vw * var(--scale)), calc(128px * var(--scale)));
-  line-height: 1.02;
-  letter-spacing: 0.02em;
+  margin: 14px 0 14px;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(54px, calc(10vw * var(--scale)), calc(150px * var(--scale)));
+  line-height: 0.98;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
   overflow-wrap: anywhere;
+  /* Kilau hanya terlihat saat melintasi judul; posisi awalnya di luar judul tidak boleh tampak. */
+  clip-path: inset(-48px);
 }
 
-/* Gradien emas per huruf supaya tetap benar saat huruf dianimasikan satu per satu. */
+/* Gradien per huruf supaya tetap benar saat huruf dianimasikan satu per satu. */
 .ml-hero__title .split-char {
-  background: var(--gold-grad);
+  background: var(--white-grad);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 3px 0 rgba(58, 37, 6, 0.9));
+  filter: drop-shadow(0 4px 0 rgba(4, 10, 32, 0.85));
 }
 
 .ml-hero__title::after {
@@ -308,25 +324,38 @@ body:has(.ml[data-variant='red']) {
   color: var(--muted);
 }
 
+/* Callout pertempuran: tebal, miring, logam emas dengan garis tepi gelap; makin panas makin merah. */
 .ml-streak {
   position: relative;
   display: grid;
   justify-items: center;
-  margin: 30px 0 26px;
+  margin: 28px 0 26px;
 }
 
 .ml-streak__word {
+  --fire: linear-gradient(180deg, #fffbe6 0%, #ffe07a 35%, #ffb02e 70%, #e0660f 100%);
+  font-family: 'Rubik', sans-serif;
   font-weight: 900;
   font-style: italic;
-  font-size: clamp(40px, 7vw, 86px);
+  font-size: clamp(42px, 7.4vw, 92px);
   line-height: 1;
+  letter-spacing: -0.01em;
   text-transform: uppercase;
-  background: var(--gold-grad);
+  background: var(--fire);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  transform: skewX(-6deg);
-  filter: drop-shadow(0 4px 0 #3a2506) drop-shadow(0 0 22px rgba(240, 196, 92, 0.35));
+  -webkit-text-stroke: 1.5px rgba(70, 24, 0, 0.55);
+  filter: drop-shadow(0 4px 0 #3b1500) drop-shadow(0 0 24px rgba(255, 170, 40, 0.4));
+}
+
+.ml-streak__word[data-level='4'] {
+  --fire: linear-gradient(180deg, #fff1e0 0%, #ffb35c 35%, #ff7a1f 70%, #c83d0a 100%);
+}
+
+.ml-streak__word[data-level='5'] {
+  --fire: linear-gradient(180deg, #ffe9e0 0%, #ff8a5c 30%, #ff3d2e 68%, #a8120f 100%);
+  filter: drop-shadow(0 4px 0 #3b0500) drop-shadow(0 0 28px rgba(255, 70, 40, 0.55));
 }
 
 .ml-streak__ring {
@@ -346,7 +375,7 @@ body:has(.ml[data-variant='red']) {
   margin-top: 8px;
   font-weight: 500;
   font-size: 15px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -354,31 +383,32 @@ body:has(.ml[data-variant='red']) {
 .ml-plaque {
   position: relative;
   width: min(100%, 600px);
-  padding: 26px 28px 28px;
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--royal) 70%, transparent), color-mix(in srgb, var(--bg) 92%, transparent));
+  padding: 24px 28px 28px;
+  border-radius: 8px;
 }
 
 .ml-plaque__date {
-  font-family: 'Cinzel', serif;
-  font-weight: 700;
-  font-size: clamp(20px, 2.4vw, 26px);
-  color: var(--gold);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: clamp(22px, 2.6vw, 30px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
 }
 
 .ml-plaque__time {
-  margin-top: 4px;
+  margin-top: 2px;
   font-weight: 600;
   font-size: 17px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold-text);
 }
 
 /* Ornamen sudut: siku emas dengan permata kecil. */
 .ml-orn {
   position: absolute;
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border: 0 solid var(--gold);
   pointer-events: none;
 }
@@ -386,8 +416,8 @@ body:has(.ml[data-variant='red']) {
 .ml-orn::after {
   content: '';
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   background: var(--gold);
   transform: rotate(45deg);
 }
@@ -396,32 +426,34 @@ body:has(.ml[data-variant='red']) {
   left: -1px;
   top: -1px;
   border-width: 2px 0 0 2px;
+  border-top-left-radius: 8px;
 }
 
 .ml-orn--tl::after {
-  left: -5px;
-  top: -5px;
+  left: -4px;
+  top: -4px;
 }
 
 .ml-orn--br {
   right: -1px;
   bottom: -1px;
   border-width: 0 2px 2px 0;
+  border-bottom-right-radius: 8px;
 }
 
 .ml-orn--br::after {
-  right: -5px;
-  bottom: -5px;
+  right: -4px;
+  bottom: -4px;
 }
 
 .ml-cd {
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .ml-cd__label {
   font-weight: 500;
   font-size: 13px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -433,6 +465,7 @@ body:has(.ml[data-variant='red']) {
   margin-top: 12px;
 }
 
+/* Sel hitung mundur: heksagon kaca bertepi biru muda, angka emas seperti timer di game. */
 .ml-cd__cell {
   position: relative;
   isolation: isolate;
@@ -441,24 +474,25 @@ body:has(.ml[data-variant='red']) {
   width: 86px;
   aspect-ratio: 1 / 1.08;
   clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
-  background: var(--gold-grad);
+  background: linear-gradient(180deg, #d8ecff, #5d9fe6);
 }
 
 .ml-cd__cell::before {
   content: '';
   position: absolute;
-  inset: 2px;
+  inset: 1.5px;
   z-index: -1;
   clip-path: inherit;
-  background: linear-gradient(180deg, var(--royal), var(--bg));
+  background: linear-gradient(180deg, var(--panel-hi), var(--navy));
 }
 
 .ml-cd__num {
-  font-family: 'Cinzel', serif;
-  font-weight: 900;
-  font-size: 30px;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  font-size: 32px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  color: var(--gold-text);
 }
 
 .ml-cd__num .digit {
@@ -476,19 +510,20 @@ body:has(.ml[data-variant='red']) {
 
 .ml-cd__unit {
   margin-top: 4px;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--muted);
 }
 
 .ml-cd-state {
   margin-top: 18px;
-  font-family: 'Cinzel', serif;
-  font-weight: 900;
-  font-size: 34px;
-  color: var(--gold);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 36px;
+  text-transform: uppercase;
+  color: var(--gold-text);
 }
 
 .ml-cd-state--cancelled {
@@ -513,18 +548,21 @@ body:has(.ml[data-variant='red']) {
   align-items: center;
   justify-content: center;
   gap: 18px;
-  font-family: 'Cinzel', serif;
-  font-weight: 900;
-  font-size: clamp(32px, 5vw, 58px);
-  line-height: 1.1;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(38px, 5.6vw, 68px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   text-align: center;
 }
 
 .ml-title__text {
-  background: var(--gold-grad);
+  background: var(--white-grad);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  filter: drop-shadow(0 3px 0 rgba(4, 10, 32, 0.8));
 }
 
 .ml-title__orn {
@@ -566,9 +604,9 @@ body:has(.ml[data-variant='red']) {
   color: var(--muted);
 }
 
-/* ---------- Lineup ---------- */
+/* ---------- Lineup (loading screen) ---------- */
 .ml-lineup {
-  background: linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--royal) 35%, var(--bg)) 50%, var(--bg));
+  background: linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--panel-hi) 30%, var(--bg)) 50%, var(--bg));
 }
 
 .ml-team-wrap {
@@ -579,10 +617,12 @@ body:has(.ml[data-variant='red']) {
 .ml-team__label {
   margin-bottom: 14px;
   text-align: center;
-  font-family: 'Cinzel', serif;
-  font-weight: 700;
-  font-size: 18px;
-  color: var(--gold);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-text);
 }
 
 .ml-team {
@@ -615,8 +655,12 @@ body:has(.ml[data-variant='red']) {
   aspect-ratio: 3 / 4.4;
   padding: 16px;
   overflow: hidden;
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, var(--royal) 0%, var(--panel) 55%, color-mix(in srgb, var(--bg) 80%, #000) 100%);
+  border: 1px solid var(--edge-soft);
+  border-radius: 8px;
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(79, 179, 255, 0.22), transparent 62%),
+    linear-gradient(180deg, var(--panel-hi) 0%, var(--panel) 55%, color-mix(in srgb, var(--bg) 80%, #000) 100%);
+  box-shadow: inset 0 1px 0 rgba(200, 228, 255, 0.28);
   color: var(--fg);
   text-decoration: none;
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s;
@@ -630,23 +674,15 @@ body:has(.ml[data-variant='red']) {
   background: var(--gold-grad);
 }
 
-.ml-card::after {
-  content: '';
-  position: absolute;
-  inset: 7px;
-  border: 1px solid rgba(240, 196, 92, 0.16);
-  pointer-events: none;
-}
-
 .ml-card:hover {
   transform: translateY(-6px);
-  border-color: var(--gold);
+  border-color: var(--edge);
 }
 
 .ml-card__slot {
   font-weight: 600;
   font-size: 12px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -658,9 +694,9 @@ body:has(.ml[data-variant='red']) {
   margin-top: 10px;
   font-weight: 600;
   font-size: 13px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--ally);
 }
 
 .ml-card__lane .ml-lane-ico {
@@ -672,13 +708,14 @@ body:has(.ml[data-variant='red']) {
 .ml-card__initial {
   position: absolute;
   left: 50%;
-  top: 48%;
+  top: 46%;
   translate: -50% -50%;
-  font-family: 'Cinzel', serif;
-  font-weight: 900;
-  font-size: clamp(110px, 12vw, 170px);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(120px, 13vw, 190px);
   line-height: 1;
-  color: rgba(240, 196, 92, 0.14);
+  text-transform: uppercase;
+  color: rgba(126, 190, 255, 0.16);
   pointer-events: none;
 }
 
@@ -688,10 +725,12 @@ body:has(.ml[data-variant='red']) {
 }
 
 .ml-card__name {
-  font-family: 'Cinzel', serif;
-  font-weight: 700;
-  font-size: clamp(19px, 1.8vw, 24px);
-  line-height: 1.15;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: clamp(22px, 2vw, 28px);
+  line-height: 1.1;
+  text-transform: uppercase;
+  color: #fff;
   overflow-wrap: anywhere;
 }
 
@@ -699,25 +738,26 @@ body:has(.ml[data-variant='red']) {
   margin-top: 2px;
   font-weight: 500;
   font-size: 14px;
-  color: var(--muted);
+  color: var(--gold-text);
 }
 
 .ml-card__tag {
   display: inline-block;
   margin: 0 6px 8px 0;
   padding: 3px 8px;
-  background: var(--gold);
+  border-radius: 3px;
+  background: var(--gold-grad);
   color: var(--gold-ink);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 11px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .ml-card__tag--maybe {
   background: transparent;
-  color: var(--gold-hi);
-  box-shadow: inset 0 0 0 1px var(--gold);
+  color: var(--fg);
+  box-shadow: inset 0 0 0 1px var(--edge);
 }
 
 .ml-card.is-maybe {
@@ -730,7 +770,12 @@ body:has(.ml[data-variant='red']) {
   gap: 6px;
   text-align: center;
   border-style: dashed;
-  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  background: color-mix(in srgb, var(--navy) 70%, transparent);
+  box-shadow: none;
+}
+
+.ml-card--empty::before {
+  opacity: 0.35;
 }
 
 .ml-card--empty .ml-card__slot {
@@ -740,25 +785,26 @@ body:has(.ml[data-variant='red']) {
 }
 
 .ml-card__sil {
-  font-family: 'Cinzel', serif;
-  font-weight: 900;
-  font-size: 84px;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 88px;
   line-height: 1;
-  color: rgba(240, 196, 92, 0.3);
+  color: rgba(126, 190, 255, 0.28);
 }
 
 .ml-card__open {
-  font-family: 'Cinzel', serif;
-  font-weight: 700;
-  font-size: 18px;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  text-transform: uppercase;
 }
 
 .ml-card__take {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 13px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 .ml-card:focus-visible {
@@ -768,14 +814,16 @@ body:has(.ml[data-variant='red']) {
 .ml-vs {
   margin: 22px 0 8px;
   text-align: center;
+  font-family: 'Rubik', sans-serif;
   font-weight: 900;
   font-style: italic;
-  font-size: 52px;
+  font-size: 56px;
   line-height: 1;
   background: var(--gold-grad);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  filter: drop-shadow(0 3px 0 #3b1500);
 }
 
 .ml-reserve {
@@ -787,10 +835,10 @@ body:has(.ml[data-variant='red']) {
 }
 
 .ml-reserve span {
-  font-weight: 600;
-  color: var(--gold);
+  font-weight: 700;
+  color: var(--gold-text);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
 }
 
 /* ---------- Ikon lane ---------- */
@@ -801,13 +849,13 @@ body:has(.ml[data-variant='red']) {
 
 .ml-lane-ico__frame {
   fill: none;
-  stroke: rgba(244, 241, 232, 0.35);
+  stroke: rgba(200, 225, 255, 0.35);
   stroke-width: 1.5;
 }
 
 .ml-lane-ico__path {
   fill: none;
-  stroke: rgba(244, 241, 232, 0.28);
+  stroke: rgba(200, 225, 255, 0.28);
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -834,118 +882,360 @@ body:has(.ml[data-variant='red']) {
 .ml-dawn__grid {
   display: grid;
   gap: 40px;
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 44px auto 0;
-  align-items: center;
+  align-items: start;
 }
 
+/* Peta sekitar setengah section di desktop, penuh di HP. */
 @media (min-width: 1024px) {
   .ml-dawn__grid {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    gap: 64px;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    gap: 56px;
   }
 }
 
 .ml-map {
+  margin: 0;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Bingkai minimap: tepi biru muda bercahaya dan siku emas, seperti kotak minimap di pojok layar game. */
+.ml-map__frame {
   position: relative;
+  aspect-ratio: 1;
+  padding: 10px;
+  border: 1px solid var(--edge);
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--panel-hi), var(--navy));
+  box-shadow:
+    inset 0 1px 0 rgba(200, 228, 255, 0.35),
+    0 0 0 4px rgba(6, 11, 31, 0.9),
+    0 0 40px rgba(79, 179, 255, 0.18);
+  container-type: inline-size;
+}
+
+.ml-map__frame svg {
+  display: block;
   width: 100%;
-  max-width: 560px;
-  margin: 0 auto;
+  height: 100%;
 }
 
-.ml-map svg {
-  width: 100%;
-  height: auto;
-}
-
-.ml-map__ground {
-  fill: var(--ground);
-  stroke: var(--line);
-  stroke-width: 2;
-}
-
-.ml-map__river {
+.ml-map__rim {
   fill: none;
-  stroke: var(--arcane);
-  stroke-opacity: 0.22;
-  stroke-width: 30;
+  stroke: rgba(200, 228, 255, 0.4);
+  stroke-width: 1.5;
+}
+
+.ml-map__canopy .tone-0 {
+  fill: #1a4630;
+}
+
+.ml-map__canopy .tone-1 {
+  fill: #2a6a44;
+}
+
+.ml-map__canopy .tone-2 {
+  fill: #143a28;
+}
+
+.ml-map__water-edge {
+  fill: none;
+  stroke: #0f3f66;
+  stroke-width: 40;
   stroke-linecap: round;
 }
 
-.ml-map__jungle {
-  fill: rgba(240, 196, 92, 0.13);
+.ml-map__water {
+  fill: none;
+  stroke: url(#ml-water);
+  stroke-width: 32;
+  stroke-linecap: round;
 }
 
-.ml-map__pit {
+.ml-map__water-shine {
   fill: none;
-  stroke: var(--arcane);
-  stroke-opacity: 0.6;
+  stroke: #bfe8ff;
   stroke-width: 2;
+  stroke-dasharray: 10 14;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+.ml-map__lane-edge {
+  fill: none;
+  stroke: #6b5536;
+  stroke-width: 24;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .ml-map__lane {
   fill: none;
-  stroke: rgba(244, 241, 232, 0.07);
-  stroke-width: 22;
+  stroke: #c9ad7a;
+  stroke-width: 18;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .ml-map__lane-line {
   fill: none;
-  stroke: var(--gold);
+  stroke: #efe0bb;
+  stroke-width: 2;
+  stroke-dasharray: 2 7;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+
+.ml-map__pit-ring {
+  fill: rgba(6, 20, 40, 0.55);
   stroke-width: 2.5;
-  stroke-linejoin: round;
 }
 
-.ml-map__tower {
-  fill: var(--gold);
-  opacity: 0.85;
+.ml-map__pit--turtle .ml-map__pit-ring {
+  stroke: #8ff2d2;
 }
 
-.ml-map__base--ally {
-  fill: var(--arcane);
+.ml-map__pit--lord .ml-map__pit-ring {
+  stroke: #d2a6ff;
 }
 
-.ml-map__base--enemy {
+.ml-map__pit-icon {
+  stroke: rgba(0, 0, 0, 0.45);
+  stroke-width: 1;
+}
+
+.ml-map__pit--turtle .ml-map__pit-icon {
+  fill: #5fe0b6;
+}
+
+.ml-map__pit--lord .ml-map__pit-icon {
+  fill: #c28bff;
+}
+
+.ml-map__pit-lines {
+  fill: none;
+  stroke: rgba(4, 40, 30, 0.7);
+  stroke-width: 1.2;
+}
+
+.ml-map__buff-glow {
+  opacity: 0.35;
+}
+
+.ml-map__buff--purple .ml-map__buff-glow,
+.ml-map__buff--purple .ml-map__buff-core {
+  fill: #b76dff;
+}
+
+.ml-map__buff--red .ml-map__buff-glow,
+.ml-map__buff--red .ml-map__buff-core {
+  fill: #ff5a44;
+}
+
+.ml-map__buff-core {
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.ml-map__tower-base {
+  fill: #0b1633;
+  stroke-width: 2;
+}
+
+.ml-map__tower--ally .ml-map__tower-base {
+  stroke: var(--ally);
+}
+
+.ml-map__tower--ally .ml-map__tower-gem {
+  fill: var(--ally);
+}
+
+.ml-map__tower--enemy .ml-map__tower-base {
+  stroke: var(--enemy);
+}
+
+.ml-map__tower--enemy .ml-map__tower-gem {
   fill: var(--enemy);
 }
 
-.ml-map__label {
-  font-family: 'Kanit', sans-serif;
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  fill: var(--muted);
+.ml-map__base-hex {
+  fill: #0b1633;
+  stroke-width: 2.5;
 }
 
-.ml-map__label--end {
-  text-anchor: end;
+.ml-map__base--ally .ml-map__base-hex {
+  stroke: var(--ally);
 }
 
-.ml-map__chip {
+.ml-map__base--ally .ml-map__base-gem {
+  fill: #9dd8ff;
+}
+
+.ml-map__base--enemy .ml-map__base-hex {
+  stroke: var(--enemy);
+}
+
+.ml-map__base--enemy .ml-map__base-gem {
+  fill: #ffb0b9;
+}
+
+/* Teks di atas peta memakai HTML supaya tetap tajam dan ukurannya ikut lebar peta. */
+.ml-map__lane-label,
+.ml-map__obj,
+.ml-map__base-label {
   position: absolute;
+  z-index: 1;
   translate: -50% -50%;
-  max-width: 38%;
-  padding: 4px 14px;
-  overflow: hidden;
-  background: var(--gold);
-  color: var(--gold-ink);
-  font-weight: 600;
-  font-size: 13px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: rgba(6, 11, 31, 0.78);
+  font-weight: 700;
+  font-size: max(10px, 2.6cqi);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   white-space: nowrap;
-  text-overflow: ellipsis;
-  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%);
+  pointer-events: none;
 }
 
-.ml-map__cap {
-  margin-top: 12px;
-  text-align: center;
-  font-size: 13px;
+.ml-map__lane-label {
+  color: var(--gold-text);
+}
+
+.ml-map__lane-label.is-vertical {
+  rotate: -90deg;
+}
+
+.ml-map__obj {
+  color: #9ff0d4;
+}
+
+.ml-map__obj--lord {
+  color: #dcb6ff;
+}
+
+.ml-map__base-label {
+  translate: 0 0;
+  font-size: max(10px, 2.4cqi);
+}
+
+.ml-map__base-label--ally {
+  left: 16%;
+  bottom: 3.5%;
+  color: #b9e2ff;
+}
+
+.ml-map__base-label--enemy {
+  right: 16%;
+  top: 3.5%;
+  color: #ffc2c9;
+}
+
+/* Pemain di peta: lingkaran bercincin biru seperti ikon hero sekutu di minimap.
+   Titik tengah avatar tepat di posisi lane; label nama menempel di kanan atau di bawahnya. */
+.ml-map__hero {
+  --av: max(24px, 6.2cqi);
+  position: absolute;
+  z-index: 2;
+  width: var(--av);
+  height: var(--av);
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+.ml-map__avatar {
+  display: grid;
+  place-items: center;
+  width: var(--av);
+  height: var(--av);
+  border: 2.5px solid var(--ally);
+  border-radius: 50%;
+  background: linear-gradient(180deg, #2a5fae, #10254f);
+  box-shadow:
+    0 0 0 2px rgba(6, 11, 31, 0.85),
+    0 0 14px rgba(79, 179, 255, 0.7);
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: max(13px, 3.6cqi);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.ml-map__hero.is-maybe .ml-map__avatar {
+  border-style: dashed;
+}
+
+.ml-map__name {
+  position: absolute;
+  max-width: 24cqi;
+  padding: 1px 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: rgba(6, 11, 31, 0.85);
+  font-weight: 600;
+  font-size: max(10px, 2.5cqi);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ml-map__hero--right .ml-map__name {
+  left: calc(100% + 4px);
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.ml-map__hero--below .ml-map__name {
+  left: 50%;
+  top: calc(100% + 3px);
+  translate: -50% 0;
+}
+
+.ml-map__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-size: 14px;
   color: var(--muted);
 }
 
+.ml-map__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ml-map__key::before {
+  content: '';
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.ml-map__key--ally::before {
+  background: var(--ally);
+}
+
+.ml-map__key--enemy::before {
+  background: var(--enemy);
+}
+
+.ml-map__key--purple::before {
+  background: #b76dff;
+}
+
+.ml-map__key--red::before {
+  background: #ff5a44;
+}
+
+.ml-map__note {
+  flex-basis: 100%;
+  font-size: 13px;
+}
+
+/* ---------- Detail match ---------- */
 .ml-intel {
   display: grid;
   gap: 10px;
@@ -958,16 +1248,17 @@ body:has(.ml[data-variant='red']) {
   align-items: center;
   gap: 14px;
   padding: 16px 20px;
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--royal) 40%, transparent);
+  border: 1px solid var(--edge-soft);
+  border-radius: 6px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--panel-hi) 60%, transparent), color-mix(in srgb, var(--panel) 50%, transparent));
 }
 
 .ml-intel__item dt {
   font-weight: 600;
   font-size: 13px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--muted);
 }
 
 .ml-intel__item dd {
@@ -976,9 +1267,12 @@ body:has(.ml[data-variant='red']) {
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  font-family: 'Cinzel', serif;
-  font-weight: 700;
-  font-size: 20px;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #fff;
   overflow-wrap: anywhere;
 }
 
@@ -988,8 +1282,12 @@ body:has(.ml[data-variant='red']) {
   max-width: 900px;
   margin: 40px auto 0;
   padding: clamp(20px, 4vw, 40px);
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--royal) 55%, transparent), var(--panel));
+  border: 1px solid var(--edge-soft);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(126, 190, 255, 0.08), transparent 25%),
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-hi) 55%, transparent), var(--panel));
+  box-shadow: inset 0 1px 0 rgba(200, 228, 255, 0.25);
 }
 
 .ml-form .jf__field--role {
@@ -999,9 +1297,9 @@ body:has(.ml[data-variant='red']) {
 .ml-form .jf__label {
   font-weight: 600;
   font-size: 13px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 .ml-form .jf__opt {
@@ -1009,13 +1307,14 @@ body:has(.ml[data-variant='red']) {
 }
 
 .ml-form .jf__input {
-  background: color-mix(in srgb, var(--bg) 75%, transparent);
-  border: 1px solid var(--line);
+  border: 1px solid var(--edge-soft);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
   color: var(--fg);
 }
 
 .ml-form .jf__input::placeholder {
-  color: #9aa0bf;
+  color: #93a6cc;
 }
 
 .ml-form .jf__input:focus-visible {
@@ -1048,19 +1347,20 @@ body:has(.ml[data-variant='red']) {
   gap: 6px;
   min-height: 100px;
   padding: 12px 6px;
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  border: 1px solid var(--edge-soft);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--navy) 70%, transparent);
   text-align: center;
   transition: border-color 0.2s, background 0.2s;
 }
 
 .ml-lane:hover .ml-lane__card {
-  border-color: var(--gold);
+  border-color: var(--edge);
 }
 
 .ml-lane input:checked + .ml-lane__card {
   border-color: var(--gold);
-  background: rgba(240, 196, 92, 0.16);
+  background: linear-gradient(180deg, rgba(255, 211, 90, 0.22), rgba(255, 211, 90, 0.06));
   box-shadow: inset 0 0 0 1px var(--gold);
 }
 
@@ -1072,7 +1372,7 @@ body:has(.ml[data-variant='red']) {
 .ml-lane__name {
   font-weight: 600;
   font-size: 13px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -1100,26 +1400,27 @@ body:has(.ml[data-variant='red']) {
 }
 
 .ml-form .jf__sent a {
-  color: var(--gold);
+  color: var(--gold-text);
   font-weight: 600;
 }
 
 .ml-form .jf__done {
   text-align: center;
   justify-items: center;
-  border: 1px solid var(--line);
-  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--gold) 18%, transparent), transparent 70%);
+  border: 1px solid var(--edge-soft);
+  border-radius: 8px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 211, 90, 0.18), transparent 70%);
 }
 
 .ml-form .jf__done-kicker {
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 .ml-form .jf__done-name {
-  background: var(--gold-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #fff;
 }
 
 .ml-form .jf__done-text,
@@ -1140,7 +1441,7 @@ body:has(.ml[data-variant='red']) {
 .ml-notes__list li {
   position: relative;
   padding: 14px 20px 14px 44px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--edge-soft);
   font-size: 18px;
   line-height: 1.5;
 }
@@ -1166,30 +1467,32 @@ body:has(.ml[data-variant='red']) {
 .ml-sched .sched__title {
   margin-bottom: 20px;
   text-align: center;
-  font-family: 'Cinzel', serif;
-  font-weight: 900;
-  font-size: clamp(28px, 4vw, 42px);
-  color: var(--gold);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: clamp(30px, 4vw, 44px);
+  text-transform: uppercase;
+  color: #fff;
 }
 
 .ml-sched .sched__row {
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--royal) 30%, transparent);
+  border: 1px solid var(--edge-soft);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--panel) 60%, transparent);
   transition: border-color 0.2s;
 }
 
 .ml-sched .sched__row:hover {
-  border-color: var(--gold);
+  border-color: var(--edge);
 }
 
 .ml-sched .sched__slots {
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 .ml-foot {
   max-width: 1200px;
   margin: 0 auto;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--edge-soft);
   color: var(--muted);
 }
 
@@ -1197,7 +1500,7 @@ body:has(.ml[data-variant='red']) {
   color: var(--gold-hi);
 }
 
-/* ---------- Pesan siap ---------- */
+/* ---------- Pesan terkirim ---------- */
 .ml-victory {
   position: fixed;
   inset: 0;
@@ -1206,25 +1509,28 @@ body:has(.ml[data-variant='red']) {
   place-content: center;
   justify-items: center;
   gap: 8px;
-  background: radial-gradient(circle, rgba(7, 11, 28, 0.82) 0%, rgba(7, 11, 28, 0.2) 70%);
+  background: radial-gradient(circle, rgba(6, 11, 31, 0.84) 0%, rgba(6, 11, 31, 0.2) 70%);
   visibility: hidden;
   pointer-events: none;
 }
 
 .ml-victory span {
-  font-family: 'Cinzel', serif;
+  font-family: 'Rubik', sans-serif;
   font-weight: 900;
-  font-size: clamp(44px, 8vw, 96px);
+  font-style: italic;
+  font-size: clamp(46px, 8vw, 100px);
+  text-transform: uppercase;
   background: var(--gold-grad);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  filter: drop-shadow(0 4px 0 #3b1500);
 }
 
 .ml-victory small {
   font-weight: 500;
   font-size: 16px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--fg);
 }
@@ -1233,8 +1539,8 @@ body:has(.ml[data-variant='red']) {
 .ml-intro {
   display: grid;
   place-items: center;
-  background: radial-gradient(ellipse at 50% 40%, #16245c 0%, #070b1c 70%);
-  color: #f4f1e8;
+  background: radial-gradient(ellipse at 50% 40%, #183272 0%, #060b1f 70%);
+  color: #f2f6ff;
 }
 
 .ml-intro__inner {
@@ -1249,29 +1555,33 @@ body:has(.ml[data-variant='red']) {
 }
 
 .ml-intro__label {
-  font-weight: 600;
-  font-size: 14px;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: #b8bcd6;
+  color: #a8bbdf;
 }
 
+/* Bar loading seperti layar muat MLBB: tepi biru muda, isi emas. */
 .ml-intro__bar {
-  width: min(70vw, 280px);
-  height: 6px;
+  width: min(70vw, 300px);
+  height: 8px;
   padding: 1px;
-  border: 1px solid rgba(240, 196, 92, 0.5);
+  border: 1px solid rgba(126, 190, 255, 0.6);
+  border-radius: 4px;
 }
 
 .ml-intro__fill {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, #a8741f, #fff1c1);
+  border-radius: 3px;
+  background: linear-gradient(90deg, #c9730f, #ffd35a, #fff7d6);
   transform-origin: 0 50%;
 }
 
 .ml-intro .intro__skip {
-  color: #fff1c1;
+  color: #fff3c4;
 }
 
 /* ---------- Layar kecil ---------- */
@@ -1283,14 +1593,14 @@ body:has(.ml[data-variant='red']) {
 
 @media (max-width: 560px) {
   .ml-top__mark {
-    font-size: 20px;
+    font-size: 21px;
   }
   .ml-status {
     font-size: 12px;
     padding: 5px 8px;
   }
   .ml-top .ml-btn--sm {
-    padding: 0 16px;
+    padding: 0 14px;
   }
   .ml-hero__cta > * {
     flex: 1 1 100%;
@@ -1305,15 +1615,15 @@ body:has(.ml[data-variant='red']) {
     width: 70px;
   }
   .ml-cd__num {
-    font-size: 24px;
+    font-size: 26px;
   }
   .ml-intel__item {
     grid-template-columns: 1fr;
     gap: 4px;
   }
-  .ml-map__chip {
-    font-size: 11px;
-    padding: 3px 10px;
+  .ml-map__frame {
+    padding: 6px;
+    border-radius: 14px;
   }
   .ml-title {
     gap: 10px;
@@ -1329,25 +1639,29 @@ body:has(.ml[data-variant='red']) {
 
 /* ---------- Tombol musik ---------- */
 .ml .music__btn {
-  padding: 0 26px;
-  background: linear-gradient(180deg, #ffe7a3, #f0c45c 52%, #c48a2c);
+  padding: 0 24px;
+  border-radius: 6px;
+  background: var(--gold-grad);
   color: var(--gold-ink);
-  font-family: 'Kanit', sans-serif;
-  font-weight: 600;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -3px 0 rgba(120, 58, 0, 0.45);
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
   font-size: 14px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%);
 }
 
 .ml .music__btn:focus-visible {
-  outline: 2px solid var(--gold-ink);
-  outline-offset: -6px;
+  outline: 3px solid var(--gold-hi);
+  outline-offset: 3px;
 }
 
 .ml .music__now {
+  border: 1px solid var(--edge-soft);
+  border-radius: 6px;
   background: color-mix(in srgb, var(--bg) 90%, transparent);
-  border: 1px solid var(--line);
   color: var(--gold-hi);
 }
 

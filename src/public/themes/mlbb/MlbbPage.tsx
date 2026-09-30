@@ -1,10 +1,11 @@
-import '@fontsource/cinzel/700.css'
-import '@fontsource/cinzel/900.css'
-import '@fontsource/kanit/400.css'
-import '@fontsource/kanit/500.css'
-import '@fontsource/kanit/600.css'
-import '@fontsource/kanit/800-italic.css'
-import '@fontsource/kanit/900-italic.css'
+import '@fontsource/oswald/500.css'
+import '@fontsource/oswald/600.css'
+import '@fontsource/oswald/700.css'
+import '@fontsource/rubik/400.css'
+import '@fontsource/rubik/500.css'
+import '@fontsource/rubik/600.css'
+import '@fontsource/rubik/700.css'
+import '@fontsource/rubik/900-italic.css'
 import './mlbb.css'
 import { useRef, useState, type CSSProperties } from 'react'
 import { gameDef } from '../../../shared/games'
@@ -23,20 +24,12 @@ import { MusicDock } from '../../common/Music'
 import { Split } from '../../common/Split'
 import { useToast } from '../../common/Toast'
 import { Embers } from './Embers'
+import { LandOfDawn } from './LandOfDawn'
 
 const def = gameDef('mlbb')
 
 /** Callout pertempuran MLBB dipakai untuk jumlah pemain yang sudah masuk. */
 const STREAK = ['', 'First Blood', 'Double Kill', 'Triple Kill', 'Maniac', 'Savage']
-
-/** Posisi label pemain di peta (persen), per lane, untuk sisi biru (markas kiri bawah). */
-const LANE_SPOTS: Record<string, [number, number]> = {
-  'EXP Lane': [16, 24],
-  'Gold Lane': [76, 85],
-  'Mid Lane': [50, 50],
-  Jungle: [31, 42],
-  Roam: [66, 64],
-}
 
 export default function MlbbPage({ j }: ThemeProps) {
   const { preview, others, replay, media } = usePage()
@@ -113,7 +106,7 @@ export default function MlbbPage({ j }: ThemeProps) {
             { strokeDashoffset: 0, duration: 1.6, ease: 'power2.inOut', scrollTrigger: { trigger: '.ml-map', start: 'top 80%', once: true } },
           )
         })
-        gsap.from('.ml-map__chip', {
+        gsap.from('.ml-map__hero', {
           scrollTrigger: { trigger: '.ml-map', start: 'top 75%', once: true },
           scale: 0,
           opacity: 0,
@@ -184,7 +177,9 @@ export default function MlbbPage({ j }: ThemeProps) {
               {streak ? (
                 <>
                   <span className="ml-streak__ring" aria-hidden="true" />
-                  <p className="ml-streak__word">{streak}</p>
+                  <p className="ml-streak__word" data-level={Math.min(s.filled, 5)}>
+                    {streak}
+                  </p>
                   <p className="ml-streak__caption">
                     {s.filled} dari {j.slots} pemain sudah masuk
                   </p>
@@ -194,7 +189,7 @@ export default function MlbbPage({ j }: ThemeProps) {
               )}
             </div>
 
-            <div className="ml-plaque">
+            <div className="ml-plaque ml-glass">
               <span className="ml-orn ml-orn--tl" aria-hidden="true" />
               <span className="ml-orn ml-orn--br" aria-hidden="true" />
               <p className="ml-plaque__date">{formatDateLong(j.date)}</p>
@@ -247,7 +242,7 @@ export default function MlbbPage({ j }: ThemeProps) {
         <section className="ml-dawn" aria-labelledby="ml-dawn-title">
           <SectionTitle id="ml-dawn-title" text="Land of Dawn" />
           <div className="ml-dawn__grid">
-            <LaneMap players={j.players.slice(0, j.slots).filter((p) => p.status === 'in')} />
+            <LandOfDawn players={j.players.slice(0, j.slots)} side={j.variant === 'red' ? 'red' : 'blue'} />
             <dl className="ml-intel">
               {j.mode && <Intel k="Mode" v={j.mode} />}
               {j.map && <Intel k={def.mapLabel} v={j.map} />}
@@ -454,77 +449,6 @@ export function LaneIcon({ lane }: { lane: string }) {
       )}
       {lane === 'Roam' && <path d="M11 27c4-12 10-2 18-15" className="ml-lane-ico__roam" />}
     </svg>
-  )
-}
-
-/** Peta 3 lane orisinal. Label nama pemain diletakkan di lane pilihan mereka. */
-function LaneMap({ players }: { players: Player[] }) {
-  const counts: Record<string, number> = {}
-  const chips = players
-    .filter((p) => LANE_SPOTS[p.role])
-    .map((p) => {
-      const n = counts[p.role] ?? 0
-      counts[p.role] = n + 1
-      const [x, y] = LANE_SPOTS[p.role]
-      return { p, x, y: y + n * 7 }
-    })
-  return (
-    <figure className="ml-map" aria-label="Peta lane dan posisi pemain">
-      <svg viewBox="0 0 400 400" aria-hidden="true">
-        <rect x="20" y="20" width="360" height="360" rx="28" className="ml-map__ground" />
-        <path d="M30 30 C 150 120, 250 280, 370 370" className="ml-map__river" />
-        <g className="ml-map__jungle">
-          {[
-            [120, 150],
-            [150, 110],
-            [95, 205],
-            [175, 175],
-            [280, 250],
-            [250, 290],
-            [305, 195],
-            [225, 225],
-          ].map(([cx, cy], i) => (
-            <circle key={i} cx={cx} cy={cy} r={i % 3 === 0 ? 9 : 6} />
-          ))}
-        </g>
-        <circle cx="135" cy="118" r="16" className="ml-map__pit" />
-        <circle cx="268" cy="288" r="16" className="ml-map__pit" />
-        <path d="M62 338V62h276" className="ml-map__lane" />
-        <path d="M62 338h276V62" className="ml-map__lane" />
-        <path d="M62 338L338 62" className="ml-map__lane" />
-        <path d="M62 338V62h276" className="ml-map__lane-line" />
-        <path d="M62 338h276V62" className="ml-map__lane-line" />
-        <path d="M62 338L338 62" className="ml-map__lane-line" />
-        {[
-          [62, 250],
-          [62, 150],
-          [150, 62],
-          [250, 62],
-          [150, 338],
-          [250, 338],
-          [338, 250],
-          [338, 150],
-          [140, 260],
-          [260, 140],
-        ].map(([x, y], i) => (
-          <rect key={i} x={x - 6} y={y - 6} width="12" height="12" transform={`rotate(45 ${x} ${y})`} className="ml-map__tower" />
-        ))}
-        <path d="M62 318l20 20-20 20-20-20z" className="ml-map__base ml-map__base--ally" />
-        <path d="M338 42l20 20-20 20-20-20z" className="ml-map__base ml-map__base--enemy" />
-        <text x="70" y="378" className="ml-map__label">
-          Markas kita
-        </text>
-        <text x="330" y="36" className="ml-map__label ml-map__label--end">
-          Markas lawan
-        </text>
-      </svg>
-      {chips.map(({ p, x, y }) => (
-        <span className="ml-map__chip" key={p.id} style={{ left: `${x}%`, top: `${y}%` }}>
-          {p.name}
-        </span>
-      ))}
-      <figcaption className="ml-map__cap">Posisi pemain sesuai lane yang dipilih. Peta digambar ulang, bukan peta resmi.</figcaption>
-    </figure>
   )
 }
 

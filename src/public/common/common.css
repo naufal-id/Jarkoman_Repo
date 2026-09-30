@@ -275,9 +275,10 @@ select.jf__input option {
   font-size: 17px;
 }
 .sched__row[data-game='mlbb'] .sched__game {
-  font-family: 'Cinzel', serif;
-  font-weight: 900;
-  font-size: 15px;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.02em;
 }
 .sched__row[data-game='repo'] .sched__game {
   font-family: 'Teko', sans-serif;
