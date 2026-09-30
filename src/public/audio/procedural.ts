@@ -112,12 +112,7 @@ function tom(v: Voice, t: number, f: number, vol = 0.45, dur = 0.45, rev = 0.15)
   osc.stop(t + dur + 0.05)
 }
 
-function pluck(
-  v: Voice,
-  t: number,
-  f: number,
-  o: { vol?: number; dur?: number; type?: OscillatorType; cutoff?: number; rev?: number; detune?: number } = {},
-) {
+function pluck(v: Voice, t: number, f: number, o: { vol?: number; dur?: number; type?: OscillatorType; cutoff?: number; rev?: number; detune?: number } = {}) {
   const { vol = 0.06, dur = 0.3, type = 'sawtooth', cutoff = 2200, rev = 0.15, detune = 0 } = o
   const osc = v.ctx.createOscillator()
   osc.type = type
@@ -134,13 +129,7 @@ function pluck(
   osc.stop(t + dur + 0.05)
 }
 
-function pad(
-  v: Voice,
-  t: number,
-  freqs: number[],
-  dur: number,
-  o: { vol?: number; cutoff?: number; rev?: number; attack?: number; type?: OscillatorType } = {},
-) {
+function pad(v: Voice, t: number, freqs: number[], dur: number, o: { vol?: number; cutoff?: number; rev?: number; attack?: number; type?: OscillatorType } = {}) {
   const { vol = 0.04, cutoff = 900, rev = 0.35, attack = 0.5, type = 'sawtooth' } = o
   const lp = v.ctx.createBiquadFilter()
   lp.type = 'lowpass'

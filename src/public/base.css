@@ -155,7 +155,9 @@ p {
   position: relative;
   z-index: 60;
   padding: 10px 16px;
-  font: 600 14px/1.4 system-ui, sans-serif;
+  font:
+    600 14px/1.4 system-ui,
+    sans-serif;
   background: #ffd166;
   color: #1a1400;
   text-align: center;
@@ -204,6 +206,12 @@ p {
 
 .art-img.is-loaded {
   opacity: 1;
+}
+
+/* Gambar hero (elemen LCP, sudah di-preload) tampil begitu terdekode, tanpa menunggu JS menandainya selesai. */
+.art-img.is-priority {
+  opacity: 1;
+  transition: none;
 }
 
 /* Intro overlay umum. */

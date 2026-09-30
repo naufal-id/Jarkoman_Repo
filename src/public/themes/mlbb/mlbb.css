@@ -45,12 +45,9 @@
   --lane-none: #9fb6e8;
   --hex: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='27.71' height='48' viewBox='0 0 27.71 48'%3E%3Cpath d='M13.86 0L27.71 8V24L13.86 32L0 24V8Z M13.86 32V48' fill='none' stroke='%2372dcff' stroke-opacity='0.16' stroke-width='1'/%3E%3C/svg%3E");
   --stars:
-    radial-gradient(1.2px 1.2px at 8% 12%, rgba(255, 255, 255, 0.85), transparent 60%),
-    radial-gradient(1px 1px at 22% 68%, rgba(255, 255, 255, 0.6), transparent 60%),
-    radial-gradient(1.4px 1.4px at 37% 28%, rgba(200, 225, 255, 0.8), transparent 60%),
-    radial-gradient(1px 1px at 51% 84%, rgba(255, 255, 255, 0.55), transparent 60%),
-    radial-gradient(1.3px 1.3px at 64% 44%, rgba(255, 240, 200, 0.75), transparent 60%),
-    radial-gradient(1px 1px at 78% 16%, rgba(255, 255, 255, 0.6), transparent 60%),
+    radial-gradient(1.2px 1.2px at 8% 12%, rgba(255, 255, 255, 0.85), transparent 60%), radial-gradient(1px 1px at 22% 68%, rgba(255, 255, 255, 0.6), transparent 60%),
+    radial-gradient(1.4px 1.4px at 37% 28%, rgba(200, 225, 255, 0.8), transparent 60%), radial-gradient(1px 1px at 51% 84%, rgba(255, 255, 255, 0.55), transparent 60%),
+    radial-gradient(1.3px 1.3px at 64% 44%, rgba(255, 240, 200, 0.75), transparent 60%), radial-gradient(1px 1px at 78% 16%, rgba(255, 255, 255, 0.6), transparent 60%),
     radial-gradient(1.2px 1.2px at 91% 62%, rgba(200, 225, 255, 0.7), transparent 60%);
   --focus: var(--gold-hi);
   --pad-x: clamp(16px, 4vw, 48px);
@@ -58,8 +55,7 @@
   --bh: clamp(320px, 62vh, 640px);
   min-height: 100vh;
   background:
-    radial-gradient(1400px 900px at 100% 30%, rgba(107, 63, 214, 0.18), transparent 60%),
-    radial-gradient(1200px 900px at 0% 60%, rgba(47, 140, 255, 0.14), transparent 60%),
+    radial-gradient(1400px 900px at 100% 30%, rgba(107, 63, 214, 0.18), transparent 60%), radial-gradient(1200px 900px at 0% 60%, rgba(47, 140, 255, 0.14), transparent 60%),
     linear-gradient(180deg, var(--night-1) 0%, var(--night-0) 35%, var(--night-1) 65%, var(--night-0) 100%);
   color: var(--fg);
   font-family: 'Rubik', system-ui, sans-serif;
@@ -80,8 +76,7 @@
   --panel-grad: linear-gradient(180deg, rgba(110, 24, 70, 0.72) 0%, rgba(53, 12, 39, 0.86) 45%, rgba(33, 7, 24, 0.92) 100%);
   --muted: #e6c2cf;
   background:
-    radial-gradient(1400px 900px at 100% 30%, rgba(176, 48, 110, 0.2), transparent 60%),
-    radial-gradient(1200px 900px at 0% 60%, rgba(255, 91, 110, 0.1), transparent 60%),
+    radial-gradient(1400px 900px at 100% 30%, rgba(176, 48, 110, 0.2), transparent 60%), radial-gradient(1200px 900px at 0% 60%, rgba(255, 91, 110, 0.1), transparent 60%),
     linear-gradient(180deg, var(--night-1) 0%, var(--night-0) 35%, var(--night-1) 65%, var(--night-0) 100%);
 }
 
@@ -185,7 +180,10 @@ body:has(.ml[data-variant='red']) {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   text-decoration: none;
-  transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
+  transition:
+    filter 0.2s,
+    transform 0.15s,
+    box-shadow 0.2s;
 }
 
 /* Tombol emas: logam dengan pita terang di tengah, bevel atas, bayangan cokelat di bawah, seperti tombol Start. */
@@ -290,8 +288,7 @@ body:has(.ml[data-variant='red']) {
     radial-gradient(900px 260px at 50% var(--bh), rgba(255, 178, 138, 0.28), transparent 70%),
     radial-gradient(700px 420px at 18% calc(var(--bh) + 160px), rgba(47, 140, 255, 0.28), transparent 70%),
     radial-gradient(760px 480px at 84% calc(var(--bh) + 120px), rgba(107, 63, 214, 0.34), transparent 70%),
-    radial-gradient(500px 300px at 50% calc(var(--bh) + 360px), rgba(255, 143, 191, 0.12), transparent 70%),
-    var(--stars),
+    radial-gradient(500px 300px at 50% calc(var(--bh) + 360px), rgba(255, 143, 191, 0.12), transparent 70%), var(--stars),
     linear-gradient(180deg, var(--night-2) 0%, var(--night-1) 60%, transparent 100%);
 }
 
@@ -299,8 +296,7 @@ body:has(.ml[data-variant='red']) {
   background:
     radial-gradient(900px 260px at 50% var(--bh), rgba(255, 150, 130, 0.28), transparent 70%),
     radial-gradient(700px 420px at 18% calc(var(--bh) + 160px), rgba(255, 91, 110, 0.22), transparent 70%),
-    radial-gradient(760px 480px at 84% calc(var(--bh) + 120px), rgba(176, 48, 110, 0.34), transparent 70%),
-    var(--stars),
+    radial-gradient(760px 480px at 84% calc(var(--bh) + 120px), rgba(176, 48, 110, 0.34), transparent 70%), var(--stars),
     linear-gradient(180deg, var(--night-2) 0%, var(--night-1) 60%, transparent 100%);
 }
 
@@ -603,9 +599,7 @@ body:has(.ml[data-variant='red']) {
   inset: 2px;
   z-index: -1;
   clip-path: inherit;
-  background:
-    radial-gradient(circle at 50% 20%, rgba(114, 220, 255, 0.25), transparent 60%),
-    linear-gradient(180deg, var(--royal), var(--night-1));
+  background: radial-gradient(circle at 50% 20%, rgba(114, 220, 255, 0.25), transparent 60%), linear-gradient(180deg, var(--royal), var(--night-1));
 }
 
 .ml-cd__num {
@@ -820,7 +814,9 @@ body:has(.ml[data-variant='red']) {
     0 18px 38px rgba(2, 4, 20, 0.55);
   color: var(--fg);
   text-decoration: none;
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s;
+  transition:
+    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.3s;
 }
 
 .ml-card:hover {
@@ -1059,8 +1055,7 @@ body:has(.ml[data-variant='red']) {
 /* Arena peta: cahaya hijau hutan di belakang peta dan ungu Lord di sisi kanan. */
 .ml-dawn {
   background:
-    radial-gradient(700px 600px at 28% 55%, rgba(63, 214, 138, 0.13), transparent 70%),
-    radial-gradient(700px 520px at 85% 40%, rgba(167, 139, 255, 0.14), transparent 70%);
+    radial-gradient(700px 600px at 28% 55%, rgba(63, 214, 138, 0.13), transparent 70%), radial-gradient(700px 520px at 85% 40%, rgba(167, 139, 255, 0.14), transparent 70%);
 }
 
 .ml-dawn__grid {
@@ -1566,7 +1561,9 @@ body:has(.ml[data-variant='red']) {
     linear-gradient(180deg, rgba(15, 23, 71, 0.8), rgba(4, 6, 26, 0.85)) padding-box,
     linear-gradient(180deg, color-mix(in srgb, var(--lc) 55%, transparent), rgba(126, 190, 255, 0.15)) border-box;
   text-align: center;
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
 }
 
 .ml-lane:hover .ml-lane__card {
@@ -1778,9 +1775,7 @@ body:has(.ml[data-variant='red']) {
 .ml-intro {
   display: grid;
   place-items: center;
-  background:
-    radial-gradient(600px 400px at 70% 30%, rgba(107, 63, 214, 0.35), transparent 70%),
-    radial-gradient(ellipse at 50% 45%, #1b2a78 0%, #04061a 70%);
+  background: radial-gradient(600px 400px at 70% 30%, rgba(107, 63, 214, 0.35), transparent 70%), radial-gradient(ellipse at 50% 45%, #1b2a78 0%, #04061a 70%);
   color: #f2f6ff;
 }
 

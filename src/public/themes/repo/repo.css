@@ -53,7 +53,10 @@ body:has(.rp) {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   text-decoration: none;
-  transition: transform 0.1s, box-shadow 0.1s, background 0.2s;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s,
+    background 0.2s;
 }
 
 /* Tombol hazard: kuning solid dengan strip hazard di tepi atas, terasa seperti tombol fisik di truk. */
@@ -586,7 +589,6 @@ body:has(.rp) {
   display: none;
 }
 
-
 .rp-bot__name {
   margin-top: 6px;
   font-family: 'Teko', sans-serif;
@@ -1084,9 +1086,7 @@ body:has(.rp[data-variant='lampu']) {
 
 /* Hero: lorong yang sama, sekarang terang di bawah lampu tabung. Tidak ada mata monster di tempat terang. */
 .rp[data-variant='lampu'] .rp-hero__bg {
-  background:
-    radial-gradient(ellipse 65% 50% at 50% 0%, rgba(255, 252, 238, 0.95), transparent 72%),
-    linear-gradient(180deg, #f4efe3 0%, #e6ddca 100%);
+  background: radial-gradient(ellipse 65% 50% at 50% 0%, rgba(255, 252, 238, 0.95), transparent 72%), linear-gradient(180deg, #f4efe3 0%, #e6ddca 100%);
 }
 
 .rp[data-variant='lampu'] .rp-corridor__lines {

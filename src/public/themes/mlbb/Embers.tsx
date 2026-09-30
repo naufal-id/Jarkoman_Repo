@@ -1,8 +1,25 @@
 import { useEffect, useRef } from 'react'
 
+/** Satu sprite bara bercahaya digambar sekali, lalu dipakai ulang tiap frame (jauh lebih murah dari shadowBlur). */
+function sprite(core: string, glow: string, size: number): HTMLCanvasElement {
+  const c = document.createElement('canvas')
+  c.width = c.height = size
+  const g = c.getContext('2d')!
+  const half = size / 2
+  const grad = g.createRadialGradient(half, half, 0, half, half, half)
+  grad.addColorStop(0, core)
+  grad.addColorStop(0.18, core)
+  grad.addColorStop(0.35, glow)
+  grad.addColorStop(1, 'rgba(0, 0, 0, 0)')
+  g.fillStyle = grad
+  g.fillRect(0, 0, size, size)
+  return c
+}
+
 /**
- * Bara emas yang naik pelan di hero MLBB (suasana Land of Dawn).
- * Berhenti saat tidak terlihat atau tab disembunyikan, dan tidak jalan sama sekali saat reduced motion.
+ * Bara emas (dan sesekali biru mana) yang naik pelan di hero MLBB (suasana Land of Dawn).
+ * Mulai setelah halaman tenang, berhenti saat tidak terlihat atau tab disembunyikan, dan tidak jalan sama sekali
+ * saat reduced motion.
  */
 export function Embers({ className = '' }: { className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null)
@@ -17,8 +34,11 @@ export function Embers({ className = '' }: { className?: string }) {
     let h = 0
     let raf = 0
     let visible = true
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    const count = window.innerWidth < 700 ? 22 : 46
+    let ready = false
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+    const count = window.innerWidth < 700 ? 18 : 40
+    const gold = sprite('rgba(255, 240, 200, 1)', 'rgba(255, 196, 90, 0.45)', 48)
+    const mana = sprite('rgba(220, 250, 255, 1)', 'rgba(110, 220, 255, 0.4)', 48)
     const parts = Array.from({ length: count }, () => spawn(true))
 
     function spawn(anywhere: boolean) {
@@ -29,7 +49,7 @@ export function Embers({ className = '' }: { className?: string }) {
         v: 0.00035 + Math.random() * 0.0009,
         drift: (Math.random() - 0.5) * 0.0004,
         phase: Math.random() * Math.PI * 2,
-        hue: Math.random() < 0.82 ? 42 : 190,
+        mana: Math.random() >= 0.82,
       }
     }
 
@@ -49,19 +69,19 @@ export function Embers({ className = '' }: { className?: string }) {
         p.x += p.drift + Math.sin(t / 1400 + p.phase) * 0.0002
         if (p.y < -0.05) Object.assign(p, spawn(false))
         const alpha = Math.min(1, (1 - p.y) * 1.4) * (0.35 + 0.35 * Math.sin(t / 500 + p.phase))
-        ctx.beginPath()
-        ctx.fillStyle = p.hue === 42 ? `rgba(255, 214, 120, ${alpha})` : `rgba(120, 230, 255, ${alpha * 0.8})`
-        ctx.shadowColor = ctx.fillStyle
-        ctx.shadowBlur = 8
-        ctx.arc(p.x * w, p.y * h, p.r, 0, Math.PI * 2)
-        ctx.fill()
+        if (alpha <= 0.01) continue
+        // Sprite 48 px dengan inti ~18%: ukuran gambar = radius inti x 11 supaya cahayanya selebar shadowBlur 8 dulu.
+        const size = p.r * 11
+        ctx.globalAlpha = p.mana ? alpha * 0.8 : alpha
+        ctx.drawImage(p.mana ? mana : gold, p.x * w - size / 2, p.y * h - size / 2, size, size)
       }
+      ctx.globalAlpha = 1
       if (visible && !document.hidden) raf = requestAnimationFrame(tick)
     }
 
     const start = () => {
       cancelAnimationFrame(raf)
-      if (visible && !document.hidden) raf = requestAnimationFrame(tick)
+      if (ready && visible && !document.hidden) raf = requestAnimationFrame(tick)
     }
 
     const io = new IntersectionObserver(([entry]) => {
@@ -73,9 +93,16 @@ export function Embers({ className = '' }: { className?: string }) {
     ro.observe(canvas)
     document.addEventListener('visibilitychange', start)
     resize()
-    start()
+    // Jangan berebut CPU dengan gambar hero dan animasi pembuka: mulai saat browser senggang.
+    const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1200))
+    const cancelIdle = window.cancelIdleCallback ?? window.clearTimeout
+    const idleId = idle(() => {
+      ready = true
+      start()
+    })
 
     return () => {
+      cancelIdle(idleId)
       cancelAnimationFrame(raf)
       io.disconnect()
       ro.disconnect()

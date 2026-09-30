@@ -1,5 +1,5 @@
 import type { Config } from '@netlify/functions'
-import { applyWebChanges } from '../../src/shared/joins'
+import { applyWebChanges, keepNotes, publicState } from '../../src/shared/joins'
 import { cleanState } from '../../src/shared/sanitize'
 import type { SiteState } from '../../src/shared/types'
 import { cleanupAudio } from '../lib/audio'
@@ -15,7 +15,9 @@ export default async function handler(req: Request): Promise<Response> {
   if (req.method === 'GET') {
     try {
       const state = await store.getJSON<SiteState>(KEY)
-      return json({ state })
+      // Catatan pemain hanya untuk admin yang login.
+      const admin = isConfigured() && verifyToken(bearer(req))
+      return json({ state: state && !admin ? publicState(state) : state })
     } catch (err) {
       console.error('[state] read failed', err)
       return error(500, 'Gagal membaca data jarkoman.')
@@ -45,7 +47,7 @@ export default async function handler(req: Request): Promise<Response> {
         if (current && input.force !== true && current.updatedAt !== base) return { result: { conflict: current } }
         // Pemain yang mendaftar atau batal lewat web setelah admin membuka dashboard tidak boleh hilang
         // hanya karena draft admin belum memuatnya. Pendaftaran web tidak mengubah updatedAt, jadi tidak bikin konflik.
-        const merged = current ? applyWebChanges(incoming, current, incoming.joinSeq) : incoming
+        const merged = current ? keepNotes(applyWebChanges(incoming, current, incoming.joinSeq), current) : incoming
         const saved: SiteState = { ...merged, updatedAt: Math.max(Date.now(), (current?.updatedAt ?? 0) + 1) }
         return { value: saved, result: { saved } }
       })

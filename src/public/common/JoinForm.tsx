@@ -1,216 +1,157 @@
-import {
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type FormEvent,
-  type ReactNode,
-} from "react";
-import { api, ApiError } from "../../shared/api";
-import { gameDef, picksFor, roleOfPick } from "../../shared/games";
-import { slotOf } from "../../shared/joins";
-import { KEYS, readJSON, removeKey, writeJSON } from "../../shared/storage";
-import type { Jarkoman } from "../../shared/types";
-import { buildJoinMessage, waLink } from "../../shared/wa";
-import { usePage } from "./context";
-import { pageLink, type SessionInfo } from "./hooks";
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { api, ApiError } from '../../shared/api'
+import { gameDef, picksFor, roleOfPick } from '../../shared/games'
+import { slotOf } from '../../shared/joins'
+import { KEYS, readJSON, removeKey, writeJSON } from '../../shared/storage'
+import type { Jarkoman } from '../../shared/types'
+import { buildJoinMessage, waLink } from '../../shared/wa'
+import { usePage } from './context'
+import { pageLink, type SessionInfo } from './hooks'
 
 export interface PickerProps {
-  value: string;
-  onChange: (value: string) => void;
-  options: string[];
-  labelId: string;
-  role?: string;
+  value: string
+  onChange: (value: string) => void
+  options: string[]
+  labelId: string
+  role?: string
 }
 
 /** 'joined' = langsung masuk skuad, 'wa' = pesan WhatsApp dibuka (pendaftaran langsung mati) */
-export type SentKind = "joined" | "wa";
+export type SentKind = 'joined' | 'wa'
 
 interface JoinFormProps {
-  j: Jarkoman;
-  session: SessionInfo;
+  j: Jarkoman
+  session: SessionInfo
   /** Teks tombol utama per tema */
-  cta: ReactNode;
+  cta: ReactNode
   /** Picker kustom untuk role (misalnya ikon lane MLBB, swatch warna R.E.P.O.) */
-  renderRole?: (p: PickerProps) => ReactNode;
+  renderRole?: (p: PickerProps) => ReactNode
   /** Picker kustom untuk pick (misalnya buy menu CS2) */
-  renderPick?: (p: PickerProps) => ReactNode;
-  onSent?: (kind: SentKind) => void;
-  className?: string;
+  renderPick?: (p: PickerProps) => ReactNode
+  onSent?: (kind: SentKind) => void
+  className?: string
 }
 
 /** Bukti pendaftaran langsung yang disimpan di perangkat ini, per jarkoman. */
 interface JoinedRecord {
-  player: string;
-  key: string;
-  name: string;
+  player: string
+  key: string
+  name: string
 }
 
-export function JoinForm({
-  j,
-  session,
-  cta,
-  renderRole,
-  renderPick,
-  onSent,
-  className = "",
-}: JoinFormProps) {
-  const def = gameDef(j.game);
-  const { preview, replaceItem } = usePage();
-  const base = useId();
-  const nameRef = useRef<HTMLInputElement>(null);
-  const [name, setName] = useState(
-    () => readJSON<string>(KEYS.joinName(j.id)) ?? "",
-  );
-  const [role, setRole] = useState("");
-  const [pick, setPick] = useState("");
-  const [note, setNote] = useState("");
-  const [trap, setTrap] = useState("");
-  const [error, setError] = useState("");
-  const [failure, setFailure] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [sentHref, setSentHref] = useState("");
-  const [previewNote, setPreviewNote] = useState(false);
-  const [confirmLeave, setConfirmLeave] = useState(false);
-  const [joined, setJoined] = useState<JoinedRecord | null>(() =>
-    readJSON<JoinedRecord>(KEYS.joined(j.id)),
-  );
+export function JoinForm({ j, session, cta, renderRole, renderPick, onSent, className = '' }: JoinFormProps) {
+  const def = gameDef(j.game)
+  const { preview, replaceItem } = usePage()
+  const base = useId()
+  const nameRef = useRef<HTMLInputElement>(null)
+  const [name, setName] = useState(() => readJSON<string>(KEYS.joinName(j.id)) ?? '')
+  const [role, setRole] = useState('')
+  const [pick, setPick] = useState('')
+  const [note, setNote] = useState('')
+  const [trap, setTrap] = useState('')
+  const [error, setError] = useState('')
+  const [failure, setFailure] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [sentHref, setSentHref] = useState('')
+  const [previewNote, setPreviewNote] = useState(false)
+  const [confirmLeave, setConfirmLeave] = useState(false)
+  const [joined, setJoined] = useState<JoinedRecord | null>(() => readJSON<JoinedRecord>(KEYS.joined(j.id)))
 
   // Isi form selalu milik jarkoman yang sedang dibuka. Di preview admin, pindah jarkoman atau game
   // tidak boleh membawa nama, pilihan, atau status dari jarkoman sebelumnya.
   useEffect(() => {
-    setName(readJSON<string>(KEYS.joinName(j.id)) ?? "");
-    setJoined(readJSON<JoinedRecord>(KEYS.joined(j.id)));
-    setRole("");
-    setPick("");
-    setNote("");
-    setError("");
-    setFailure("");
-    setSentHref("");
-    setPreviewNote(false);
-    setConfirmLeave(false);
-  }, [j.id, j.game]);
+    setName(readJSON<string>(KEYS.joinName(j.id)) ?? '')
+    setJoined(readJSON<JoinedRecord>(KEYS.joined(j.id)))
+    setRole('')
+    setPick('')
+    setNote('')
+    setError('')
+    setFailure('')
+    setSentHref('')
+    setPreviewNote(false)
+    setConfirmLeave(false)
+  }, [j.id, j.game])
 
-  const closed = session.state === "ended" || session.state === "cancelled";
-  const auto = j.autoJoin;
+  const closed = session.state === 'ended' || session.state === 'cancelled'
+  const auto = j.autoJoin
   // Pendaftaran dianggap aktif hanya kalau pemainnya masih ada di skuad (host bisa saja menghapusnya).
-  const me = joined ? j.players.find((p) => p.id === joined.player) : undefined;
+  const me = joined ? j.players.find((p) => p.id === joined.player) : undefined
 
   if (closed) {
-    const ask = waLink(
-      j.wa,
-      `Halo, jarkoman ${def.name} "${j.headline}" sudah ${session.state === "cancelled" ? "batal" : "selesai"}. Ada jadwal mabar berikutnya?`,
-    );
+    const ask = waLink(j.wa, `Halo, jarkoman ${def.name} "${j.headline}" sudah ${session.state === 'cancelled' ? 'batal' : 'selesai'}. Ada jadwal mabar berikutnya?`)
     return (
       <div className={`jf jf--closed ${className}`}>
         <p className="jf__closed-text">
-          {session.state === "cancelled"
-            ? "Sesi ini dibatalkan host."
-            : "Sesi ini sudah selesai."}{" "}
-          Mau ikut jadwal berikutnya? Tanya langsung ke host.
+          {session.state === 'cancelled' ? 'Sesi ini dibatalkan host.' : 'Sesi ini sudah selesai.'} Mau ikut jadwal berikutnya? Tanya langsung ke host.
         </p>
-        <a
-          className="jf__submit"
-          href={ask}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a className="jf__submit" href={ask} target="_blank" rel="noopener noreferrer">
           Tanya jadwal berikutnya
         </a>
       </div>
-    );
+    )
   }
 
   const openWhatsApp = () => {
-    const message = buildJoinMessage(
-      j,
-      { name, role, pick, note },
-      pageLink(j),
-    );
-    const href = waLink(j.wa, message);
-    const win = window.open(href, "_blank");
-    if (win) win.opener = null;
-    setSentHref(href);
-    onSent?.("wa");
-  };
+    const message = buildJoinMessage(j, { name, role, pick, note }, pageLink(j))
+    const href = waLink(j.wa, message)
+    const win = window.open(href, '_blank')
+    if (win) win.opener = null
+    setSentHref(href)
+    onSent?.('wa')
+  }
 
   if (me && joined) {
-    const slot = slotOf(j, me.id);
-    const reserveNo = j.players.indexOf(me) - j.slots + 1;
-    const detail = [me.role, me.pick].filter(Boolean).join(" · ");
+    const slot = slotOf(j, me.id)
+    const reserveNo = j.players.indexOf(me) - j.slots + 1
+    const detail = [me.role, me.pick].filter(Boolean).join(' · ')
     const tellHost = waLink(
       j.wa,
-      `Halo, aku sudah lock in di jarkoman ${def.name} "${j.headline}" atas nama ${me.name}${slot ? ` (slot ${slot})` : " (cadangan)"}.\n${pageLink(j)}`,
-    );
+      `Halo, aku sudah lock in di jarkoman ${def.name} "${j.headline}" atas nama ${me.name}${slot ? ` (slot ${slot})` : ' (cadangan)'}.\n${pageLink(j)}`,
+    )
     const leave = async () => {
-      setBusy(true);
-      setFailure("");
+      setBusy(true)
+      setFailure('')
       try {
-        const res = await api.leave(j.id, joined.player, joined.key);
-        removeKey(KEYS.joined(j.id));
-        setJoined(null);
-        setConfirmLeave(false);
-        replaceItem(res.item);
+        const res = await api.leave(j.id, joined.player, joined.key)
+        removeKey(KEYS.joined(j.id))
+        setJoined(null)
+        setConfirmLeave(false)
+        replaceItem(res.item)
       } catch (err) {
-        setFailure(
-          err instanceof ApiError
-            ? err.message
-            : "Gagal membatalkan. Coba lagi.",
-        );
+        setFailure(err instanceof ApiError ? err.message : 'Gagal membatalkan. Coba lagi.')
       } finally {
-        setBusy(false);
+        setBusy(false)
       }
-    };
+    }
     return (
       <div className={`jf jf--done ${className}`}>
         <div className="jf__done" role="status">
-          <p className="jf__done-kicker">
-            {slot ? `Slot ${slot} terkunci` : `Cadangan ke-${reserveNo}`}
-          </p>
+          <p className="jf__done-kicker">{slot ? `Slot ${slot} terkunci` : `Cadangan ke-${reserveNo}`}</p>
           <p className="jf__done-name">{me.name}</p>
           <p className="jf__done-text">
-            {detail ? `${detail}. ` : ""}
+            {detail ? `${detail}. ` : ''}
             {slot
-              ? "Nama kamu sudah tampil di skuad. Host tidak perlu memasukkanmu lagi."
-              : "Skuad sudah penuh, jadi kamu masuk cadangan. Kalau ada yang batal, kamu naik otomatis."}
+              ? 'Nama kamu sudah tampil di skuad. Host tidak perlu memasukkanmu lagi.'
+              : 'Skuad sudah penuh, jadi kamu masuk cadangan. Kalau ada yang batal, kamu naik otomatis.'}
           </p>
         </div>
         <div className="jf__foot">
-          <a
-            className="jf__submit"
-            href={tellHost}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a className="jf__submit" href={tellHost} target="_blank" rel="noopener noreferrer">
             Kabari host di WhatsApp
           </a>
           <p className="jf__hint">Opsional. Slot kamu sudah tersimpan.</p>
           {confirmLeave ? (
             <div className="jf__confirm">
               <span>Yakin batal ikut? Slotmu akan dibuka untuk orang lain.</span>
-              <button
-                type="button"
-                className="jf__alt"
-                onClick={leave}
-                disabled={busy}
-              >
-                {busy ? "Membatalkan…" : "Ya, batal ikut"}
+              <button type="button" className="jf__alt" onClick={leave} disabled={busy}>
+                {busy ? 'Membatalkan…' : 'Ya, batal ikut'}
               </button>
-              <button
-                type="button"
-                className="jf__alt"
-                onClick={() => setConfirmLeave(false)}
-                disabled={busy}
-              >
+              <button type="button" className="jf__alt" onClick={() => setConfirmLeave(false)} disabled={busy}>
                 Tidak jadi
               </button>
             </div>
           ) : (
-            <button
-              type="button"
-              className="jf__alt"
-              onClick={() => setConfirmLeave(true)}
-            >
+            <button type="button" className="jf__alt" onClick={() => setConfirmLeave(true)}>
               Batal ikut
             </button>
           )}
@@ -221,33 +162,33 @@ export function JoinForm({
           )}
         </div>
       </div>
-    );
+    )
   }
 
-  const pickOptions = picksFor(def, role);
+  const pickOptions = picksFor(def, role)
 
   const submit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (busy) return;
+    e.preventDefault()
+    if (busy) return
     if (!name.trim()) {
-      setError("Isi nama dulu, biar host tahu siapa yang join.");
-      nameRef.current?.focus();
-      return;
+      setError('Isi nama dulu, biar host tahu siapa yang join.')
+      nameRef.current?.focus()
+      return
     }
-    setError("");
-    setFailure("");
-    writeJSON(KEYS.joinName(j.id), name.trim());
+    setError('')
+    setFailure('')
+    writeJSON(KEYS.joinName(j.id), name.trim())
     if (!auto) {
-      openWhatsApp();
-      return;
+      openWhatsApp()
+      return
     }
     if (preview) {
       // Preview admin tidak menulis ke data asli.
-      setPreviewNote(true);
-      onSent?.("joined");
-      return;
+      setPreviewNote(true)
+      onSent?.('joined')
+      return
     }
-    setBusy(true);
+    setBusy(true)
     try {
       const res = await api.join({
         id: j.id,
@@ -256,49 +197,40 @@ export function JoinForm({
         pick,
         note,
         website: trap,
-      });
+      })
       const record: JoinedRecord = {
         player: res.player.id,
         key: res.key,
         name: res.player.name,
-      };
-      writeJSON(KEYS.joined(j.id), record);
-      setJoined(record);
-      replaceItem(res.item);
-      onSent?.("joined");
+      }
+      writeJSON(KEYS.joined(j.id), record)
+      setJoined(record)
+      replaceItem(res.item)
+      onSent?.('joined')
     } catch (err) {
-      if (err instanceof ApiError && err.code === "name-taken") {
-        setError(err.message);
-        nameRef.current?.focus();
+      if (err instanceof ApiError && err.code === 'name-taken') {
+        setError(err.message)
+        nameRef.current?.focus()
       } else {
-        setFailure(
-          err instanceof ApiError
-            ? err.message
-            : "Gagal terhubung. Coba lagi.",
-        );
+        setFailure(err instanceof ApiError ? err.message : 'Gagal terhubung. Coba lagi.')
       }
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
-  };
+  }
 
   const onPick = (value: string) => {
-    setPick(value);
+    setPick(value)
     // Valorant: memilih agent otomatis mengisi role-nya.
-    const inferred = roleOfPick(def, value);
-    if (inferred && !role) setRole(inferred);
-  };
+    const inferred = roleOfPick(def, value)
+    if (inferred && !role) setRole(inferred)
+  }
 
-  const roleId = `${base}-role`;
-  const pickId = `${base}-pick`;
+  const roleId = `${base}-role`
+  const pickId = `${base}-pick`
 
   return (
-    <form
-      className={`jf ${className}`}
-      onSubmit={submit}
-      noValidate
-      aria-busy={busy || undefined}
-    >
+    <form className={`jf ${className}`} onSubmit={submit} noValidate aria-busy={busy || undefined}>
       <div className="jf__field jf__field--name">
         <label className="jf__label" htmlFor={`${base}-name`}>
           Nama / nickname
@@ -323,11 +255,7 @@ export function JoinForm({
         )}
       </div>
 
-      <div
-        className="jf__field jf__field--role"
-        role="group"
-        aria-labelledby={roleId}
-      >
+      <div className="jf__field jf__field--role" role="group" aria-labelledby={roleId}>
         <span className="jf__label" id={roleId}>
           {def.roleLabel}
         </span>
@@ -339,12 +267,7 @@ export function JoinForm({
             labelId: roleId,
           })
         ) : (
-          <select
-            className="jf__input"
-            aria-labelledby={roleId}
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
+          <select className="jf__input" aria-labelledby={roleId} value={role} onChange={(e) => setRole(e.target.value)}>
             <option value="">Bebas / belum tahu</option>
             {def.roles.map((r) => (
               <option key={r}>{r}</option>
@@ -353,11 +276,7 @@ export function JoinForm({
         )}
       </div>
 
-      <div
-        className="jf__field jf__field--pick"
-        role="group"
-        aria-labelledby={pickId}
-      >
+      <div className="jf__field jf__field--pick" role="group" aria-labelledby={pickId}>
         <span className="jf__label" id={pickId}>
           {def.pickLabel}
         </span>
@@ -370,12 +289,7 @@ export function JoinForm({
             role,
           })
         ) : (
-          <select
-            className="jf__input"
-            aria-labelledby={pickId}
-            value={pick}
-            onChange={(e) => onPick(e.target.value)}
-          >
+          <select className="jf__input" aria-labelledby={pickId} value={pick} onChange={(e) => onPick(e.target.value)}>
             <option value="">Bebas / belum tahu</option>
             {pickOptions.map((p) => (
               <option key={p}>{p}</option>
@@ -403,35 +317,29 @@ export function JoinForm({
       <div className="jf__trap" aria-hidden="true">
         <label>
           Website
-          <input
-            tabIndex={-1}
-            autoComplete="off"
-            value={trap}
-            onChange={(e) => setTrap(e.target.value)}
-          />
+          <input tabIndex={-1} autoComplete="off" value={trap} onChange={(e) => setTrap(e.target.value)} />
         </label>
       </div>
 
       <div className="jf__foot">
         <button type="submit" className="jf__submit" disabled={busy}>
-          {busy ? "Mengunci slot…" : cta}
+          {busy ? 'Mengunci slot…' : cta}
         </button>
         <p className="jf__hint">
           {auto
             ? session.full
-              ? "Slot sudah penuh. Kamu langsung masuk daftar cadangan dan naik otomatis kalau ada yang batal."
-              : "Nama kamu langsung masuk skuad di halaman ini. Host tidak perlu memasukkanmu lagi."
-            : `${session.full ? "Slot sudah penuh, kamu akan masuk daftar cadangan. " : ""}Tombol ini membuka WhatsApp dengan pesan yang sudah terisi. Tinggal tekan kirim.`}
+              ? 'Slot sudah penuh. Kamu langsung masuk daftar cadangan dan naik otomatis kalau ada yang batal.'
+              : 'Nama kamu langsung masuk skuad di halaman ini. Host tidak perlu memasukkanmu lagi.'
+            : `${session.full ? 'Slot sudah penuh, kamu akan masuk daftar cadangan. ' : ''}Tombol ini membuka WhatsApp dengan pesan yang sudah terisi. Tinggal tekan kirim.`}
         </p>
         {previewNote && (
           <p className="jf__sent" role="status">
-            Ini preview, jadi tidak ada yang disimpan. Di halaman asli, pemain
-            langsung masuk skuad.
+            Ini preview, jadi tidak ada yang disimpan. Di halaman asli, pemain langsung masuk skuad.
           </p>
         )}
         {failure && (
           <p className="jf__error" role="alert">
-            {failure}{" "}
+            {failure}{' '}
             <button type="button" className="jf__alt" onClick={openWhatsApp}>
               Konfirmasi lewat WhatsApp saja
             </button>
@@ -439,7 +347,7 @@ export function JoinForm({
         )}
         {sentHref && (
           <p className="jf__sent" role="status">
-            WhatsApp tidak terbuka?{" "}
+            WhatsApp tidak terbuka?{' '}
             <a href={sentHref} target="_blank" rel="noopener noreferrer">
               Buka pesan konfirmasi
             </a>
@@ -447,5 +355,5 @@ export function JoinForm({
         )}
       </div>
     </form>
-  );
+  )
 }

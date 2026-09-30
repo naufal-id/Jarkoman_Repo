@@ -1,6 +1,15 @@
 import type { GameId, Jarkoman, MediaPayload, Player, SiteState, StateResponse } from './types'
 
-const EXT_TYPES: Record<string, string> = { mp3: 'audio/mpeg', m4a: 'audio/mp4', aac: 'audio/aac', ogg: 'audio/ogg', oga: 'audio/ogg', wav: 'audio/wav', flac: 'audio/flac', webm: 'audio/webm' }
+const EXT_TYPES: Record<string, string> = {
+  mp3: 'audio/mpeg',
+  m4a: 'audio/mp4',
+  aac: 'audio/aac',
+  ogg: 'audio/ogg',
+  oga: 'audio/ogg',
+  wav: 'audio/wav',
+  flac: 'audio/flac',
+  webm: 'audio/webm',
+}
 
 /** Beberapa browser tidak mengisi file.type untuk .m4a/.flac, jadi tebak dari ekstensi. */
 export function audioType(file: Pick<File, 'type' | 'name'>): string {
@@ -42,8 +51,9 @@ async function request<T>(path: string, init: RequestInit = {}, timeoutMs = 1200
 }
 
 export const api = {
-  async getState(): Promise<SiteState | null> {
-    const data = await request<StateResponse>('/api/state', { cache: 'no-store' })
+  /** Dengan token admin, catatan pemain ikut dikirim; tanpa token (halaman publik) catatan dikosongkan server. */
+  async getState(token?: string): Promise<SiteState | null> {
+    const data = await request<StateResponse>('/api/state', { cache: 'no-store', headers: token ? { authorization: `Bearer ${token}` } : undefined })
     return data.state
   },
   login(password: string) {

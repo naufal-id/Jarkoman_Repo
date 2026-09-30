@@ -87,7 +87,7 @@ function DashboardInner({ token, onLogout }: Props) {
   const fetchState = useCallback(async () => {
     setLoad({ kind: 'loading' })
     try {
-      const server = await api.getState()
+      const server = await api.getState(token)
       const base = (server && cleanState(server)?.state) || defaultState()
       const local = readJSON<DraftStore>(KEYS.draft)
       let working = base
@@ -106,7 +106,7 @@ function DashboardInner({ token, onLogout }: Props) {
     } catch (err) {
       setLoad({ kind: 'error', message: err instanceof ApiError ? err.message : 'Gagal memuat data.' })
     }
-  }, [])
+  }, [token])
 
   useEffect(() => {
     fetchState()
@@ -121,7 +121,7 @@ function DashboardInner({ token, onLogout }: Props) {
       if (document.hidden || pulling || live.current.saving) return
       pulling = true
       try {
-        const raw = await api.getState()
+        const raw = await api.getState(token)
         const server = raw ? cleanState(raw)?.state : null
         const { saved: s, draft: d } = live.current
         if (!server || !s || !d || live.current.saving) return
@@ -147,7 +147,7 @@ function DashboardInner({ token, onLogout }: Props) {
       window.clearInterval(timer)
       window.removeEventListener('focus', pull)
     }
-  }, [load.kind, toast])
+  }, [load.kind, toast, token])
 
   const dirty = Boolean(draft && saved && !same(draft, saved))
   const neverSaved = saved?.updatedAt === 0
@@ -451,9 +451,7 @@ function DashboardInner({ token, onLogout }: Props) {
                   </button>
                 </div>
               </div>
-              <p className="adm-editor__help">
-                Jarkoman utama tampil di alamat utama situs. Yang lain bisa dibuka lewat link masing-masing dan muncul di bagian "jadwal lain".
-              </p>
+              <p className="adm-editor__help">Jarkoman utama tampil di alamat utama situs. Yang lain bisa dibuka lewat link masing-masing dan muncul di bagian "jadwal lain".</p>
               <Editor key={current.id} item={current} token={token} onPatch={patchCurrent} onGame={changeGame} />
             </>
           ) : (

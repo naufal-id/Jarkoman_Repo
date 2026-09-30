@@ -1,9 +1,10 @@
 import type { Config } from '@netlify/functions'
-import { addWebPlayer, JoinError, removeWebPlayer, slotOf, type JoinErrorCode } from '../../src/shared/joins'
+import { addWebPlayer, JoinError, publicItem, removeWebPlayer, slotOf, type JoinErrorCode } from '../../src/shared/joins'
 import { cleanState, ID_PATTERN } from '../../src/shared/sanitize'
 import type { SiteState } from '../../src/shared/types'
 import { joinKey, verifyJoinKey } from '../lib/auth'
 import { joinSecrets } from '../lib/join-secret'
+import { clientIp, hitLimit, JOIN_RATE } from '../lib/ratelimit'
 import { error, json, readJson } from '../lib/http'
 import { stateStore, updateJSON, WriteConflictError } from '../lib/store'
 
@@ -32,7 +33,7 @@ function load(current: SiteState | null): SiteState {
  * Pendaftaran langsung dari halaman publik (tanpa login).
  * POST: tambah pemain ke skuad. DELETE: batalkan pendaftaran sendiri memakai kunci dari POST.
  */
-export default async function handler(req: Request): Promise<Response> {
+export default async function handler(req: Request, context?: { ip?: string }): Promise<Response> {
   if (req.method !== 'POST' && req.method !== 'DELETE') return error(405, 'Metode tidak didukung.')
 
   let body: Body
@@ -51,11 +52,14 @@ export default async function handler(req: Request): Promise<Response> {
   try {
     const secrets = await joinSecrets(store)
     if (req.method === 'POST') {
+      if (await hitLimit(store, id, clientIp(req, context), JOIN_RATE)) {
+        return error(429, 'Terlalu banyak pendaftaran dari jaringan ini. Coba lagi beberapa menit lagi atau kabari host.', { code: 'rate-limited' })
+      }
       const out = await updateJSON<SiteState, ReturnType<typeof addWebPlayer>>(store, KEY, (current) => {
         const result = addWebPlayer(load(current), { id, name: text(body.name), role: text(body.role), pick: text(body.pick), note: text(body.note) })
         return { value: result.state, result }
       })
-      return json({ item: out.item, player: out.player, key: joinKey(id, out.player.id, secrets.current), slot: slotOf(out.item, out.player.id) })
+      return json({ item: publicItem(out.item), player: out.player, key: joinKey(id, out.player.id, secrets.current), slot: slotOf(out.item, out.player.id) })
     }
 
     const playerId = text(body.player)
@@ -66,7 +70,7 @@ export default async function handler(req: Request): Promise<Response> {
       const result = removeWebPlayer(load(current), id, playerId)
       return { value: result.state, result }
     })
-    return json({ item: out.item })
+    return json({ item: publicItem(out.item) })
   } catch (err) {
     if (err instanceof JoinError) return error(STATUS[err.code], err.message, { code: err.code })
     if (err instanceof WriteConflictError) return error(503, 'Lagi ramai yang daftar. Coba tekan lagi.', { code: 'busy' })

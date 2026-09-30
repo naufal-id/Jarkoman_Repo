@@ -12,6 +12,7 @@ import { gameDef } from '../../../shared/games'
 import { dayName, formatClock, formatDateShort, pad2 } from '../../../shared/time'
 import type { Player } from '../../../shared/types'
 import { copyText } from '../../common/actions'
+import { HERO_SIZES } from '../../../shared/art'
 import { ArtImage } from '../../common/ArtImage'
 import { usePage, type ThemeProps } from '../../common/context'
 import { Digits } from '../../common/Digits'
@@ -49,6 +50,7 @@ const WEAPONS: Record<string, { kind: string; side: 'T' | 'CT' | ''; price: numb
 const pc = (slot: number) => String(slot % 5)
 
 /** Kurang lebih pola recoil AK-47 (naik, ke kiri, lalu ke kanan) dalam kotak 120 x 220. */
+// prettier-ignore
 const SPRAY: [number, number][] = [
   [60, 212], [61, 198], [59, 182], [62, 164], [60, 145], [63, 126], [66, 108], [68, 92], [70, 78], [71, 66],
   [64, 57], [53, 52], [42, 49], [32, 46], [25, 47], [20, 42], [29, 37], [41, 35], [55, 34], [69, 31],
@@ -88,7 +90,7 @@ export default function Cs2Page({ j }: ThemeProps) {
         tl.from('.cs-hud-top', { y: -70, opacity: 0, duration: 0.6 }, 0)
           .from('.cs-hud--left', { x: -80, opacity: 0, duration: 0.7 }, 0.15)
           .from('.cs-hud--right', { x: 80, opacity: 0, duration: 0.7 }, 0.15)
-          .from('.cs-screen', { opacity: 0, x: 70, duration: 0.8, ease: 'power4.out' }, 0.1)
+          .from('.cs-screen', { x: 70, filter: 'brightness(0.2)', duration: 0.8, ease: 'power4.out' }, 0.1)
           .from('.cs-screen__tag', { opacity: 0, y: -10, duration: 0.4 }, 0.6)
           .from('.cs-hero__title .split-word', { y: 60, opacity: 0, duration: 0.6, stagger: 0.08 }, 0.2)
           .from('.cs-kicker, .cs-hero__sub', { opacity: 0, x: -24, duration: 0.5, stagger: 0.08 }, 0.35)
@@ -199,13 +201,7 @@ export default function Cs2Page({ j }: ThemeProps) {
   const copyLobby = async () => toast((await copyText(j.lobby)) ? `${def.lobbyLabel} disalin.` : 'Gagal menyalin.')
 
   return (
-    <div
-      className="cs"
-      data-variant={j.variant}
-      data-site={named ?? undefined}
-      ref={root}
-      style={known?.tint ? ({ '--map-tint': known.tint } as CSSProperties) : undefined}
-    >
+    <div className="cs" data-variant={j.variant} data-site={named ?? undefined} ref={root} style={known?.tint ? ({ '--map-tint': known.tint } as CSSProperties) : undefined}>
       {intro.show && <CsIntro onDone={intro.done} />}
 
       <header className="cs-hud-top">
@@ -262,7 +258,7 @@ export default function Cs2Page({ j }: ThemeProps) {
           <figure className="cs-screen" aria-hidden="true">
             <span className="cs-corner" />
             <div className="cs-screen__frame">
-              <ArtImage game="cs2" custom={j.bg} className="cs-screen__img" sizes="(max-width: 900px) 92vw, 46vw" priority />
+              <ArtImage game="cs2" custom={j.bg} className="cs-screen__img" sizes={HERO_SIZES.cs2} priority />
             </div>
             <figcaption className="cs-screen__tag">{mapCode || 'counter-strike 2'}</figcaption>
             <Spray />
@@ -304,24 +300,24 @@ export default function Cs2Page({ j }: ThemeProps) {
             <div className="cs-info__side">
               {known && <MapCard map={known} name={j.map} />}
               <dl className="cs-info__list">
-              {j.mode && <InfoRow k="Mode" v={j.mode} />}
-              {j.map && <InfoRow k="Map" v={j.map} note={mapCode} />}
-              {j.rank && <InfoRow k="Rank" v={j.rank} />}
-              {j.host && <InfoRow k="Host" v={j.host} />}
-              {j.lobby && (
-                <InfoRow k={def.lobbyLabel} v={j.lobby} mono>
-                  <button className="cs-btn cs-btn--line cs-btn--sm" type="button" onClick={copyLobby}>
-                    Salin
-                  </button>
-                </InfoRow>
-              )}
-              {j.voice && (
-                <InfoRow k="Voice" v="Discord / voice room">
-                  <a className="cs-btn cs-btn--line cs-btn--sm" href={j.voice} target="_blank" rel="noopener noreferrer">
-                    Masuk voice
-                  </a>
-                </InfoRow>
-              )}
+                {j.mode && <InfoRow k="Mode" v={j.mode} />}
+                {j.map && <InfoRow k="Map" v={j.map} note={mapCode} />}
+                {j.rank && <InfoRow k="Rank" v={j.rank} />}
+                {j.host && <InfoRow k="Host" v={j.host} />}
+                {j.lobby && (
+                  <InfoRow k={def.lobbyLabel} v={j.lobby} mono>
+                    <button className="cs-btn cs-btn--line cs-btn--sm" type="button" onClick={copyLobby}>
+                      Salin
+                    </button>
+                  </InfoRow>
+                )}
+                {j.voice && (
+                  <InfoRow k="Voice" v="Discord / voice room">
+                    <a className="cs-btn cs-btn--line cs-btn--sm" href={j.voice} target="_blank" rel="noopener noreferrer">
+                      Masuk voice
+                    </a>
+                  </InfoRow>
+                )}
               </dl>
             </div>
           </div>
@@ -426,15 +422,18 @@ export default function Cs2Page({ j }: ThemeProps) {
           <section className="cs-notes" aria-labelledby="cs-notes-title">
             <SectionTitle id="cs-notes-title" no="04" text="Aturan ronde" />
             <ol className="cs-notes__list">
-              {j.notes.split('\n').filter((l) => l.trim()).map((line, i) => (
-                <li key={i}>
-                  <span className="cs-notes__num" aria-hidden="true">
-                    <small>Ronde</small>
-                    {pad2(i + 1)}
-                  </span>
-                  <span className="cs-notes__text">{line}</span>
-                </li>
-              ))}
+              {j.notes
+                .split('\n')
+                .filter((l) => l.trim())
+                .map((line, i) => (
+                  <li key={i}>
+                    <span className="cs-notes__num" aria-hidden="true">
+                      <small>Ronde</small>
+                      {pad2(i + 1)}
+                    </span>
+                    <span className="cs-notes__text">{line}</span>
+                  </li>
+                ))}
             </ol>
           </section>
         )}
@@ -638,15 +637,7 @@ function MapOverview({ map, name, slots, side, site }: { map: Cs2Map; name: stri
       <div className="cs-map__radar">
         <span className="cs-corner" aria-hidden="true" />
         <div className="cs-map__layer" style={layerStyle(map.view)}>
-          <img
-            className="cs-map__img"
-            src={level === 'lower' && map.lower ? map.lower : map.radar}
-            alt=""
-            width={1024}
-            height={1024}
-            loading="lazy"
-            decoding="async"
-          />
+          <img className="cs-map__img" src={level === 'lower' && map.lower ? map.lower : map.radar} alt="" width={1024} height={1024} loading="lazy" decoding="async" />
           <span className={`cs-map__spawn cs-map__spawn--t ${off(false)}`} style={at(map.t)} aria-hidden="true">
             T
           </span>
@@ -672,9 +663,7 @@ function MapOverview({ map, name, slots, side, site }: { map: Cs2Map; name: stri
         <span className="cs-map__key cs-map__key--t">Spawn T</span>
         <span className="cs-map__key cs-map__key--ct">Spawn CT</span>
         <span className={`cs-map__key cs-map__key--site ${hostage ? 'is-hostage' : ''}`}>{hostage ? 'Sandera' : 'Bombsite'}</span>
-        <span className="cs-map__key cs-map__key--you">
-          {players > 0 ? `${players} pemain, sisi ${side}` : `Sisi ${side}, belum ada pemain`}
-        </span>
+        <span className="cs-map__key cs-map__key--you">{players > 0 ? `${players} pemain, sisi ${side}` : `Sisi ${side}, belum ada pemain`}</span>
         {site && <span className="cs-map__key cs-map__key--plan">Rencana: site {site}</span>}
         {(lower || map.marks.some((m) => m.lower)) && <span className="cs-map__key cs-map__key--note">Ikon redup ada di lantai {lower ? 'atas' : 'bawah'}</span>}
       </figcaption>

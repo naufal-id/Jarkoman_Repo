@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { gameDef, picksFor } from '../shared/games'
 import { blankPlayer } from '../shared/defaults'
 import type { Jarkoman, Player } from '../shared/types'
@@ -40,6 +41,13 @@ export function PlayersEditor({ item, onChange, onSlots, onAutoJoin }: Props) {
   }
 
   const webCount = players.filter((p) => p.via === 'web').length
+  const [confirmClear, setConfirmClear] = useState(false)
+  // Rem darurat kalau link jarkoman dipakai untuk spam: hapus semua pendaftar website sekaligus (pemain yang
+  // diinput host tetap). Baru berlaku di halaman setelah disimpan, sama seperti perubahan lain.
+  const clearWeb = () => {
+    onChange(players.filter((p) => p.via !== 'web'))
+    setConfirmClear(false)
+  }
 
   return (
     <div className="adm-players">
@@ -66,6 +74,24 @@ export function PlayersEditor({ item, onChange, onSlots, onAutoJoin }: Props) {
             : `Tombol ${def.cta} membuka WhatsApp ke nomor konfirmasi. Kamu memasukkan pemain sendiri di daftar ini.`}
           {webCount > 0 && ` ${webCount} pemain di daftar ini mendaftar lewat website.`}
         </p>
+        {webCount > 0 &&
+          (confirmClear ? (
+            <div className="adm-confirm" role="group" aria-label="Konfirmasi hapus pendaftar website">
+              <p>Hapus {webCount} pemain yang mendaftar lewat website dari jarkoman ini? Pemain yang kamu input sendiri tetap. Berlaku setelah disimpan.</p>
+              <div className="adm-confirm__actions">
+                <button type="button" className="adm-btn adm-btn--danger adm-btn--sm" onClick={clearWeb}>
+                  Ya, hapus {webCount} pemain
+                </button>
+                <button type="button" className="adm-btn adm-btn--ghost adm-btn--sm" onClick={() => setConfirmClear(false)}>
+                  Batal
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" className="adm-btn adm-btn--ghost adm-btn--sm adm-players__clear" onClick={() => setConfirmClear(true)}>
+              Hapus semua pendaftar website ({webCount})
+            </button>
+          ))}
       </div>
 
       <div className="adm-slots">

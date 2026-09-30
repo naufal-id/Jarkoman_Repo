@@ -92,7 +92,7 @@ export async function valorantMedia(fetcher: Fetcher): Promise<MediaPayload> {
   const maps: Record<string, string> = {}
   const mapInfo: Record<string, MapMedia> = {}
   const gallery: MediaItem[] = []
-  for (const m of ((mapsRes as { data?: ValorantMap[] }).data ?? [])) {
+  for (const m of (mapsRes as { data?: ValorantMap[] }).data ?? []) {
     const name = (m.displayName ?? '').trim()
     if (!wanted.has(name.toLowerCase()) || !isHttps(m.splash)) continue
     if (maps[name.toLowerCase()]) continue
@@ -107,7 +107,7 @@ export async function valorantMedia(fetcher: Fetcher): Promise<MediaPayload> {
     gallery.push({ url: m.splash, thumb: isHttps(m.listViewIconTall) ? m.listViewIconTall : m.splash, label: name, kind: 'map' })
   }
   const agents: Record<string, AgentMedia> = {}
-  for (const a of ((agentsRes as { data?: ValorantAgent[] }).data ?? [])) {
+  for (const a of (agentsRes as { data?: ValorantAgent[] }).data ?? []) {
     const name = (a.displayName ?? '').trim()
     if (!name || a.isPlayableCharacter === false) continue
     const portrait = a.fullPortraitV2 || a.fullPortrait
@@ -139,10 +139,7 @@ interface SteamData {
 }
 
 export async function steamMedia(fetcher: Fetcher, game: GameId, appId: number): Promise<MediaPayload> {
-  const raw = (await getJson(fetcher, `https://store.steampowered.com/api/appdetails?appids=${appId}&l=english`)) as Record<
-    string,
-    { success?: boolean; data?: SteamData }
-  >
+  const raw = (await getJson(fetcher, `https://store.steampowered.com/api/appdetails?appids=${appId}&l=english`)) as Record<string, { success?: boolean; data?: SteamData }>
   const entry = raw?.[String(appId)]
   if (!entry?.success || !entry.data) throw new Error(`steam ${appId} tidak tersedia`)
   const data = entry.data

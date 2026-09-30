@@ -2,16 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { blankPlayer, createJarkoman, switchGame } from '../src/shared/defaults'
 import { buildIcs } from '../src/shared/ics'
 import { cleanState, cleanUrl } from '../src/shared/sanitize'
-import {
-  countdownParts,
-  endEpoch,
-  formatDateLong,
-  formatTimeRange,
-  liveState,
-  nextSaturday,
-  relativeDay,
-  startEpoch,
-} from '../src/shared/time'
+import { countdownParts, endEpoch, formatDateLong, formatTimeRange, liveState, nextSaturday, relativeDay, startEpoch } from '../src/shared/time'
 import { buildBroadcast, buildJoinMessage, formatPhoneDisplay, normalizePhone, waLink } from '../src/shared/wa'
 
 // 2026-09-28 10:00 WIB (Senin)
@@ -132,11 +123,7 @@ describe('sanitasi', () => {
     const good = createJarkoman('repo', NOW)
     const result = cleanState({
       featuredId: 'tidak-ada',
-      items: [
-        { ...good, headline: '  <b>Shift</b>\u0007  malam  ', slots: 99, bg: 'javascript:alert(1)', voice: 'https://discord.gg/abc' },
-        { game: 'valorant' },
-        'sampah',
-      ],
+      items: [{ ...good, headline: '  <b>Shift</b>\u0007  malam  ', slots: 99, bg: 'javascript:alert(1)', voice: 'https://discord.gg/abc' }, { game: 'valorant' }, 'sampah'],
     })!
     expect(result.dropped).toBe(2)
     const item = result.state.items[0]

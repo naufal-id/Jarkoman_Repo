@@ -26,6 +26,10 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    # Script hanya dari situs sendiri, plus satu script inline di index.html (ambil jadwal lebih awal) lewat hash-nya.
+    # Hash dicek test (tests/csp.test.ts) supaya tidak basi saat index.html diubah. Gambar dan audio boleh dari
+    # https mana saja karena admin bisa memasang gambar latar dan lagu dari link.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-yMGbyFFbov6djIfJ4ewX77O4yix7elsSqbuPsO+p/hY='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; frame-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'"
 
 # Dashboard admin tidak perlu muncul di mesin pencari dan tidak boleh di-embed situs lain.
 [[headers]]

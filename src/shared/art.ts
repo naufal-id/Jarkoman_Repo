@@ -19,6 +19,14 @@ export const KEY_ART: Record<GameId, KeyArt> = {
   repo: { src: '/games/repo.webp', w: 460, h: 215, label: 'Key art R.E.P.O.' },
 }
 
+/** Atribut sizes gambar hero tiap tema. Dipakai tema dan preload di App supaya browser memilih file yang sama. */
+export const HERO_SIZES: Record<GameId, string> = {
+  valorant: '(max-width: 1023px) 100vw, 62vw',
+  cs2: '(max-width: 900px) 92vw, 46vw',
+  mlbb: '100vw',
+  repo: '420px',
+}
+
 export function artSrcSet(game: GameId): string | undefined {
   const a = KEY_ART[game]
   return a.small && a.smallW ? `${a.small} ${a.smallW}w, ${a.src} ${a.w}w` : undefined

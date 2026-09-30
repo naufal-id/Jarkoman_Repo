@@ -28,10 +28,7 @@ export async function startFile(url: string, volume = 0.6): Promise<Playback> {
   audio.loop = true
   audio.preload = 'auto'
   audio.volume = 0
-  await Promise.race([
-    audio.play(),
-    new Promise((_, reject) => window.setTimeout(() => reject(new Error('timeout')), 20000)),
-  ])
+  await Promise.race([audio.play(), new Promise((_, reject) => window.setTimeout(() => reject(new Error('timeout')), 20000))])
   let level = 0
   const fadeIn = window.setInterval(() => {
     level = Math.min(volume, level + volume / 24)

@@ -111,7 +111,10 @@ export function applyWebChanges(target: SiteState, source: SiteState, sinceSeq: 
     ...target,
     items,
     joinSeq: Math.max(target.joinSeq, source.joinSeq),
-    gone: [...gone].map(([id, seq]) => ({ id, seq })).sort((a, b) => a.seq - b.seq).slice(-LIMITS.gone),
+    gone: [...gone]
+      .map(([id, seq]) => ({ id, seq }))
+      .sort((a, b) => a.seq - b.seq)
+      .slice(-LIMITS.gone),
   }
 }
 
@@ -124,4 +127,33 @@ export function newWebPlayers(target: SiteState, source: SiteState): { item: Jar
     for (const p of item.players) if (p.via === 'web' && p.seq > target.joinSeq && !have.has(p.id)) out.push({ item, player: p })
   }
   return out
+}
+
+/**
+ * Catatan pemain ditulis untuk host, bukan untuk semua orang. Respons API publik (GET /api/state tanpa login,
+ * respons /api/join) memakai versi ini; dashboard admin yang login tetap menerima catatan lengkap.
+ */
+export function publicItem(item: Jarkoman): Jarkoman {
+  return item.players.some((p) => p.note) ? { ...item, players: item.players.map((p) => (p.note ? { ...p, note: '' } : p)) } : item
+}
+
+export function publicState(state: SiteState): SiteState {
+  return { ...state, items: state.items.map(publicItem) }
+}
+
+/**
+ * Admin tidak bisa mengubah catatan pemain, tapi draftnya bisa berasal dari bacaan tanpa catatan (sesi login habis
+ * lalu login lagi). Saat menyimpan, catatan yang kosong di draft diambil dari data server supaya tidak terhapus.
+ */
+export function keepNotes(incoming: SiteState, current: SiteState): SiteState {
+  const notes = new Map<string, string>()
+  for (const item of current.items) for (const p of item.players) if (p.note) notes.set(`${item.id}:${p.id}`, p.note)
+  if (!notes.size) return incoming
+  return {
+    ...incoming,
+    items: incoming.items.map((item) => ({
+      ...item,
+      players: item.players.map((p) => (p.note ? p : { ...p, note: notes.get(`${item.id}:${p.id}`) ?? '' })),
+    })),
+  }
 }

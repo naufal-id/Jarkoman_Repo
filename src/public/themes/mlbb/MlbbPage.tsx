@@ -10,6 +10,7 @@ import { gameDef } from '../../../shared/games'
 import { formatDateLong, formatTimeRange } from '../../../shared/time'
 import type { Player } from '../../../shared/types'
 import { copyText } from '../../common/actions'
+import { HERO_SIZES } from '../../../shared/art'
 import { ArtImage } from '../../common/ArtImage'
 import { usePage, type ThemeProps } from '../../common/context'
 import { Digits } from '../../common/Digits'
@@ -50,7 +51,8 @@ export default function MlbbPage({ j }: ThemeProps) {
       gsap.matchMedia().add(MOTION_OK, () => {
         if (!intro.ready) return
         const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-        tl.from('.ml-banner', { opacity: 0, duration: 1.2, ease: 'power2.out' }, 0)
+        // Banner = gambar LCP: jangan mulai dari opacity 0 (LCP menunggu), cukup naik dari gelap.
+        tl.from('.ml-banner', { filter: 'brightness(0.3) saturate(0.6)', duration: 1.2, ease: 'power2.out' }, 0)
           .from('.ml-banner__img', { scale: 1.12, duration: 2.2, ease: 'power3.out' }, 0)
           .from('.ml-rays', { opacity: 0, scale: 0.6, rotate: -30, duration: 1.6, ease: 'power2.out' }, 0.2)
           .from('.ml-crest', { scale: 0.4, opacity: 0, duration: 0.9, ease: 'back.out(1.8)' }, 0.1)
@@ -159,7 +161,7 @@ export default function MlbbPage({ j }: ThemeProps) {
         <section className="ml-hero" aria-labelledby="ml-title">
           <div className="ml-hero__bg" aria-hidden="true">
             <div className="ml-banner">
-              <ArtImage game="mlbb" custom={j.bg} className="ml-banner__img" sizes="100vw" priority />
+              <ArtImage game="mlbb" custom={j.bg} className="ml-banner__img" sizes={HERO_SIZES.mlbb} priority />
             </div>
             <div className="ml-rays" />
             <Embers className="ml-embers" />
@@ -210,9 +212,7 @@ export default function MlbbPage({ j }: ThemeProps) {
 
         <section className="ml-lineup" aria-labelledby="ml-lineup-title">
           <SectionTitle id="ml-lineup-title" text="Lineup" />
-          <p className="ml-lead">
-            {s.full ? 'Tim sudah lengkap. Yang daftar sekarang masuk cadangan.' : `${s.open} slot masih terbuka. Pilih lane yang kosong biar draft enak.`}
-          </p>
+          <p className="ml-lead">{s.full ? 'Tim sudah lengkap. Yang daftar sekarang masuk cadangan.' : `${s.open} slot masih terbuka. Pilih lane yang kosong biar draft enak.`}</p>
           {teams.map((team, ti) => (
             <div className="ml-team-wrap" key={ti}>
               {teams.length > 1 && <p className="ml-team__label">{ti === 0 ? 'Tim 1' : 'Tim 2'}</p>}
@@ -326,9 +326,12 @@ export default function MlbbPage({ j }: ThemeProps) {
           <section className="ml-notes" aria-labelledby="ml-notes-title">
             <SectionTitle id="ml-notes-title" text="Aturan main" />
             <ul className="ml-notes__list">
-              {j.notes.split('\n').filter((l) => l.trim()).map((line, i) => (
-                <li key={i}>{line}</li>
-              ))}
+              {j.notes
+                .split('\n')
+                .filter((l) => l.trim())
+                .map((line, i) => (
+                  <li key={i}>{line}</li>
+                ))}
             </ul>
           </section>
         )}
@@ -501,4 +504,3 @@ function MlIntro({ onDone }: { onDone: () => void }) {
     </div>
   )
 }
-

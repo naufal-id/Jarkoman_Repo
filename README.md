@@ -57,6 +57,8 @@ Di dashboard bagian **Skuad**, setiap jarkoman punya pilihan **Cara pemain masuk
 - Nama yang sama tidak bisa didaftarkan dua kali di satu jarkoman.
 - Pemain bisa **Batal ikut** dari perangkat yang dipakai mendaftar. Perangkat lain tidak bisa membatalkan pendaftaran orang lain.
 - Pendaftar baru muncul di dashboard dalam hitungan detik dengan label "Daftar lewat website", tanpa membuang perubahan yang sedang kamu edit. Menyimpan draft lama juga tidak menghapus pendaftar yang masuk setelahnya.
+- Kalau link dipakai untuk spam, tombol **Hapus semua pendaftar website** di bagian Skuad menghapus semua pendaftar web sekaligus (pemain yang kamu input sendiri tetap). Satu jaringan juga dibatasi 6 pendaftaran per 10 menit per jarkoman.
+- **Catatan untuk host** yang diisi pemain hanya terlihat di dashboard admin, tidak di halaman publik atau API publik.
 
 ## Map VALORANT dan CS2
 
@@ -96,8 +98,10 @@ Mode dev menjalankan handler Functions yang sama dengan penyimpanan file di `.da
 Perintah lain:
 
 ```bash
-npm test           # unit test (waktu/zona, pesan WA, kalender, sanitasi, login, simpan, konflik, pendaftaran langsung, media, audio, edge function)
+npm test           # unit test (waktu/zona, pesan WA, kalender, sanitasi, login, simpan, konflik, pendaftaran langsung, media, audio, edge function, CSP)
+npm run test:e2e   # Playwright: 4 tema x 2 varian di 320 dan 1440 px, alur LOCK IN dan batal ikut (dev server terpisah, data di .data-e2e)
 npm run typecheck
+npm run format     # Prettier
 npm run build
 npm run preview    # menyajikan hasil build, API tetap jalan
 ```
@@ -125,7 +129,9 @@ docs/PLAN.md                   riset, desain, dan rencana
 - Semua data dari dashboard divalidasi ulang di server (panjang teks, URL hanya http/https, jumlah slot, dll).
 - Upload lagu butuh login admin, hanya menerima tipe audio, dan dibatasi 4,5 MB.
 - Simpan dari dua perangkat sekaligus tidak saling menimpa diam-diam: dashboard menampilkan pilihan saat ada versi lebih baru.
-- `/api/join` terbuka tanpa login tapi dibatasi: hanya jarkoman yang pendaftaran langsungnya nyala dan belum selesai/dibatalkan, maksimal 20 nama per jarkoman, nama unik, role harus dari daftar game, plus kolom jebakan untuk bot. Kunci pembatalan ditandatangani HMAC dan hanya disimpan di perangkat pendaftar.
+- `/api/join` terbuka tanpa login tapi dibatasi: hanya jarkoman yang pendaftaran langsungnya nyala dan belum selesai/dibatalkan, maksimal 20 nama per jarkoman, nama unik, role harus dari daftar game, 6 pendaftaran per 10 menit per jaringan (hash IP, bukan IP mentah), plus kolom jebakan untuk bot. Kunci pembatalan ditandatangani HMAC dan hanya disimpan di perangkat pendaftar.
+- Catatan pemain dikosongkan di `GET /api/state` tanpa login dan di respons `/api/join`; dashboard yang login menerima versi lengkap.
+- Header Content-Security-Policy: script hanya dari situs sendiri (script inline di `index.html` diizinkan lewat hash, dicek `tests/csp.test.ts`), tidak bisa di-embed situs lain.
 - Setiap tulis ke data memakai tulis bersyarat (ETag Netlify Blobs) dan diulang otomatis kalau bertabrakan, jadi dua orang yang menekan LOCK IN bersamaan tidak saling menimpa.
 
 ## Catatan

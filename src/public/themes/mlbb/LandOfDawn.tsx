@@ -88,11 +88,26 @@ const distToSegment = ([px, py]: Pt, [ax, ay]: Pt, [bx, by]: Pt) => {
 const CANOPY = (() => {
   const rand = rng(7)
   const lanes: [Pt, Pt][] = [
-    [[44, 356], [44, 44]],
-    [[44, 44], [356, 44]],
-    [[44, 356], [356, 356]],
-    [[356, 356], [356, 44]],
-    [[44, 356], [356, 44]],
+    [
+      [44, 356],
+      [44, 44],
+    ],
+    [
+      [44, 44],
+      [356, 44],
+    ],
+    [
+      [44, 356],
+      [356, 356],
+    ],
+    [
+      [356, 356],
+      [356, 44],
+    ],
+    [
+      [44, 356],
+      [356, 44],
+    ],
   ]
   const clear = (p: Pt) =>
     lanes.every(([a, b]) => distToSegment(p, a, b) > 24) &&
@@ -127,14 +142,8 @@ export function LandOfDawn({ players, side }: { players: Player[]; side: Side })
   const view = (p: Pt) => (side === 'blue' ? p : turn(p))
   // Menara dan buff fisik milik blue; milik red adalah cerminnya. Tim sendiri = sisi yang dipilih host.
   const own = (team: Side) => (team === side ? 'ally' : 'enemy')
-  const towers = [
-    ...BLUE_TOWERS.map((p) => ({ at: view(p), team: own('blue') })),
-    ...BLUE_TOWERS.map((p) => ({ at: view(mirror(p)), team: own('red') })),
-  ]
-  const buffs = [
-    ...BLUE_BUFFS.map((b) => ({ at: view(b.at), kind: b.kind })),
-    ...BLUE_BUFFS.map((b) => ({ at: view(mirror(b.at)), kind: b.kind })),
-  ]
+  const towers = [...BLUE_TOWERS.map((p) => ({ at: view(p), team: own('blue') })), ...BLUE_TOWERS.map((p) => ({ at: view(mirror(p)), team: own('red') }))]
+  const buffs = [...BLUE_BUFFS.map((b) => ({ at: view(b.at), kind: b.kind })), ...BLUE_BUFFS.map((b) => ({ at: view(mirror(b.at)), kind: b.kind }))]
   const turtle = view(TURTLE)
   const lord = view(LORD)
   // Sungai: kurva S dari sudut kiri atas ke kanan bawah (ikut diputar untuk red side).
@@ -146,7 +155,10 @@ export function LandOfDawn({ players, side }: { players: Player[]; side: Side })
     .map((p) => {
       const n = counts[p.role] ?? 0
       counts[p.role] = n + 1
-      const { at: [x, y], label } = LANE_SPOTS[side][p.role]
+      const {
+        at: [x, y],
+        label,
+      } = LANE_SPOTS[side][p.role]
       // Pemain kedua di lane yang sama digeser sedikit supaya tidak tertumpuk.
       return { p, label, at: [x + n * 12, y - n * 12] as Pt }
     })

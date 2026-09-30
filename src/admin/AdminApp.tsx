@@ -4,10 +4,7 @@ import { KEYS, readJSON, removeKey, writeJSON } from '../shared/storage'
 import { Dashboard } from './Dashboard'
 import { Login } from './Login'
 
-type Gate =
-  | { kind: 'checking' }
-  | { kind: 'login'; notice?: string; configured: boolean | null; apiMissing?: boolean }
-  | { kind: 'in'; token: string }
+type Gate = { kind: 'checking' } | { kind: 'login'; notice?: string; configured: boolean | null; apiMissing?: boolean } | { kind: 'in'; token: string }
 
 export function AdminApp() {
   const [gate, setGate] = useState<Gate>({ kind: 'checking' })

@@ -10,6 +10,7 @@ import { gameDef, roleOfPick } from '../../../shared/games'
 import { dateBlocks, formatDateLong, formatTimeRange } from '../../../shared/time'
 import type { MapMedia, Player } from '../../../shared/types'
 import { copyText } from '../../common/actions'
+import { HERO_SIZES } from '../../../shared/art'
 import { ArtImage } from '../../common/ArtImage'
 import { usePage, type ThemeProps } from '../../common/context'
 import { Digits } from '../../common/Digits'
@@ -149,7 +150,7 @@ export default function ValorantPage({ j }: ThemeProps) {
           <div className="val-hero__bg" aria-hidden="true">
             <span className="val-hero__ghost">{j.map || def.name}</span>
             <div className="val-hero__art">
-              <ArtImage game="valorant" custom={j.bg} className="val-hero__img" sizes="(max-width: 1023px) 100vw, 62vw" priority />
+              <ArtImage game="valorant" custom={j.bg} className="val-hero__img" sizes={HERO_SIZES.valorant} priority />
             </div>
             <span className="val-hero__edge" />
           </div>
@@ -281,9 +282,12 @@ export default function ValorantPage({ j }: ThemeProps) {
           <section className="val-brief" aria-labelledby="val-brief-title">
             <SectionTitle id="val-brief-title" index="04" text="Briefing" />
             <ul className="val-brief__list">
-              {j.notes.split('\n').filter((l) => l.trim()).map((line, i) => (
-                <li key={i}>{line}</li>
-              ))}
+              {j.notes
+                .split('\n')
+                .filter((l) => l.trim())
+                .map((line, i) => (
+                  <li key={i}>{line}</li>
+                ))}
             </ul>
           </section>
         )}
@@ -350,11 +354,7 @@ function MapPanel({ name, info }: { name: string; info?: MapMedia }) {
         <div className="val-map__mini" aria-hidden="true">
           <img src={mini} alt="" referrerPolicy="no-referrer" loading="lazy" decoding="async" onError={() => setMiniFailed(true)} />
           {info!.markers.map((m) => (
-            <span
-              key={`${m.kind}-${m.label}`}
-              className={`val-map__mark val-map__mark--${m.kind}`}
-              style={{ left: `${m.x * 100}%`, top: `${m.y * 100}%` }}
-            >
+            <span key={`${m.kind}-${m.label}`} className={`val-map__mark val-map__mark--${m.kind}`} style={{ left: `${m.x * 100}%`, top: `${m.y * 100}%` }}>
               {m.label}
             </span>
           ))}
@@ -437,7 +437,11 @@ function SlotCard({ index, player, host }: { index: number; player: Player | nul
     <article className={`val-slot ${colors ? 'has-agent' : ''} ${player.status === 'maybe' ? 'is-maybe' : ''}`} style={style}>
       <span className="val-slot__num">{num}</span>
       {agent?.portrait && <img className="val-slot__portrait" src={agent.portrait} alt="" loading="lazy" referrerPolicy="no-referrer" />}
-      {!agent?.portrait && <span className="val-slot__initial" aria-hidden="true">{player.name.slice(0, 1)}</span>}
+      {!agent?.portrait && (
+        <span className="val-slot__initial" aria-hidden="true">
+          {player.name.slice(0, 1)}
+        </span>
+      )}
       <div className="val-slot__info">
         {isHost && <span className="val-slot__tag">Host</span>}
         {player.status === 'maybe' && <span className="val-slot__tag val-slot__tag--maybe">Belum pasti</span>}

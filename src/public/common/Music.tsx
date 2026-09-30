@@ -10,11 +10,7 @@ import { usePage } from './context'
  * 'track' = lagu bawaan game (file), 'gen' = musik sintetis untuk game yang belum punya lagu bawaan,
  * 'file' = lagu upload atau link dari host.
  */
-export type MusicSource =
-  | { kind: 'track'; game: GameId; track: DefaultTrack }
-  | { kind: 'gen'; game: GameId }
-  | { kind: 'file'; url: string }
-  | { kind: 'none' }
+export type MusicSource = { kind: 'track'; game: GameId; track: DefaultTrack } | { kind: 'gen'; game: GameId } | { kind: 'file'; url: string } | { kind: 'none' }
 
 export function musicSource(j: Pick<Jarkoman, 'music' | 'game'>): MusicSource {
   if (j.music === 'none') return { kind: 'none' }
@@ -63,12 +59,7 @@ export function useMusic(j: Pick<Jarkoman, 'music' | 'game'>, opts: { autoResume
     setBusy(true)
     setError('')
     try {
-      const h =
-        src.kind === 'track'
-          ? await startTrack(await getContext(), src.track)
-          : src.kind === 'gen'
-            ? startSong(await getContext(), src.game)
-            : await startFile(src.url)
+      const h = src.kind === 'track' ? await startTrack(await getContext(), src.track) : src.kind === 'gen' ? startSong(await getContext(), src.game) : await startFile(src.url)
       if (!wanted.current) {
         h.stop()
         return
@@ -79,7 +70,11 @@ export function useMusic(j: Pick<Jarkoman, 'music' | 'game'>, opts: { autoResume
       wanted.current = false
       setPlaying(false)
       setError(
-        src.kind === 'file' ? 'Lagu gagal diputar. Cek file atau link-nya.' : src.kind === 'track' ? 'Lagu gagal dimuat. Cek koneksi lalu coba lagi.' : 'Browser ini tidak bisa memutar musik.',
+        src.kind === 'file'
+          ? 'Lagu gagal diputar. Cek file atau link-nya.'
+          : src.kind === 'track'
+            ? 'Lagu gagal dimuat. Cek koneksi lalu coba lagi.'
+            : 'Browser ini tidak bisa memutar musik.',
       )
     } finally {
       setBusy(false)
@@ -168,14 +163,7 @@ export function MusicDock({ j }: { j: Jarkoman }) {
   if (!m.available) return null
   return (
     <div className="music" data-playing={m.playing || undefined}>
-      <button
-        type="button"
-        className="music__btn"
-        aria-pressed={m.playing}
-        aria-label={m.playing ? 'Matikan musik' : 'Putar musik'}
-        onClick={m.toggle}
-        disabled={m.busy}
-      >
+      <button type="button" className="music__btn" aria-pressed={m.playing} aria-label={m.playing ? 'Matikan musik' : 'Putar musik'} onClick={m.toggle} disabled={m.busy}>
         <span className="music__eq" aria-hidden="true">
           <i />
           <i />

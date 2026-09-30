@@ -94,7 +94,10 @@ code {
   font-size: 15px;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s, filter 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    filter 0.15s;
 }
 
 .adm-btn:disabled {
@@ -802,7 +805,9 @@ select.adm-input option {
   text-align: left;
   overflow: hidden;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .adm-game input {
@@ -823,7 +828,9 @@ select.adm-input option {
   height: 100%;
   object-fit: cover;
   opacity: 0.5;
-  transition: opacity 0.2s, transform 0.4s;
+  transition:
+    opacity 0.2s,
+    transform 0.4s;
 }
 
 .adm-game::after {
@@ -1435,4 +1442,28 @@ select.adm-input option {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* ---------- Hapus pendaftar website ---------- */
+.adm-players__clear {
+  justify-self: start;
+  margin-top: 10px;
+}
+
+.adm-confirm {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid #6b2f2f;
+  border-radius: 8px;
+  background: #221415;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.adm-confirm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }

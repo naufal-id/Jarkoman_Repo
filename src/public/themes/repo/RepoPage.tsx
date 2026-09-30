@@ -12,6 +12,7 @@ import { gameDef, REPO_COLORS } from '../../../shared/games'
 import { dateBlocks, formatClock, formatDateLong, formatTimeRange, pad2 } from '../../../shared/time'
 import type { Player } from '../../../shared/types'
 import { copyText } from '../../common/actions'
+import { HERO_SIZES } from '../../../shared/art'
 import { ArtImage } from '../../common/ArtImage'
 import { usePage, type ThemeProps } from '../../common/context'
 import { Schedule, SiteFooter, useActions } from '../../common/Extras'
@@ -80,7 +81,7 @@ export default function RepoPage({ j }: ThemeProps) {
           .from('.rp-truck', { opacity: 0, y: 40, duration: 0.8 }, 0.3)
           // Layar CRT menyala: garis tipis melebar jadi layar penuh.
           .fromTo('.rp-crt__screen', { clipPath: 'inset(49.5% 0 49.5% 0)' }, { clipPath: 'inset(0% 0 0% 0)', duration: 0.5, ease: 'power4.out' }, 0.8)
-          .from('.rp-crt__feed', { opacity: 0, filter: 'brightness(3) contrast(0.4)', duration: 0.6, ease: 'steps(6)' }, 1.05)
+          .from('.rp-crt__feed', { filter: 'brightness(3) contrast(0.4)', duration: 0.6, ease: 'steps(6)' }, 1.05)
           .from('.rp-crt__line', { opacity: 0, x: -8, duration: 0.25, stagger: 0.08 }, 1.3)
 
         gsap.from('.rp-bot', {
@@ -193,9 +194,11 @@ export default function RepoPage({ j }: ThemeProps) {
               <div className="rp-crt">
                 <div className="rp-crt__screen">
                   <div className="rp-crt__feed">
-                    <ArtImage game="repo" custom={j.bg} className="rp-crt__img" sizes="420px" priority />
+                    <ArtImage game="repo" custom={j.bg} className="rp-crt__img" sizes={HERO_SIZES.repo} priority />
                   </div>
-                  <p className="rp-crt__line">&gt; {def.mapLabel.toUpperCase()}: {(j.map || 'Acak').toUpperCase()}</p>
+                  <p className="rp-crt__line">
+                    &gt; {def.mapLabel.toUpperCase()}: {(j.map || 'Acak').toUpperCase()}
+                  </p>
                   {j.rank && <p className="rp-crt__line">&gt; TARGET: {j.rank.toUpperCase()}</p>}
                   <p className="rp-crt__line">
                     &gt; SHIFT: {date.dow} {date.day} {date.month} · {formatClock(j.time)} {j.tz}
@@ -433,9 +436,7 @@ function BotCard({ player, host }: { player: Player | null; host: string }) {
     <div className={`rp-bot ${player.status === 'maybe' ? 'is-maybe' : ''}`}>
       <Semibot color={color} />
       <span className="rp-bot__name">{player.name}</span>
-      <span className="rp-bot__task">
-        {[player.pick, player.role && `semibot ${player.role.toLowerCase()}`].filter(Boolean).join(' · ') || 'Tugas bebas'}
-      </span>
+      <span className="rp-bot__task">{[player.pick, player.role && `semibot ${player.role.toLowerCase()}`].filter(Boolean).join(' · ') || 'Tugas bebas'}</span>
       {(isHost || player.status === 'maybe') && <span className="rp-bot__tag">{isHost ? 'Host' : 'Belum pasti'}</span>}
     </div>
   )

@@ -58,10 +58,7 @@ export function MediaPicker({ game, value, onChange }: Props) {
           <img src={artThumb(game)} alt="" loading="lazy" />
           <span className="adm-media__cap">Key art bawaan</span>
         </label>
-        {state.kind === 'loading' &&
-          Array.from({ length: 3 }, (_, i) => (
-            <span className="adm-media__opt adm-media__opt--loading" key={i} aria-hidden="true" />
-          ))}
+        {state.kind === 'loading' && Array.from({ length: 3 }, (_, i) => <span className="adm-media__opt adm-media__opt--loading" key={i} aria-hidden="true" />)}
         {gallery.map((m) => (
           <label className={`adm-media__opt ${value === m.url ? 'is-on' : ''}`} key={m.url}>
             <input type="radio" name="bg" checked={value === m.url} onChange={() => onChange(m.url)} />

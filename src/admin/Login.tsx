@@ -76,8 +76,8 @@ export function Login({ configured, apiMissing, notice, onRetry, onSuccess }: Lo
         ) : configured === false ? (
           <div className="adm-note adm-note--warn" role="alert">
             <p>
-              <strong>Password admin belum diset.</strong> Di Netlify buka <em>Site configuration → Environment variables</em>, tambahkan <code>ADMIN_PASSWORD</code>, lalu
-              deploy ulang.
+              <strong>Password admin belum diset.</strong> Di Netlify buka <em>Site configuration → Environment variables</em>, tambahkan <code>ADMIN_PASSWORD</code>, lalu deploy
+              ulang.
             </p>
             <button className="adm-btn adm-btn--ghost" type="button" onClick={onRetry}>
               Sudah, cek lagi

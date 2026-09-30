@@ -97,8 +97,8 @@ export function MusicEditor({ item, token, onPatch }: Props) {
           </p>
         ) : (
           <p className="adm-hint">
-            {GAMES[item.game].name} belum punya lagu bawaan, jadi dipakai musik sintetis "{SONG_TITLES[item.game]}" yang dibuat langsung di browser. Pilih Upload lagu
-            kalau mau pakai lagu lain.
+            {GAMES[item.game].name} belum punya lagu bawaan, jadi dipakai musik sintetis "{SONG_TITLES[item.game]}" yang dibuat langsung di browser. Pilih Upload lagu kalau mau
+            pakai lagu lain.
           </p>
         ))}
 

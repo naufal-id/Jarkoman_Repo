@@ -124,12 +124,7 @@ export function Preview({ item, others, replay, published }: PreviewProps) {
           </p>
         )}
         <div className="adm-preview__frame" data-focused={framed || undefined} style={{ width: size.w * scale, height: frameH * scale }}>
-          <iframe
-            ref={frame}
-            title="Preview halaman jarkoman"
-            src="/?preview=1"
-            style={{ width: size.w, height: frameH, transform: `scale(${scale})` }}
-          />
+          <iframe ref={frame} title="Preview halaman jarkoman" src="/?preview=1" style={{ width: size.w, height: frameH, transform: `scale(${scale})` }} />
         </div>
       </div>
     </div>

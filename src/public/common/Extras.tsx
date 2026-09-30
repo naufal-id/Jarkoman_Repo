@@ -51,9 +51,7 @@ export function Schedule({ items, className = '', title }: ScheduleProps) {
                 <img className="sched__thumb" src={artThumb(i.game)} alt="" loading="lazy" width={96} height={54} />
                 <span className="sched__game">{def.name}</span>
                 <span className="sched__headline">{i.headline}</span>
-                <span className="sched__when">
-                  {live ? 'Lagi main' : `${formatDateShort(i.date)} · ${formatClock(i.time)} ${i.tz}`}
-                </span>
+                <span className="sched__when">{live ? 'Lagi main' : `${formatDateShort(i.date)} · ${formatClock(i.time)} ${i.tz}`}</span>
                 <span className="sched__slots">
                   {playersIn(i)}/{i.slots}
                 </span>
@@ -70,8 +68,8 @@ export function SiteFooter({ media, className = '' }: { media: MediaPayload | nu
   return (
     <footer className={`site-foot ${className}`}>
       <p>
-        Dibuat untuk ngajak teman mabar. Bukan situs resmi dan tidak berafiliasi dengan Riot Games, Valve, Moonton, atau semiwork. Nama dan aset game milik
-        pemiliknya masing-masing.
+        Dibuat untuk ngajak teman mabar. Bukan situs resmi dan tidak berafiliasi dengan Riot Games, Valve, Moonton, atau semiwork. Nama dan aset game milik pemiliknya
+        masing-masing.
         {media && (
           <>
             {' '}

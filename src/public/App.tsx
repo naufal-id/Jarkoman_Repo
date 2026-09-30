@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
 import { api, ApiError } from '../shared/api'
 import { defaultState } from '../shared/defaults'
+import { artSrcSet, HERO_SIZES, KEY_ART } from '../shared/art'
 import { gameDef } from '../shared/games'
 import { cleanJarkoman, cleanState } from '../shared/sanitize'
 import { KEYS, LEGACY_KEYS, readJSON, removeKey, writeJSON } from '../shared/storage'
@@ -17,10 +18,7 @@ const THEMES: Record<GameId, ComponentType<ThemeProps>> = {
   repo: lazy(() => import('./themes/repo/RepoPage')),
 }
 
-type Load =
-  | { kind: 'loading' }
-  | { kind: 'error'; message: string }
-  | { kind: 'ready'; state: SiteState; sample: boolean; offline: boolean }
+type Load = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; state: SiteState; sample: boolean; offline: boolean }
 
 const params = new URLSearchParams(location.search)
 const PREVIEW = params.get('preview') === '1'
@@ -29,6 +27,42 @@ const WANTED = params.get('id')
 const REFRESH_MS = 45_000
 
 LEGACY_KEYS.forEach((k) => removeKey(k))
+
+/**
+ * index.html mulai mengambil /api/state bersamaan dengan unduhan JS (window.__jkState). Hasilnya dipakai sekali
+ * untuk muat pertama; kalau gagal atau tidak ada, App mengambil ulang lewat api.getState seperti biasa.
+ */
+async function takeEarlyState(): Promise<SiteState | null | undefined> {
+  const w = window as { __jkState?: Promise<{ state?: SiteState | null } | null> }
+  const early = w.__jkState
+  delete w.__jkState
+  if (!early) return undefined
+  const body = await early.catch(() => null)
+  return body && 'state' in body ? (body.state ?? null) : undefined
+}
+
+let preloaded = false
+/** Mulai unduh gambar hero sebelum chunk tema selesai dimuat (gambar ini biasanya elemen LCP). */
+function preloadHeroArt(item: Jarkoman) {
+  if (preloaded || PREVIEW) return
+  preloaded = true
+  const link = document.createElement('link')
+  link.rel = 'preload'
+  link.as = 'image'
+  link.setAttribute('fetchpriority', 'high')
+  if (item.bg) {
+    link.href = item.bg
+    link.referrerPolicy = 'no-referrer'
+  } else {
+    link.href = KEY_ART[item.game].src
+    const set = artSrcSet(item.game)
+    if (set) {
+      link.setAttribute('imagesrcset', set)
+      link.setAttribute('imagesizes', HERO_SIZES[item.game])
+    }
+  }
+  document.head.appendChild(link)
+}
 
 export function App() {
   const [load, setLoad] = useState<Load>({ kind: 'loading' })
@@ -42,7 +76,8 @@ export function App() {
     const id = ++reqId.current
     setLoad({ kind: 'loading' })
     try {
-      const remote = await api.getState()
+      const early = await takeEarlyState()
+      const remote = early !== undefined ? early : await api.getState()
       if (id !== reqId.current) return
       const cleaned = remote ? cleanState(remote)?.state : null
       if (cleaned && cleaned.items.length) {
@@ -78,7 +113,9 @@ export function App() {
       const cleaned = remote ? cleanState(remote)?.state : null
       if (id !== reqId.current || !cleaned || !cleaned.items.length) return
       writeJSON(KEYS.lastState, cleaned)
-      setLoad((l) => (l.kind === 'ready' && !l.sample && JSON.stringify(l.state) === JSON.stringify(cleaned) ? l : { kind: 'ready', state: cleaned, sample: false, offline: false }))
+      setLoad((l) =>
+        l.kind === 'ready' && !l.sample && JSON.stringify(l.state) === JSON.stringify(cleaned) ? l : { kind: 'ready', state: cleaned, sample: false, offline: false },
+      )
     } catch {
       // Diam saja: data yang sedang tampil tetap dipakai.
     }
@@ -180,6 +217,11 @@ export function App() {
     }
   }, [load, previewData])
 
+  const heroItem = view?.item
+  useEffect(() => {
+    if (heroItem) preloadHeroArt(heroItem)
+  }, [heroItem])
+
   if (PREVIEW && !view) return <SystemScreen text="Menunggu data dari editor…" busy />
   if (load.kind === 'loading' && !PREVIEW) return <SystemScreen text="Mengambil jadwal mabar terbaru…" busy />
   if (load.kind === 'error' && !PREVIEW)
@@ -257,9 +299,7 @@ function Stage({ item, others, replay, replaceItem, banner }: StageProps) {
 function SystemScreen({ text, busy, children }: { text: string; busy?: boolean; children?: React.ReactNode }) {
   return (
     <main className="sys" aria-busy={busy || undefined}>
-      <p className="sys__mark">
-        JARKOMAN{busy && <span aria-hidden="true">_</span>}
-      </p>
+      <p className="sys__mark">JARKOMAN{busy && <span aria-hidden="true">_</span>}</p>
       <p className="sys__text" role={busy ? 'status' : 'alert'}>
         {text}
       </p>

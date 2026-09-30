@@ -10,3 +10,5 @@ dist/
 coverage/
 test-results/
 *.tsbuildinfo
+.data-e2e/
+playwright-report/

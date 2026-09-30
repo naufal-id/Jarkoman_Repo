@@ -30,7 +30,7 @@ export function ArtImage({ game, custom, className = '', sizes = '100vw', priori
         // Gambar dari cache bisa sudah selesai sebelum onLoad terpasang.
         if (el?.complete && el.naturalWidth > 0 && loadedSrc !== src) setLoadedSrc(src)
       }}
-      className={`art-img ${loadedSrc === src ? 'is-loaded' : ''} ${className}`}
+      className={`art-img ${priority ? 'is-priority' : ''} ${loadedSrc === src ? 'is-loaded' : ''} ${className}`}
       src={src}
       srcSet={useCustom ? undefined : artSrcSet(game)}
       sizes={sizes}

@@ -53,6 +53,11 @@ async function server(): Promise<SiteState> {
   return ((await (await stateHandler(req('/api/state'))).json()) as { state: SiteState }).state
 }
 
+/** Bacaan dashboard admin (dengan token), termasuk catatan pemain. */
+async function adminServer(): Promise<SiteState> {
+  return ((await (await stateHandler(req('/api/state', { headers: auth() }))).json()) as { state: SiteState }).state
+}
+
 describe('pendaftaran langsung (LOCK IN)', () => {
   it('pemain masuk skuad jarkoman yang dipilih saja, bukan jarkoman lain', async () => {
     const val = upcoming('valorant')
@@ -64,7 +69,7 @@ describe('pendaftaran langsung (LOCK IN)', () => {
     expect(body.slot).toBe(1)
     expect(body.player).toMatchObject({ name: 'Raka' })
 
-    const s = await server()
+    const s = await adminServer()
     const [v, c] = [s.items.find((i) => i.id === val.id)!, s.items.find((i) => i.id === cs.id)!]
     expect(v.players.map((p) => p.name)).toEqual(['Raka'])
     expect(v.players[0]).toMatchObject({ role: 'Duelist', pick: 'Jett', via: 'web', status: 'in', note: 'telat 10 menit' })
@@ -129,6 +134,37 @@ describe('pendaftaran langsung (LOCK IN)', () => {
     process.env.ADMIN_PASSWORD = ''
     const guessable = joinKey('x', 'p', 'jarkoman:')
     expect(verifyJoinKey('x', 'p', guessable, (await joinSecrets(memoryStore())).accepted)).toBe(false)
+  })
+
+  it('batas pendaftaran per IP per jarkoman menahan spam, IP lain tetap bisa daftar', async () => {
+    const j = upcoming('valorant')
+    j.slots = 10
+    await publish(stateOf(j))
+    const post = (name: string, ip: string) => joinHandler(req('/api/join', { method: 'POST', body: JSON.stringify({ id: j.id, name }) }), { ip })
+    for (let i = 0; i < 6; i++) expect((await post(`Spam ${i}`, '10.0.0.1')).status).toBe(200)
+    const blocked = await post('Spam 7', '10.0.0.1')
+    expect(blocked.status).toBe(429)
+    expect(((await blocked.json()) as { code: string }).code).toBe('rate-limited')
+    expect((await post('Tetangga', '10.0.0.2')).status).toBe(200)
+  })
+
+  it('catatan pemain hanya terlihat oleh admin dan tidak hilang saat admin menyimpan draft tanpa catatan', async () => {
+    const j = upcoming('mlbb')
+    await publish(stateOf(j))
+    const { body } = await join({ id: j.id, name: 'Nadia', note: 'telat 10 menit' })
+    expect(body.item.players[0].note).toBe('')
+
+    const publicView = await server()
+    expect(publicView.items[0].players[0].note).toBe('')
+    const adminView = await adminServer()
+    expect(adminView.items[0].players[0].note).toBe('telat 10 menit')
+
+    // Draft dari bacaan publik (catatan kosong) disimpan admin: catatan di server tetap ada.
+    const draft = structuredClone(publicView)
+    draft.items[0].headline = 'Judul baru'
+    const saved = await publish(draft, publicView.updatedAt)
+    expect(saved.res.status).toBe(200)
+    expect(saved.body.state.items[0].players[0].note).toBe('telat 10 menit')
   })
 
   it('simpanan admin dari draft lama tidak menghapus pendaftar baru dan tidak memunculkan lagi yang batal', async () => {
