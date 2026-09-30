@@ -1,5 +1,5 @@
 import { GAMES } from '../../src/shared/games'
-import type { AgentMedia, GameId, MediaItem, MediaPayload } from '../../src/shared/types'
+import type { AgentMedia, GameId, MapMarker, MapMedia, MediaItem, MediaPayload } from '../../src/shared/types'
 
 type Fetcher = typeof fetch
 
@@ -24,11 +24,53 @@ export function hexFromRgba(v: unknown): string | null {
   return `#${v.slice(0, 6).toLowerCase()}`
 }
 
+interface ValorantCallout {
+  regionName?: string
+  superRegionName?: string
+  location?: { x?: number; y?: number }
+}
+
 interface ValorantMap {
   displayName?: string
   splash?: string
   listViewIcon?: string
   listViewIconTall?: string
+  displayIcon?: string | null
+  coordinates?: string | null
+  tacticalDescription?: string | null
+  xMultiplier?: number
+  yMultiplier?: number
+  xScalarToAdd?: number
+  yScalarToAdd?: number
+  callouts?: ValorantCallout[] | null
+}
+
+const SPAWN_LABEL: Record<string, string> = { 'Attacker Side': 'ATK', 'Defender Side': 'DEF' }
+
+/**
+ * Penanda site dan spawn di minimap. Rumus valorant-api: sumbu dunia tertukar,
+ * x minimap = y dunia * xMultiplier + xScalarToAdd, y minimap = x dunia * yMultiplier + yScalarToAdd (hasil 0 sampai 1).
+ */
+export function mapMarkers(m: ValorantMap): MapMarker[] {
+  const { xMultiplier: xm, yMultiplier: ym, xScalarToAdd: xa, yScalarToAdd: ya } = m
+  if (![xm, ym, xa, ya].every((n) => typeof n === 'number' && Number.isFinite(n))) return []
+  const out: MapMarker[] = []
+  for (const c of m.callouts ?? []) {
+    const wx = c.location?.x
+    const wy = c.location?.y
+    if (typeof wx !== 'number' || typeof wy !== 'number') continue
+    const region = (c.regionName ?? '').trim()
+    const zone = (c.superRegionName ?? '').trim()
+    let marker: Omit<MapMarker, 'x' | 'y'> | null = null
+    if (region === 'Site' && /^[A-C]$/.test(zone)) marker = { kind: 'site', label: zone }
+    else if (region === 'Spawn' && SPAWN_LABEL[zone]) marker = { kind: 'spawn', label: SPAWN_LABEL[zone] }
+    if (!marker || out.some((o) => o.kind === marker.kind && o.label === marker.label)) continue
+    const x = wy * xm! + xa!
+    const y = wx * ym! + ya!
+    if (x < 0 || x > 1 || y < 0 || y > 1) continue
+    out.push({ ...marker, x: Math.round(x * 1000) / 1000, y: Math.round(y * 1000) / 1000 })
+  }
+  return out
 }
 
 interface ValorantAgent {
@@ -48,12 +90,20 @@ export async function valorantMedia(fetcher: Fetcher): Promise<MediaPayload> {
     getJson(fetcher, 'https://valorant-api.com/v1/agents?isPlayableCharacter=true'),
   ])
   const maps: Record<string, string> = {}
+  const mapInfo: Record<string, MapMedia> = {}
   const gallery: MediaItem[] = []
   for (const m of ((mapsRes as { data?: ValorantMap[] }).data ?? [])) {
     const name = (m.displayName ?? '').trim()
     if (!wanted.has(name.toLowerCase()) || !isHttps(m.splash)) continue
     if (maps[name.toLowerCase()]) continue
     maps[name.toLowerCase()] = m.splash
+    mapInfo[name.toLowerCase()] = {
+      splash: m.splash,
+      minimap: isHttps(m.displayIcon) ? m.displayIcon : undefined,
+      coordinates: typeof m.coordinates === 'string' ? m.coordinates.slice(0, 60) : undefined,
+      sites: typeof m.tacticalDescription === 'string' ? m.tacticalDescription.slice(0, 30) : undefined,
+      markers: mapMarkers(m),
+    }
     gallery.push({ url: m.splash, thumb: isHttps(m.listViewIconTall) ? m.listViewIconTall : m.splash, label: name, kind: 'map' })
   }
   const agents: Record<string, AgentMedia> = {}
@@ -75,6 +125,7 @@ export async function valorantMedia(fetcher: Fetcher): Promise<MediaPayload> {
     sourceUrl: 'https://valorant-api.com',
     gallery,
     maps,
+    mapInfo,
     agents,
   }
 }

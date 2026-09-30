@@ -7,8 +7,8 @@ import '@fontsource/barlow/800.css'
 import './valorant.css'
 import { useRef, useState, type CSSProperties } from 'react'
 import { gameDef, roleOfPick } from '../../../shared/games'
-import { dateBlocks, formatTimeRange } from '../../../shared/time'
-import type { Player } from '../../../shared/types'
+import { dateBlocks, formatDateLong, formatTimeRange } from '../../../shared/time'
+import type { MapMedia, Player } from '../../../shared/types'
 import { copyText } from '../../common/actions'
 import { ArtImage } from '../../common/ArtImage'
 import { usePage, type ThemeProps } from '../../common/context'
@@ -71,6 +71,17 @@ export default function ValorantPage({ j }: ThemeProps) {
             .set(cover, { transformOrigin: '100% 50%' })
             .to(cover, { scaleX: 0, duration: 0.5, ease: 'power3.out' })
         })
+
+        if (document.querySelector('.val-map')) {
+          const reveal = gsap.timeline({ scrollTrigger: { trigger: '.val-map', start: 'top 80%', once: true } })
+          reveal
+            .fromTo('.val-map__wipe', { scaleX: 0, transformOrigin: '0% 50%' }, { scaleX: 1, duration: 0.45, ease: 'power3.in' })
+            .set('.val-map__wipe', { transformOrigin: '100% 50%' })
+            .to('.val-map__wipe', { scaleX: 0, duration: 0.55, ease: 'power3.out' })
+            .from('.val-map__name', { yPercent: 40, opacity: 0, duration: 0.6, ease: 'power4.out' }, 0.5)
+            .from('.val-map__mini', { x: 30, opacity: 0, duration: 0.6, ease: 'power3.out' }, 0.6)
+            .from('.val-map__mark', { scale: 0, duration: 0.35, stagger: 0.07, ease: 'back.out(2.4)' }, 0.9)
+        }
 
         gsap.from('.val-intel__item', {
           scrollTrigger: { trigger: '.val-intel__grid', start: 'top 85%', once: true },
@@ -183,32 +194,29 @@ export default function ValorantPage({ j }: ThemeProps) {
 
         <section className="val-intel" aria-labelledby="val-intel-title">
           <SectionTitle id="val-intel-title" index="01" text="Detail match" />
-          <dl className="val-intel__grid">
-            {j.mode && <IntelItem code="MODE" value={j.mode} />}
-            {j.map && (
-              <IntelItem code={def.mapLabel.toUpperCase()} value={j.map}>
-                {media?.maps?.[j.map.toLowerCase()] && (
-                  <img className="val-intel__thumb" src={media.maps[j.map.toLowerCase()]} alt="" referrerPolicy="no-referrer" loading="lazy" />
-                )}
-              </IntelItem>
-            )}
-            {j.rank && <IntelItem code="RANK" value={j.rank} />}
-            {j.host && <IntelItem code="HOST" value={j.host} />}
-            {j.lobby && (
-              <IntelItem code={def.lobbyLabel.toUpperCase()} value={j.lobby} small>
-                <button type="button" className="val-mini" onClick={copyLobby}>
-                  Salin
-                </button>
-              </IntelItem>
-            )}
-            {j.voice && (
-              <IntelItem code="VOICE" value="Discord / voice room" small>
-                <a className="val-mini" href={j.voice} target="_blank" rel="noopener noreferrer">
-                  Masuk voice
-                </a>
-              </IntelItem>
-            )}
-          </dl>
+          <div className={`val-intel__layout ${j.map ? 'has-map' : ''}`}>
+            {j.map && <MapPanel name={j.map} info={media?.mapInfo?.[j.map.toLowerCase()]} />}
+            <dl className="val-intel__grid">
+              {j.mode && <IntelItem code="MODE" value={j.mode} />}
+              {j.rank && <IntelItem code="RANK" value={j.rank} />}
+              <IntelItem code="JADWAL" value={`${formatDateLong(j.date)}, ${formatTimeRange(j)}`} small />
+              {j.host && <IntelItem code="HOST" value={j.host} />}
+              {j.lobby && (
+                <IntelItem code={def.lobbyLabel.toUpperCase()} value={j.lobby} small>
+                  <button type="button" className="val-mini" onClick={copyLobby}>
+                    Salin
+                  </button>
+                </IntelItem>
+              )}
+              {j.voice && (
+                <IntelItem code="VOICE" value="Discord / voice room" small>
+                  <a className="val-mini" href={j.voice} target="_blank" rel="noopener noreferrer">
+                    Masuk voice
+                  </a>
+                </IntelItem>
+              )}
+            </dl>
+          </div>
         </section>
 
         <section className="val-squad" aria-labelledby="val-squad-title">
@@ -312,6 +320,53 @@ function IntelItem({ code, value, small, children }: { code: string; value: stri
         {children}
       </dd>
     </div>
+  )
+}
+
+/**
+ * Kartu map ala layar loading VALORANT: splash map, nama raksasa, koordinat fiksi Riot, dan minimap
+ * dengan penanda site serta spawn. Gambar dari valorant-api lewat /api/media; tanpa itu tetap tampil
+ * sebagai panel tipografi.
+ */
+function MapPanel({ name, info }: { name: string; info?: MapMedia }) {
+  const [splashFailed, setSplashFailed] = useState(false)
+  const [miniFailed, setMiniFailed] = useState(false)
+  const splash = info?.splash && !splashFailed ? info.splash : ''
+  const mini = info?.minimap && !miniFailed ? info.minimap : ''
+  const sites = info?.markers.filter((m) => m.kind === 'site').map((m) => m.label) ?? []
+  return (
+    <figure className={`val-map ${splash ? 'has-splash' : ''} ${mini ? 'has-mini' : ''}`} style={{ '--len': Math.max(name.length, 5) } as CSSProperties}>
+      <div className="val-map__art" aria-hidden="true">
+        {splash ? (
+          <img className="val-map__splash" src={splash} alt="" referrerPolicy="no-referrer" loading="lazy" decoding="async" onError={() => setSplashFailed(true)} />
+        ) : (
+          <span className="val-map__ghost">{name}</span>
+        )}
+      </div>
+      {mini && (
+        <div className="val-map__mini" aria-hidden="true">
+          <img src={mini} alt="" referrerPolicy="no-referrer" loading="lazy" decoding="async" onError={() => setMiniFailed(true)} />
+          {info!.markers.map((m) => (
+            <span
+              key={`${m.kind}-${m.label}`}
+              className={`val-map__mark val-map__mark--${m.kind}`}
+              style={{ left: `${m.x * 100}%`, top: `${m.y * 100}%` }}
+            >
+              {m.label}
+            </span>
+          ))}
+        </div>
+      )}
+      <figcaption className="val-map__cap">
+        <span className="val-map__kicker">
+          <span className="val-map__code">//</span> Map
+          {info?.sites ? ` · ${info.sites}` : sites.length ? ` · Site ${sites.join('/')}` : ''}
+        </span>
+        <span className="val-map__name">{name}</span>
+        {info?.coordinates && <span className="val-map__coords">{info.coordinates}</span>}
+      </figcaption>
+      <span className="val-map__wipe" aria-hidden="true" />
+    </figure>
   )
 }
 

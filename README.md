@@ -58,6 +58,13 @@ Di dashboard bagian **Skuad**, setiap jarkoman punya pilihan **Cara pemain masuk
 - Pemain bisa **Batal ikut** dari perangkat yang dipakai mendaftar. Perangkat lain tidak bisa membatalkan pendaftaran orang lain.
 - Pendaftar baru muncul di dashboard dalam hitungan detik dengan label "Daftar lewat website", tanpa membuang perubahan yang sedang kamu edit. Menyimpan draft lama juga tidak menghapus pendaftar yang masuk setelahnya.
 
+## Map VALORANT dan CS2
+
+Bagian detail match kedua game menampilkan map sekitar setengah lebar section (penuh di HP):
+
+- **VALORANT**: kartu ala layar loading map, berisi splash map, nama map besar, koordinat fiksi Riot, dan minimap dengan penanda site (A/B/C) serta spawn ATK/DEF. Semua diambil dari [valorant-api.com](https://valorant-api.com) lewat `/api/media`. Kalau sumber itu tidak bisa diakses, kartu tetap tampil sebagai panel tipografi dengan nama map.
+- **CS2**: radar overview resmi (dari file game) dengan ikon seperti loading screen: spawn T dan CT, bombsite A/B atau sandera, titik pemain yang sudah masuk di spawn sisi yang dipilih (varian T/CT), sorotan site kalau judul menyebut "A" atau "B", dan tombol lantai Atas/Bawah untuk Nuke, Train, dan Vertigo. Di sampingnya ada kartu map dengan screenshot pemilihan map dan emblem resmi. Aset 12 map disimpan di `src/public/themes/cs2/maps/` (WebP, sekitar 115 KB per halaman), diekstrak dari depot game oleh [MurkyYT/cs2-map-icons](https://github.com/MurkyYT/cs2-map-icons). Map yang ditulis manual di luar daftar memakai radar ilustrasi.
+
 ## Musik
 
 Tiap jarkoman bisa punya musik, diatur di dashboard bagian **Musik**:

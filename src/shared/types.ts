@@ -99,6 +99,26 @@ export interface AgentMedia {
   role?: string
 }
 
+/** Penanda di minimap, koordinat 0 sampai 1 dari kiri atas gambar minimap. */
+export interface MapMarker {
+  kind: 'site' | 'spawn'
+  /** 'A', 'B', 'C' untuk site; 'ATK' atau 'DEF' untuk spawn */
+  label: string
+  x: number
+  y: number
+}
+
+export interface MapMedia {
+  splash?: string
+  /** Minimap resmi (gambar persegi, latar transparan) */
+  minimap?: string
+  /** Koordinat fiksi map dari Riot, misalnya 45°26'BF'N,12°20'Q'E */
+  coordinates?: string
+  /** Misalnya "A/B Sites" */
+  sites?: string
+  markers: MapMarker[]
+}
+
 export interface MediaPayload {
   game: GameId
   source: string
@@ -106,5 +126,7 @@ export interface MediaPayload {
   hero?: string
   gallery: MediaItem[]
   maps?: Record<string, string>
+  /** Detail per map (kunci nama map huruf kecil), saat ini untuk VALORANT */
+  mapInfo?: Record<string, MapMedia>
   agents?: Record<string, AgentMedia>
 }

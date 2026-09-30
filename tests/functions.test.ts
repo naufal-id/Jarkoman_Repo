@@ -116,7 +116,25 @@ describe('media', () => {
       fakeFetch({
         'https://valorant-api.com/v1/maps': {
           data: [
-            { displayName: 'Ascent', splash: 'https://media/ascent.png', listViewIconTall: 'https://media/ascent-tall.png' },
+            {
+              displayName: 'Ascent',
+              splash: 'https://media/ascent.png',
+              listViewIconTall: 'https://media/ascent-tall.png',
+              displayIcon: 'https://media/ascent-mini.png',
+              coordinates: "45°26'BF'N,12°20'Q'E",
+              tacticalDescription: 'A/B Sites',
+              xMultiplier: 7e-5,
+              yMultiplier: -7e-5,
+              xScalarToAdd: 0.813895,
+              yScalarToAdd: 0.573242,
+              callouts: [
+                { regionName: 'Site', superRegionName: 'A', location: { x: 5000, y: -6000 } },
+                { regionName: 'Site', superRegionName: 'A', location: { x: 5100, y: -6100 } },
+                { regionName: 'Spawn', superRegionName: 'Attacker Side', location: { x: -3000, y: -1000 } },
+                { regionName: 'Tree', superRegionName: 'A', location: { x: 1, y: 1 } },
+                { regionName: 'Site', superRegionName: 'B', location: { x: 999999, y: 0 } },
+              ],
+            },
             { displayName: 'The Range', splash: 'https://media/range.png' },
           ],
         },
@@ -134,6 +152,17 @@ describe('media', () => {
       }),
     )
     expect(data.maps).toEqual({ ascent: 'https://media/ascent.png' })
+    // Sumbu tertukar: x minimap dari y dunia. Site ganda diambil sekali, titik di luar gambar dibuang.
+    expect(data.mapInfo?.ascent).toEqual({
+      splash: 'https://media/ascent.png',
+      minimap: 'https://media/ascent-mini.png',
+      coordinates: "45°26'BF'N,12°20'Q'E",
+      sites: 'A/B Sites',
+      markers: [
+        { kind: 'site', label: 'A', x: 0.394, y: 0.223 },
+        { kind: 'spawn', label: 'ATK', x: 0.744, y: 0.783 },
+      ],
+    })
     expect(data.gallery).toHaveLength(1)
     expect(data.agents?.jett).toMatchObject({ portrait: 'https://media/jett.png', colors: ['#9adeff', '#3a7fb5'], role: 'Duelist' })
   })

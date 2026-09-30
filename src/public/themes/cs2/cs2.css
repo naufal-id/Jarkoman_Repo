@@ -513,24 +513,32 @@ body:has(.cs) {
 
 /* ---------- Info match ---------- */
 .cs-info {
-  display: grid;
-  gap: 48px;
   border-top: 1px solid var(--line);
 }
 
+.cs-info__grid {
+  display: grid;
+  gap: 40px;
+  margin-top: 40px;
+}
+
+/* Overview map sekitar setengah lebar section di desktop. */
 @media (min-width: 1024px) {
-  .cs-info {
-    grid-template-columns: minmax(0, 1fr) 340px;
+  .cs-info__grid {
+    grid-template-columns: minmax(0, 13fr) minmax(0, 11fr);
     align-items: start;
-    gap: 72px;
-  }
-  .cs-info > * {
-    margin: 0;
+    gap: 56px;
   }
 }
 
+.cs-info__side {
+  display: grid;
+  gap: 28px;
+  min-width: 0;
+}
+
 .cs-info__list {
-  margin: 36px 0 0;
+  margin: 0;
 }
 
 .cs-info__row {
@@ -582,7 +590,7 @@ body:has(.cs) {
 }
 
 .cs-radar svg {
-  width: min(100%, 340px);
+  width: min(100%, 560px);
   height: auto;
 }
 
@@ -645,6 +653,335 @@ body:has(.cs) {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+/* ---------- Overview map resmi ---------- */
+.cs-map {
+  margin: 0;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.cs-map__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  min-height: 44px;
+}
+
+.cs-map__label {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cs-map__code {
+  padding: 2px 8px;
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.cs-map__levels {
+  margin-left: auto;
+  display: inline-flex;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.cs-map__level {
+  min-width: 72px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.cs-map__level[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.cs-map__level:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: -4px;
+}
+
+/* Panel radar: persegi dengan grid tipis seperti layar overview, ukuran mengikuti lebar kolom. */
+.cs-map__radar {
+  position: relative;
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(232, 230, 225, 0.05), transparent 70%),
+    linear-gradient(rgba(232, 230, 225, 0.04) 1px, transparent 1px) 0 0 / 10% 10%,
+    linear-gradient(90deg, rgba(232, 230, 225, 0.04) 1px, transparent 1px) 0 0 / 10% 10%,
+    #0b0e11;
+  overflow: hidden;
+  container-type: inline-size;
+}
+
+.cs-map__layer {
+  position: absolute;
+}
+
+.cs-map__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cs-map__spawn,
+.cs-map__site {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  translate: -50% -50%;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.cs-map__spawn {
+  min-width: clamp(28px, 6.4cqi, 44px);
+  height: clamp(22px, 4.6cqi, 32px);
+  padding: 0 6px;
+  border-radius: 2px;
+  font-size: clamp(14px, 2.9cqi, 20px);
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+}
+
+.cs-map__spawn--t {
+  background: #eda338;
+  color: #1a1206;
+}
+
+.cs-map__spawn--ct {
+  background: #6d9eeb;
+  color: #07111f;
+}
+
+/* Bombsite: huruf stensil di kotak merah, seperti ikon target bom di radar. */
+.cs-map__site {
+  width: clamp(30px, 7cqi, 48px);
+  height: clamp(30px, 7cqi, 48px);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 4px;
+  background: #d9412f;
+  color: #fff;
+  font-family: 'Saira Stencil One', sans-serif;
+  font-weight: 400;
+  font-size: clamp(17px, 4cqi, 28px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+
+.cs-map__site.is-hostage {
+  width: clamp(20px, 4.2cqi, 28px);
+  height: clamp(20px, 4.2cqi, 28px);
+  border-width: 1.5px;
+  border-radius: 50%;
+  background: #f1efe9;
+  color: #0e1114;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: clamp(12px, 2.4cqi, 16px);
+}
+
+.cs-map__site.is-target {
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 3px rgba(0, 0, 0, 0.6),
+    0 0 24px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.cs-map__site.is-target::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 2px solid var(--accent);
+  border-radius: 6px;
+  animation: cs-ping 1.6s ease-out infinite;
+}
+
+@keyframes cs-ping {
+  from {
+    opacity: 0.9;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+.cs-map__player {
+  position: absolute;
+  z-index: 2;
+  width: clamp(9px, 2cqi, 14px);
+  height: clamp(9px, 2cqi, 14px);
+  border: 2px solid #0b0e11;
+  border-radius: 50%;
+  background: var(--accent);
+  translate: -50% -50%;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 80%, transparent);
+}
+
+.cs-map__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.cs-map__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cs-map__key::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.cs-map__key--t::before {
+  background: #eda338;
+}
+
+.cs-map__key--ct::before {
+  background: #6d9eeb;
+}
+
+.cs-map__key--site::before {
+  background: #d9412f;
+  box-shadow: inset 0 0 0 1.5px #fff;
+}
+
+.cs-map__key--site.is-hostage::before {
+  border-radius: 50%;
+  background: #f1efe9;
+  box-shadow: none;
+}
+
+.cs-map__key--you::before {
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.cs-map__key--plan {
+  color: var(--accent);
+}
+
+.cs-map__key--plan::before,
+.cs-map__key--note::before {
+  display: none;
+}
+
+.cs-map__key--note {
+  flex-basis: 100%;
+  font-size: 14px;
+}
+
+.cs-map .is-other-level {
+  opacity: 0.28;
+  filter: grayscale(1);
+}
+
+/* ---------- Kartu map (seperti menu pilih map) ---------- */
+.cs-mapcard {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  background: #0b0e11;
+}
+
+.cs-mapcard__shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cs-mapcard::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(11, 14, 17, 0.55) 62%, rgba(11, 14, 17, 0.95) 100%);
+}
+
+.cs-mapcard__meta {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.cs-mapcard__icon {
+  width: clamp(52px, 16%, 76px);
+  height: auto;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+}
+
+.cs-mapcard__name {
+  font-family: 'Saira Stencil One', sans-serif;
+  font-size: clamp(30px, 3.6vw, 46px);
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+  overflow-wrap: anywhere;
+}
+
+.cs-mapcard__type {
+  margin-top: 6px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d6d3cc;
+}
+
+.cs-mapcard__type code {
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cs-map__site.is-target::after {
+    animation: none;
+    opacity: 0.8;
+  }
 }
 
 /* ---------- Scoreboard ---------- */

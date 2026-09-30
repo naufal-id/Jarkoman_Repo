@@ -563,11 +563,231 @@ body:has(.val[data-variant='bone']) {
   color: var(--alt-fg);
 }
 
+.val-intel__layout {
+  display: grid;
+  gap: 40px;
+  margin-top: 48px;
+}
+
+/* Kartu map sekitar setengah lebar section di desktop. */
+@media (min-width: 1024px) {
+  .val-intel__layout.has-map {
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    align-items: start;
+    gap: 56px;
+  }
+  /* Di samping kartu map, info ditumpuk satu kolom supaya tingginya mengimbangi kartu. */
+  .val-intel__layout.has-map .val-intel__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .val-intel__layout.has-map .val-map {
+    position: sticky;
+    top: 32px;
+  }
+}
+
 .val-intel__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-  margin-top: 48px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  align-content: start;
+  margin: 0;
   border-top: 1px solid var(--line);
+}
+
+/* ---------- Kartu map (layar loading map) ---------- */
+.val-map {
+  position: relative;
+  isolation: isolate;
+  margin: 0;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--bone);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 28px), calc(100% - 28px) 100%, 0 100%);
+  container-type: inline-size;
+}
+
+.val-map::before {
+  content: '';
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: var(--red);
+}
+
+.val-map__art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.val-map__splash {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.val-map__art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(15, 25, 35, 0.05) 0%, rgba(15, 25, 35, 0.2) 42%, rgba(15, 25, 35, 0.94) 100%),
+    linear-gradient(90deg, rgba(15, 25, 35, 0.5), transparent 60%);
+}
+
+/* Tanpa gambar dari valorant-api: grid tipis, cahaya merah, dan nama map raksasa bergaris. */
+.val-map:not(.has-splash) .val-map__art {
+  background:
+    radial-gradient(circle at 78% 22%, rgba(255, 70, 85, 0.28), transparent 55%),
+    linear-gradient(rgba(236, 232, 225, 0.05) 1px, transparent 1px) 0 0 / 8cqi 8cqi,
+    linear-gradient(90deg, rgba(236, 232, 225, 0.05) 1px, transparent 1px) 0 0 / 8cqi 8cqi,
+    var(--ink);
+}
+
+.val-map__ghost {
+  position: absolute;
+  right: -2cqi;
+  top: 6cqi;
+  font-family: 'Anton', sans-serif;
+  font-size: min(34cqi, calc(190cqi / var(--len)));
+  line-height: 0.85;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(236, 232, 225, 0.16);
+}
+
+.val-map__mini {
+  position: absolute;
+  z-index: 1;
+  top: 5cqi;
+  right: 5cqi;
+  width: 38cqi;
+  aspect-ratio: 1;
+  border: 1px solid rgba(236, 232, 225, 0.22);
+  background: rgba(15, 25, 35, 0.62);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.val-map__mini img {
+  position: absolute;
+  inset: 4%;
+  width: 92%;
+  height: 92%;
+  object-fit: contain;
+}
+
+/* Posisi memakai properti translate supaya animasi scale GSAP (transform) tidak menggeser penanda. */
+.val-map__mark {
+  position: absolute;
+  z-index: 1;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.val-map__mark--site {
+  width: max(22px, 6cqi);
+  height: max(22px, 6cqi);
+  background: var(--red);
+  color: var(--ink);
+  font-family: 'Anton', sans-serif;
+  font-size: max(14px, 3.8cqi);
+  clip-path: polygon(0 0, 100% 0, 100% 72%, 72% 100%, 0 100%);
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.val-map__mark--spawn {
+  padding: 3px 5px;
+  background: rgba(236, 232, 225, 0.94);
+  color: var(--ink);
+  font-family: 'Barlow', sans-serif;
+  font-weight: 800;
+  font-size: max(10px, 1.9cqi);
+  letter-spacing: 0.08em;
+}
+
+.val-map__cap {
+  position: absolute;
+  z-index: 2;
+  left: 6cqi;
+  right: 6cqi;
+  bottom: 6cqi;
+  display: grid;
+  justify-items: start;
+  gap: 1.4cqi;
+}
+
+.val-map__kicker {
+  font-family: 'Barlow', sans-serif;
+  font-weight: 800;
+  font-size: max(12px, 1.9cqi);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.val-map__code {
+  color: var(--red);
+}
+
+.val-map__name {
+  font-family: 'Anton', sans-serif;
+  font-size: min(17cqi, calc(150cqi / var(--len)));
+  line-height: 0.86;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.val-map__coords {
+  font-family: 'Barlow', sans-serif;
+  font-weight: 600;
+  font-size: max(12px, 1.8cqi);
+  letter-spacing: 0.2em;
+  color: rgba(236, 232, 225, 0.78);
+}
+
+.val-map__wipe {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: var(--red);
+  transform: scaleX(0);
+  pointer-events: none;
+}
+
+/* Varian Bone: panel info berwarna ink, jadi kartu perlu tepi supaya tidak menyatu. */
+.val[data-variant='bone'] .val-map::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border: 1px solid rgba(236, 232, 225, 0.16);
+  pointer-events: none;
+}
+
+.val[data-variant='bone'] .val-map:not(.has-splash) .val-map__art {
+  background-color: #16222d;
+}
+
+@media (max-width: 559px) {
+  .val-map {
+    aspect-ratio: 1;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+  }
+  .val-map__mini {
+    width: 46cqi;
+  }
+  .val-map__name {
+    font-size: min(19cqi, calc(160cqi / var(--len)));
+  }
 }
 
 .val-intel__item {
@@ -615,13 +835,6 @@ body:has(.val[data-variant='bone']) {
   font-size: 20px;
   line-height: 1.3;
   text-transform: none;
-}
-
-.val-intel__thumb {
-  width: 112px;
-  height: 60px;
-  object-fit: cover;
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
 }
 
 .val-mini {

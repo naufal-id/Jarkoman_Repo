@@ -6,7 +6,7 @@ import '@fontsource/noto-sans/400.css'
 import '@fontsource/noto-sans/600.css'
 import '@fontsource/noto-sans/700.css'
 import './cs2.css'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { gameDef } from '../../../shared/games'
 import { dayName, formatClock, formatDateShort, pad2 } from '../../../shared/time'
 import type { Player } from '../../../shared/types'
@@ -22,24 +22,9 @@ import { JoinForm, type SentKind } from '../../common/JoinForm'
 import { MusicDock } from '../../common/Music'
 import { Split } from '../../common/Split'
 import { useToast } from '../../common/Toast'
+import { CS2_MAPS, type Cs2Map, type MapPoint } from './maps'
 
 const def = gameDef('cs2')
-
-/** Nama file map resmi. de_ = bomb defusal, cs_ = hostage rescue. */
-const MAP_CODES: Record<string, string> = {
-  Ancient: 'de_ancient',
-  Anubis: 'de_anubis',
-  'Dust II': 'de_dust2',
-  Inferno: 'de_inferno',
-  Mirage: 'de_mirage',
-  Nuke: 'de_nuke',
-  Overpass: 'de_overpass',
-  Train: 'de_train',
-  Cache: 'de_cache',
-  Vertigo: 'de_vertigo',
-  Office: 'cs_office',
-  Italy: 'cs_italy',
-}
 
 /** Kelas senjata dan sisi yang bisa membelinya di buy menu (T saja, CT saja, atau dua-duanya). */
 const WEAPONS: Record<string, { kind: string; side: 'T' | 'CT' | '' }> = {
@@ -78,7 +63,9 @@ export default function Cs2Page({ j }: ThemeProps) {
 
   // Huruf bombsite hanya "diklaim" kalau judul memang menyebut site A atau B.
   const named = /\bA\b/.test(j.headline.toUpperCase()) ? 'A' : /\bB\b/.test(j.headline.toUpperCase()) ? 'B' : null
-  const mapCode = MAP_CODES[j.map] ?? (j.map ? j.map.toLowerCase().replace(/\s+/g, '_') : '')
+  const known = CS2_MAPS[j.map]
+  // de_ = bomb defusal, cs_ = hostage rescue. Map di luar daftar ditulis ulang seperti nama file map.
+  const mapCode = known?.code ?? (j.map ? j.map.toLowerCase().replace(/\s+/g, '_') : '')
   const scale = j.headline.length <= 14 ? 1 : j.headline.length <= 24 ? 0.8 : 0.64
   const slots = Array.from({ length: j.slots }, (_, i) => j.players[i] ?? null)
   const reserves = j.players.slice(j.slots)
@@ -107,6 +94,36 @@ export default function Cs2Page({ j }: ThemeProps) {
           if (i % 3 === 0) spray.to('.cs-hero__title', { y: -3, duration: 0.03, yoyo: true, repeat: 1 }, i * 0.075)
         })
 
+        gsap.from('.cs-map__img', {
+          scrollTrigger: { trigger: '.cs-map', start: 'top 80%', once: true },
+          opacity: 0,
+          scale: 1.06,
+          duration: 0.9,
+          ease: 'power3.out',
+        })
+        gsap.from('.cs-map__spawn, .cs-map__site', {
+          scrollTrigger: { trigger: '.cs-map', start: 'top 70%', once: true },
+          scale: 0,
+          opacity: 0,
+          duration: 0.4,
+          stagger: 0.08,
+          delay: 0.35,
+          ease: 'back.out(2.2)',
+        })
+        gsap.from('.cs-map__player', {
+          scrollTrigger: { trigger: '.cs-map', start: 'top 70%', once: true },
+          scale: 0,
+          duration: 0.3,
+          stagger: 0.05,
+          delay: 0.8,
+          ease: 'back.out(3)',
+        })
+        gsap.from('.cs-mapcard', {
+          scrollTrigger: { trigger: '.cs-mapcard', start: 'top 85%', once: true },
+          clipPath: 'inset(0 100% 0 0)',
+          duration: 0.8,
+          ease: 'power3.inOut',
+        })
         gsap.from('.cs-radar__sweep', {
           rotate: -720,
           transformOrigin: '50% 50%',
@@ -250,9 +267,16 @@ export default function Cs2Page({ j }: ThemeProps) {
         </section>
 
         <section className="cs-info" aria-labelledby="cs-info-title">
-          <div className="cs-info__main">
-            <SectionTitle id="cs-info-title" text="Info match" />
-            <dl className="cs-info__list">
+          <SectionTitle id="cs-info-title" text="Info match" />
+          <div className="cs-info__grid">
+            {known ? (
+              <MapOverview map={known} name={j.map} players={joined.length} side={j.variant === 'ct' ? 'CT' : 'T'} site={named} />
+            ) : (
+              <Radar players={joined.length} site={named} />
+            )}
+            <div className="cs-info__side">
+              {known && <MapCard map={known} name={j.map} />}
+              <dl className="cs-info__list">
               {j.mode && <InfoRow k="Mode" v={j.mode} />}
               {j.map && <InfoRow k="Map" v={j.map} note={mapCode} />}
               {j.rank && <InfoRow k="Rank" v={j.rank} />}
@@ -271,9 +295,9 @@ export default function Cs2Page({ j }: ThemeProps) {
                   </a>
                 </InfoRow>
               )}
-            </dl>
+              </dl>
+            </div>
           </div>
-          <Radar players={joined.length} site={named} />
         </section>
 
         <section className="cs-board" aria-labelledby="cs-board-title">
@@ -478,6 +502,124 @@ function Spray() {
         </g>
       ))}
     </svg>
+  )
+}
+
+const at = (p: MapPoint): CSSProperties => ({ left: `${p.x * 100}%`, top: `${p.y * 100}%` })
+
+/** Lapisan radar diperbesar sehingga hanya area `view` yang terlihat. Ikon ikut lapisan, jadi posisinya tetap tepat. */
+const layerStyle = (v: Cs2Map['view']): CSSProperties => ({
+  width: `${100 / v.size}%`,
+  height: `${100 / v.size}%`,
+  left: `${(-v.x / v.size) * 100}%`,
+  top: `${(-v.y / v.size) * 100}%`,
+})
+
+/** Titik pemain melingkari spawn, supaya jumlahnya terbaca tanpa menutupi ikon spawn. */
+function around(p: MapPoint, count: number): MapPoint[] {
+  const n = Math.min(count, 10)
+  const r = n > 5 ? 0.052 : 0.042
+  return Array.from({ length: n }, (_, i) => {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / Math.max(n, 5)
+    return { x: p.x + Math.cos(a) * r, y: p.y + Math.sin(a) * r }
+  })
+}
+
+/**
+ * Overview map resmi (radar dari file game) dengan ikon seperti loading screen CS2: spawn T dan CT,
+ * bombsite A/B atau sandera. Titik pemain yang sudah masuk berkumpul di spawn sisi yang dipilih host.
+ */
+function MapOverview({ map, name, players, side, site }: { map: Cs2Map; name: string; players: number; side: 'T' | 'CT'; site: 'A' | 'B' | null }) {
+  const [level, setLevel] = useState<'upper' | 'lower'>('upper')
+  useEffect(() => setLevel('upper'), [map.code])
+  const spawn = side === 'T' ? map.t : map.ct
+  const hostage = map.marks.some((m) => m.kind === 'H')
+  const lower = level === 'lower' && Boolean(map.lower)
+  // Ikon milik lantai lain diredupkan supaya tidak terbaca seolah ada di radar yang sedang tampil.
+  const off = (onLower: boolean) => (onLower !== lower ? 'is-other-level' : '')
+  const summary = `${players} pemain di spawn ${side}${site ? `, rencana ke site ${site}` : ''}`
+  return (
+    <figure className="cs-map" aria-label={`Overview ${name}: ${summary}`}>
+      <div className="cs-map__head">
+        <span className="cs-map__label">Overview</span>
+        <code className="cs-map__code">{map.code}</code>
+        {map.lower && (
+          <div className="cs-map__levels" role="group" aria-label="Lantai radar">
+            {(
+              [
+                ['upper', 'Atas'],
+                ['lower', 'Bawah'],
+              ] as const
+            ).map(([v, label]) => (
+              <button key={v} type="button" className="cs-map__level" aria-pressed={level === v} onClick={() => setLevel(v)}>
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="cs-map__radar">
+        <span className="cs-corner" aria-hidden="true" />
+        <div className="cs-map__layer" style={layerStyle(map.view)}>
+          <img
+            className="cs-map__img"
+            src={level === 'lower' && map.lower ? map.lower : map.radar}
+            alt=""
+            width={1024}
+            height={1024}
+            loading="lazy"
+            decoding="async"
+          />
+          <span className={`cs-map__spawn cs-map__spawn--t ${off(false)}`} style={at(map.t)} aria-hidden="true">
+            T
+          </span>
+          <span className={`cs-map__spawn cs-map__spawn--ct ${off(false)}`} style={at(map.ct)} aria-hidden="true">
+            CT
+          </span>
+          {map.marks.map((m, i) => (
+            <span
+              key={`${m.kind}${i}`}
+              className={`cs-map__site ${m.kind === 'H' ? 'is-hostage' : ''} ${m.kind === site ? 'is-target' : ''} ${off(Boolean(m.lower))}`}
+              style={at(m)}
+              aria-hidden="true"
+            >
+              {m.kind}
+            </span>
+          ))}
+          {around(spawn, players).map((p, i) => (
+            <span key={i} className={`cs-map__player ${off(false)}`} style={at(p)} aria-hidden="true" />
+          ))}
+        </div>
+      </div>
+      <figcaption className="cs-map__legend">
+        <span className="cs-map__key cs-map__key--t">Spawn T</span>
+        <span className="cs-map__key cs-map__key--ct">Spawn CT</span>
+        <span className={`cs-map__key cs-map__key--site ${hostage ? 'is-hostage' : ''}`}>{hostage ? 'Sandera' : 'Bombsite'}</span>
+        <span className="cs-map__key cs-map__key--you">
+          {players > 0 ? `${players} pemain, sisi ${side}` : `Sisi ${side}, belum ada pemain`}
+        </span>
+        {site && <span className="cs-map__key cs-map__key--plan">Rencana: site {site}</span>}
+        {(lower || map.marks.some((m) => m.lower)) && <span className="cs-map__key cs-map__key--note">Ikon redup ada di lantai {lower ? 'atas' : 'bawah'}</span>}
+      </figcaption>
+    </figure>
+  )
+}
+
+/** Kartu map seperti di menu pilih map CS2: screenshot resmi, emblem, nama, dan jenis map. */
+function MapCard({ map, name }: { map: Cs2Map; name: string }) {
+  return (
+    <div className="cs-mapcard">
+      <img className="cs-mapcard__shot" src={map.shot} alt="" width={1280} height={720} loading="lazy" decoding="async" />
+      <div className="cs-mapcard__meta">
+        <img className="cs-mapcard__icon" src={map.icon} alt="" width={192} height={192} loading="lazy" decoding="async" />
+        <div>
+          <p className="cs-mapcard__name">{name}</p>
+          <p className="cs-mapcard__type">
+            {map.code.startsWith('cs_') ? 'Hostage rescue' : 'Bomb defusal'} · <code>{map.code}</code>
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }
 
