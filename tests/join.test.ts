@@ -261,8 +261,8 @@ describe('logika join bersama', () => {
     expect(joinCloseLabel({ ...j, joinClose: -1 })).toBe('')
 
     const state = stateOf(j)
-    expect(() => addWebPlayer(state, { id: j.id, name: 'Telat' }, start - 10 * 60_000)).toThrow(/ditutup/)
-    expect(addWebPlayer(state, { id: j.id, name: 'Tepat' }, start - 60 * 60_000).player.name).toBe('Tepat')
+    expect(() => addWebPlayer(state, { id: j.id, name: 'Telat', role: '', pick: '', note: '' }, start - 10 * 60_000)).toThrow(/ditutup/)
+    expect(addWebPlayer(state, { id: j.id, name: 'Tepat', role: '', pick: '', note: '' }, start - 60 * 60_000).player.name).toBe('Tepat')
     expect(buildBroadcast(j, 'https://x.test/?id=a')).toContain('Pendaftaran ditutup 30 menit sebelum mulai')
     // Data lama tanpa field ini: tanpa batas.
     const legacy = { ...j } as Partial<Jarkoman>
